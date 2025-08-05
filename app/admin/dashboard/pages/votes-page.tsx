@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Vote, Download, Search, Filter, TrendingUp } from 'lucide-react'
 import { AdminPageLayout } from '../components/admin-page-layout'
+import { ActionBar, ActionBarButton } from '../components/action-bar'
 import { VoteManagement } from '../components/vote-management'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +16,11 @@ interface VoteStats {
   uniqueVoters: number
 }
 
-export function VotesPage() {
+interface VotesPageProps {
+  onNavigate?: (tabId: string) => void
+}
+
+export function VotesPage({ onNavigate }: VotesPageProps) {
   const [voteStats, setVoteStats] = useState<VoteStats>({
     total: 0,
     today: 0,
@@ -23,6 +28,7 @@ export function VotesPage() {
     uniqueVoters: 0
   })
   const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchVoteStats()
@@ -74,27 +80,35 @@ export function VotesPage() {
 
   return (
     <AdminPageLayout
-      title="投票管理"
-      description="查看和管理所有投票记录，分析投票趋势"
       breadcrumbs={[{ label: '投票管理', icon: Vote }]}
-      actions={
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            分析报告
-          </Button>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            筛选
-          </Button>
-          <Button size="sm" onClick={handleExportVotes}>
-            <Download className="h-4 w-4 mr-2" />
-            导出数据
-          </Button>
-        </div>
-      }
+      onNavigate={onNavigate}
     >
       <div className="space-y-6">
+        {/* ActionBar - 标题、搜索和操作按钮 */}
+        <ActionBar
+          title="投票管理"
+          description="查看和管理所有投票记录，分析投票趋势"
+          showSearch={true}
+          searchPlaceholder="搜索用户、项目或投票记录..."
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          actions={
+            <>
+              <ActionBarButton variant="outline">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                分析报告
+              </ActionBarButton>
+              <ActionBarButton variant="outline">
+                <Filter className="h-4 w-4 mr-2" />
+                筛选
+              </ActionBarButton>
+              <ActionBarButton onClick={handleExportVotes}>
+                <Download className="h-4 w-4 mr-2" />
+                导出数据
+              </ActionBarButton>
+            </>
+          }
+        />
         {/* 投票统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
@@ -158,29 +172,7 @@ export function VotesPage() {
           </Card>
         </div>
 
-        {/* 搜索和筛选 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>搜索投票记录</CardTitle>
-            <CardDescription>
-              通过用户、项目或时间范围搜索投票记录
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="搜索投票记录..."
-                  className="pl-10"
-                />
-              </div>
-              <Button variant="outline">
-                搜索
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+
 
         {/* 投票管理组件 */}
         <Card>
@@ -191,7 +183,10 @@ export function VotesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <VoteManagement onStatsUpdate={handleStatsUpdate} />
+            <VoteManagement
+              onStatsUpdate={handleStatsUpdate}
+              searchTerm={searchTerm}
+            />
           </CardContent>
         </Card>
       </div>

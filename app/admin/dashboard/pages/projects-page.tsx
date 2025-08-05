@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { FolderOpen, Plus, Search, Filter, Eye } from 'lucide-react'
 import { AdminPageLayout } from '../components/admin-page-layout'
+import { ActionBar, ActionBarButton } from '../components/action-bar'
 import { ProjectManagement } from '../components/project-management'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,7 +16,11 @@ interface ProjectStats {
   totalVotes: number
 }
 
-export function ProjectsPage() {
+interface ProjectsPageProps {
+  onNavigate?: (tabId: string) => void
+}
+
+export function ProjectsPage({ onNavigate }: ProjectsPageProps) {
   const [projectStats, setProjectStats] = useState<ProjectStats>({
     total: 0,
     active: 0,
@@ -23,6 +28,7 @@ export function ProjectsPage() {
     totalVotes: 0
   })
   const [isLoading, setIsLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchProjectStats()
@@ -62,27 +68,35 @@ export function ProjectsPage() {
 
   return (
     <AdminPageLayout
-      title="项目管理"
-      description="管理所有提交的项目，可以屏蔽或恢复项目的投票资格"
       breadcrumbs={[{ label: '项目管理', icon: FolderOpen }]}
-      actions={
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm">
-            <Eye className="h-4 w-4 mr-2" />
-            预览模式
-          </Button>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            筛选
-          </Button>
-          <Button size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            添加项目
-          </Button>
-        </div>
-      }
+      onNavigate={onNavigate}
     >
       <div className="space-y-6">
+        {/* ActionBar - 标题、搜索和操作按钮 */}
+        <ActionBar
+          title="项目管理"
+          description="管理所有提交的项目，可以屏蔽或恢复项目的投票资格"
+          showSearch={true}
+          searchPlaceholder="搜索项目标题、描述或提交者..."
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          actions={
+            <>
+              <ActionBarButton variant="outline">
+                <Eye className="h-4 w-4 mr-2" />
+                预览模式
+              </ActionBarButton>
+              <ActionBarButton variant="outline">
+                <Filter className="h-4 w-4 mr-2" />
+                筛选
+              </ActionBarButton>
+              <ActionBarButton>
+                <Plus className="h-4 w-4 mr-2" />
+                添加项目
+              </ActionBarButton>
+            </>
+          }
+        />
         {/* 项目统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
@@ -146,29 +160,7 @@ export function ProjectsPage() {
           </Card>
         </div>
 
-        {/* 搜索和筛选 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>搜索项目</CardTitle>
-            <CardDescription>
-              通过项目标题、描述或提交者搜索项目
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="搜索项目..."
-                  className="pl-10"
-                />
-              </div>
-              <Button variant="outline">
-                搜索
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+
 
         {/* 项目管理组件 */}
         <Card>
@@ -179,7 +171,10 @@ export function ProjectsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ProjectManagement onStatsUpdate={handleStatsUpdate} />
+            <ProjectManagement
+              onStatsUpdate={handleStatsUpdate}
+              searchTerm={searchTerm}
+            />
           </CardContent>
         </Card>
       </div>

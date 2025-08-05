@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { Users, UserPlus, Search, Filter } from 'lucide-react'
 import { AdminPageLayout } from '../components/admin-page-layout'
+import { ActionBar, ActionBarButton } from '../components/action-bar'
 import { UserManagement } from '../components/user-management'
+import { UserDetailPage } from './user-detail-page'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,13 +16,19 @@ interface UserStats {
   blocked: number
 }
 
-export function UsersPage() {
+interface UsersPageProps {
+  onNavigate?: (tabId: string) => void
+}
+
+export function UsersPage({ onNavigate }: UsersPageProps) {
   const [userStats, setUserStats] = useState<UserStats>({
     total: 0,
     active: 0,
     blocked: 0
   })
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchUserStats()
@@ -49,25 +57,52 @@ export function UsersPage() {
     fetchUserStats()
   }
 
+  const handleUserSelect = (userId: string) => {
+    setSelectedUserId(userId)
+  }
+
+  const handleBackToList = () => {
+    setSelectedUserId(null)
+  }
+
+  // 如果选择了用户，显示用户详情页面
+  if (selectedUserId) {
+    return (
+      <UserDetailPage
+        userId={selectedUserId}
+        onBack={handleBackToList}
+        onNavigate={onNavigate}
+      />
+    )
+  }
+
   return (
     <AdminPageLayout
-      title="用户管理"
-      description="管理所有注册用户，可以屏蔽或恢复用户的投票权限"
       breadcrumbs={[{ label: '用户管理', icon: Users }]}
-      actions={
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
-            筛选
-          </Button>
-          <Button size="sm">
-            <UserPlus className="h-4 w-4 mr-2" />
-            添加用户
-          </Button>
-        </div>
-      }
+      onNavigate={onNavigate}
     >
       <div className="space-y-6">
+        {/* ActionBar - 标题、搜索和操作按钮 */}
+        <ActionBar
+          title="用户管理"
+          description="管理所有注册用户，可以屏蔽或恢复用户的投票权限"
+          showSearch={true}
+          searchPlaceholder="搜索用户名、邮箱或姓名..."
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          actions={
+            <>
+              <ActionBarButton variant="outline">
+                <Filter className="h-4 w-4 mr-2" />
+                筛选
+              </ActionBarButton>
+              <ActionBarButton>
+                <UserPlus className="h-4 w-4 mr-2" />
+                添加用户
+              </ActionBarButton>
+            </>
+          }
+        />
         {/* 用户统计卡片 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
@@ -116,29 +151,7 @@ export function UsersPage() {
           </Card>
         </div>
 
-        {/* 搜索和筛选 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>搜索用户</CardTitle>
-            <CardDescription>
-              通过用户名、邮箱或姓名搜索用户
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center space-x-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="搜索用户..."
-                  className="pl-10"
-                />
-              </div>
-              <Button variant="outline">
-                搜索
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+
 
         {/* 用户管理组件 */}
         <Card>
@@ -149,7 +162,11 @@ export function UsersPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <UserManagement onStatsUpdate={handleStatsUpdate} />
+            <UserManagement
+              onStatsUpdate={handleStatsUpdate}
+              onUserSelect={handleUserSelect}
+              searchTerm={searchTerm}
+            />
           </CardContent>
         </Card>
       </div>

@@ -24,9 +24,10 @@ interface Project {
 
 interface ProjectManagementProps {
   onStatsUpdate: () => void
+  searchTerm?: string
 }
 
-export function ProjectManagement({ onStatsUpdate }: ProjectManagementProps) {
+export function ProjectManagement({ onStatsUpdate, searchTerm = '' }: ProjectManagementProps) {
   const [projects, setProjects] = useState<Project[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -86,6 +87,20 @@ export function ProjectManagement({ onStatsUpdate }: ProjectManagementProps) {
     }
   }
 
+  // 过滤项目列表
+  const filteredProjects = projects.filter(project => {
+    if (!searchTerm) return true
+    const searchLower = searchTerm.toLowerCase()
+    return (
+      project.title.toLowerCase().includes(searchLower) ||
+      project.description.toLowerCase().includes(searchLower) ||
+      project.submitterName.toLowerCase().includes(searchLower) ||
+      project.submitterEmail.toLowerCase().includes(searchLower) ||
+      (project.category && project.category.toLowerCase().includes(searchLower)) ||
+      (project.tags && project.tags.toLowerCase().includes(searchLower))
+    )
+  })
+
   if (isLoading) {
     return <div className="text-center py-8">加载中...</div>
   }
@@ -93,9 +108,20 @@ export function ProjectManagement({ onStatsUpdate }: ProjectManagementProps) {
   return (
     <div className="space-y-4">
       <div className="text-sm text-gray-600">
-        共 {projects.length} 个项目，其中 {projects.filter(p => !p.isBlocked).length} 个可投票项目
+        {searchTerm ? (
+          <>
+            搜索到 {filteredProjects.length} 个项目，共 {projects.length} 个项目
+            {searchTerm && (
+              <span className="ml-2 text-blue-600">
+                搜索: "{searchTerm}"
+              </span>
+            )}
+          </>
+        ) : (
+          <>共 {projects.length} 个项目，其中 {projects.filter(p => !p.isBlocked).length} 个可投票项目</>
+        )}
       </div>
-      
+
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
@@ -110,7 +136,8 @@ export function ProjectManagement({ onStatsUpdate }: ProjectManagementProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {projects.map((project) => (
+            {filteredProjects.length > 0 ? (
+              filteredProjects.map((project) => (
               <TableRow key={project.id}>
                 <TableCell>
                   <Dialog>
@@ -203,7 +230,14 @@ export function ProjectManagement({ onStatsUpdate }: ProjectManagementProps) {
                   </Button>
                 </TableCell>
               </TableRow>
-            ))}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  {searchTerm ? `没有找到匹配 "${searchTerm}" 的项目` : '暂无项目数据'}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

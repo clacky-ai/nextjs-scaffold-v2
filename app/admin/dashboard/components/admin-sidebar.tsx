@@ -11,7 +11,6 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Shield,
   Menu,
   X
 } from 'lucide-react'
@@ -158,79 +157,92 @@ export function AdminSidebar({
       "flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out shadow-sm",
       isCollapsed ? "w-16" : "w-64"
     )}>
-      {/* Header */}
+      {/* Header - 管理员信息区域 */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        {!isCollapsed && (
-          <div className="flex items-center space-x-2 transition-opacity duration-200">
-            <Shield className="h-6 w-6 text-blue-600" />
-            <h1 className="text-lg font-semibold text-gray-900">管理后台</h1>
-          </div>
-        )}
-        {isCollapsed && (
-          <div className="flex items-center justify-center w-full">
-            <Shield className="h-6 w-6 text-blue-600" />
-          </div>
-        )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={toggleCollapse}
-          className={cn(
-            "h-8 w-8 p-0 hover:bg-gray-100 transition-colors",
-            isCollapsed && "absolute right-2"
-          )}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-
-      {/* User Info */}
-      <div className={cn(
-        "border-b border-gray-200 transition-all duration-300",
-        isCollapsed ? "p-2" : "p-4"
-      )}>
         {!isCollapsed ? (
-          <div className="transition-opacity duration-200">
-            <div className="flex items-center space-x-3">
-              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-blue-600">
-                  {session.user?.name?.charAt(0) || 'A'}
-                </span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {session.user?.name}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {session.user?.email}
-                </p>
-              </div>
-            </div>
-            {systemStatus && (
-              <div className="mt-3">
-                <Badge
-                  variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}
-                  className="text-xs"
-                >
-                  {systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'}
-                </Badge>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex justify-center">
-            <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+          <div className="flex items-center space-x-3 flex-1 min-w-0 transition-opacity duration-200">
+            <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-medium text-blue-600">
                 {session.user?.name?.charAt(0) || 'A'}
               </span>
             </div>
+            <div className="flex-1 min-w-0 group relative">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {session.user?.name}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {session.user?.email}
+              </p>
+              {/* Hover 时显示完整信息的 tooltip */}
+              <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 z-50 whitespace-nowrap shadow-lg">
+                <div>{session.user?.name}</div>
+                <div className="text-gray-300">{session.user?.email}</div>
+                {/* 小箭头 */}
+                <div className="absolute bottom-full left-2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900"></div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          /* 折叠状态：只显示展开按钮，居中显示 */
+          <div className="flex items-center justify-center w-full">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleCollapse}
+              className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors group relative"
+              title="展开侧边栏"
+            >
+              <ChevronRight className="h-4 w-4" />
+              {/* 折叠状态下的 hover 提示 */}
+              <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 z-50 whitespace-nowrap shadow-lg">
+                <div>{session.user?.name}</div>
+                <div className="text-gray-300">{session.user?.email}</div>
+                {/* 小箭头 */}
+                <div className="absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900"></div>
+              </div>
+            </Button>
           </div>
         )}
+
+        {/* 展开状态的折叠按钮 */}
+        {!isCollapsed && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleCollapse}
+            className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors flex-shrink-0 ml-3"
+            title="折叠侧边栏"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+        )}
       </div>
+
+      {/* System Status */}
+      {systemStatus && (
+        <div className={cn(
+          "border-b border-gray-200 transition-all duration-300",
+          isCollapsed ? "p-2" : "p-4"
+        )}>
+          {!isCollapsed ? (
+            <div className="transition-opacity duration-200">
+              <Badge
+                variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}
+                className="text-xs"
+              >
+                {systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'}
+              </Badge>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                systemStatus.isVotingEnabled ? "bg-green-500" : "bg-gray-400"
+              )} title={systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'} />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Navigation Menu */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
@@ -310,26 +322,10 @@ function MobileSidebarContent({
 }) {
   return (
     <div className="flex flex-col h-full">
-      {/* 移动端头部 */}
+      {/* 移动端头部 - 管理员信息区域 */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-2">
-          <Shield className="h-6 w-6 text-blue-600" />
-          <h1 className="text-lg font-semibold text-gray-900">管理后台</h1>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClose}
-          className="h-8 w-8 p-0"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
-
-      {/* 移动端用户信息 */}
-      <div className="p-4 border-b border-gray-200">
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+        <div className="flex items-center space-x-3 flex-1 min-w-0">
+          <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-medium text-blue-600">
               {session.user?.name?.charAt(0) || 'A'}
             </span>
@@ -343,17 +339,27 @@ function MobileSidebarContent({
             </p>
           </div>
         </div>
-        {systemStatus && (
-          <div className="mt-3">
-            <Badge
-              variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}
-              className="text-xs"
-            >
-              {systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'}
-            </Badge>
-          </div>
-        )}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClose}
+          className="h-8 w-8 p-0 flex-shrink-0 ml-3"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
+
+      {/* 移动端系统状态 */}
+      {systemStatus && (
+        <div className="p-4 border-b border-gray-200">
+          <Badge
+            variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}
+            className="text-xs"
+          >
+            {systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'}
+          </Badge>
+        </div>
+      )}
 
       {/* 移动端导航菜单 */}
       <nav className="flex-1 p-4 space-y-2">

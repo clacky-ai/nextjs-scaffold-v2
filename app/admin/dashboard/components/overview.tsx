@@ -7,6 +7,7 @@ import { Users, FolderOpen, Vote, Activity, RefreshCw, BarChart3 } from 'lucide-
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { AdminPageLayout } from './admin-page-layout'
+import { ActionBar, ActionBarButton } from './action-bar'
 
 interface Stats {
   totalUsers: number
@@ -27,7 +28,11 @@ interface RecentActivity {
   timestamp: string
 }
 
-export function OverviewPage() {
+interface OverviewPageProps {
+  onNavigate?: (tabId: string) => void
+}
+
+export function OverviewPage({ onNavigate }: OverviewPageProps) {
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     totalProjects: 0,
@@ -200,23 +205,25 @@ export function OverviewPage() {
 
   return (
     <AdminPageLayout
-      title="系统概览"
-      description="查看投票系统的整体运行状况"
       breadcrumbs={[{ label: '系统概览', icon: BarChart3 }]}
-      actions={
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          className="flex items-center space-x-2"
-          disabled={isLoadingStats}
-        >
-          <RefreshCw className={`h-4 w-4 ${isLoadingStats ? 'animate-spin' : ''}`} />
-          <span>刷新数据</span>
-        </Button>
-      }
+      onNavigate={onNavigate}
     >
       <div className="space-y-6">
+        {/* ActionBar - 标题和刷新按钮 */}
+        <ActionBar
+          title="系统概览"
+          description="查看投票系统的整体运行状况"
+          actions={
+            <ActionBarButton
+              variant="outline"
+              onClick={handleRefresh}
+              disabled={isLoadingStats}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingStats ? 'animate-spin' : ''}`} />
+              刷新数据
+            </ActionBarButton>
+          }
+        />
 
       {/* 系统状态卡片 */}
       {systemStatus && (

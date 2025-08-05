@@ -24,9 +24,10 @@ interface Vote {
 
 interface VoteManagementProps {
   onStatsUpdate: () => void
+  searchTerm?: string
 }
 
-export function VoteManagement({ onStatsUpdate }: VoteManagementProps) {
+export function VoteManagement({ onStatsUpdate, searchTerm = '' }: VoteManagementProps) {
   const [votes, setVotes] = useState<Vote[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
@@ -79,6 +80,18 @@ export function VoteManagement({ onStatsUpdate }: VoteManagementProps) {
     }
   }
 
+  // 过滤投票记录
+  const filteredVotes = votes.filter(vote => {
+    if (!searchTerm) return true
+    const searchLower = searchTerm.toLowerCase()
+    return (
+      vote.voter.name.toLowerCase().includes(searchLower) ||
+      vote.voter.email.toLowerCase().includes(searchLower) ||
+      vote.project.title.toLowerCase().includes(searchLower) ||
+      vote.reason.toLowerCase().includes(searchLower)
+    )
+  })
+
   if (isLoading) {
     return <div className="text-center py-8">加载中...</div>
   }
@@ -86,9 +99,20 @@ export function VoteManagement({ onStatsUpdate }: VoteManagementProps) {
   return (
     <div className="space-y-4">
       <div className="text-sm text-gray-600">
-        共 {votes.length} 条投票记录
+        {searchTerm ? (
+          <>
+            搜索到 {filteredVotes.length} 条投票记录，共 {votes.length} 条记录
+            {searchTerm && (
+              <span className="ml-2 text-blue-600">
+                搜索: "{searchTerm}"
+              </span>
+            )}
+          </>
+        ) : (
+          <>共 {votes.length} 条投票记录</>
+        )}
       </div>
-      
+
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
@@ -101,7 +125,8 @@ export function VoteManagement({ onStatsUpdate }: VoteManagementProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {votes.map((vote) => (
+            {filteredVotes.length > 0 ? (
+              filteredVotes.map((vote) => (
               <TableRow key={vote.id}>
                 <TableCell>
                   <div>
@@ -169,7 +194,14 @@ export function VoteManagement({ onStatsUpdate }: VoteManagementProps) {
                   </AlertDialog>
                 </TableCell>
               </TableRow>
-            ))}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                  {searchTerm ? `没有找到匹配 "${searchTerm}" 的投票记录` : '暂无投票记录'}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

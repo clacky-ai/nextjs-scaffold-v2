@@ -18,9 +18,11 @@ interface User {
 
 interface UserManagementProps {
   onStatsUpdate: () => void
+  onUserSelect?: (userId: string) => void
+  searchTerm?: string
 }
 
-export function UserManagement({ onStatsUpdate }: UserManagementProps) {
+export function UserManagement({ onStatsUpdate, onUserSelect, searchTerm = '' }: UserManagementProps) {
   const [users, setUsers] = useState<User[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -80,6 +82,18 @@ export function UserManagement({ onStatsUpdate }: UserManagementProps) {
     }
   }
 
+  // 过滤用户列表
+  const filteredUsers = users.filter(user => {
+    if (!searchTerm) return true
+    const searchLower = searchTerm.toLowerCase()
+    return (
+      user.name.toLowerCase().includes(searchLower) ||
+      user.email.toLowerCase().includes(searchLower) ||
+      (user.phone && user.phone.toLowerCase().includes(searchLower)) ||
+      (user.team && user.team.toLowerCase().includes(searchLower))
+    )
+  })
+
   if (isLoading) {
     return <div className="text-center py-8">加载中...</div>
   }
@@ -87,9 +101,20 @@ export function UserManagement({ onStatsUpdate }: UserManagementProps) {
   return (
     <div className="space-y-4">
       <div className="text-sm text-gray-600">
-        共 {users.length} 个用户，其中 {users.filter(u => !u.isBlocked).length} 个活跃用户
+        {searchTerm ? (
+          <>
+            搜索到 {filteredUsers.length} 个用户，共 {users.length} 个用户
+            {searchTerm && (
+              <span className="ml-2 text-blue-600">
+                搜索: "{searchTerm}"
+              </span>
+            )}
+          </>
+        ) : (
+          <>共 {users.length} 个用户，其中 {users.filter(u => !u.isBlocked).length} 个活跃用户</>
+        )}
       </div>
-      
+
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
@@ -104,9 +129,21 @@ export function UserManagement({ onStatsUpdate }: UserManagementProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
+                <TableCell className="font-medium">
+                  {onUserSelect ? (
+                    <button
+                      onClick={() => onUserSelect(user.id)}
+                      className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                    >
+                      {user.name}
+                    </button>
+                  ) : (
+                    user.name
+                  )}
+                </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.phone || '-'}</TableCell>
                 <TableCell>{user.team || '-'}</TableCell>
@@ -132,7 +169,14 @@ export function UserManagement({ onStatsUpdate }: UserManagementProps) {
                   </Button>
                 </TableCell>
               </TableRow>
-            ))}
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  {searchTerm ? `没有找到匹配 "${searchTerm}" 的用户` : '暂无用户数据'}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

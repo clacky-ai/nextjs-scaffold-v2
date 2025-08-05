@@ -22,20 +22,25 @@ interface AdminDashboardContentProps {
 export function AdminDashboardContent({ session }: AdminDashboardContentProps) {
   const [activeTab, setActiveTab] = useState('overview')
 
+  // 导航处理函数
+  const handleNavigateToTab = (tabId: string) => {
+    setActiveTab(tabId)
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <OverviewPage />
+        return <OverviewPage onNavigate={handleNavigateToTab} />
       case 'users':
-        return <UsersPage />
+        return <UsersPage onNavigate={handleNavigateToTab} />
       case 'projects':
-        return <ProjectsPage />
+        return <ProjectsPage onNavigate={handleNavigateToTab} />
       case 'votes':
-        return <VotesPage />
+        return <VotesPage onNavigate={handleNavigateToTab} />
       case 'settings':
-        return <SettingsPage />
+        return <SettingsPage onNavigate={handleNavigateToTab} />
       default:
-        return <OverviewPage />
+        return <OverviewPage onNavigate={handleNavigateToTab} />
     }
   }
 

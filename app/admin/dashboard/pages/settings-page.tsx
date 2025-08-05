@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Settings, Save, RefreshCw, Shield, Database } from 'lucide-react'
 import { AdminPageLayout } from '../components/admin-page-layout'
+import { ActionBar, ActionBarButton } from '../components/action-bar'
 import { SystemSettings } from '../components/system-settings'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,7 +16,11 @@ interface SystemStatus {
   updatedAt: string
 }
 
-export function SettingsPage() {
+interface SettingsPageProps {
+  onNavigate?: (tabId: string) => void
+}
+
+export function SettingsPage({ onNavigate }: SettingsPageProps) {
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -54,23 +59,27 @@ export function SettingsPage() {
 
   return (
     <AdminPageLayout
-      title="系统设置"
-      description="管理投票系统的全局设置和配置"
       breadcrumbs={[{ label: '系统设置', icon: Settings }]}
-      actions={
-        <div className="flex items-center space-x-3">
-          <Button variant="outline" size="sm" onClick={handleBackup}>
-            <Database className="h-4 w-4 mr-2" />
-            备份数据
-          </Button>
-          <Button variant="outline" size="sm" onClick={fetchSystemStatus}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            刷新状态
-          </Button>
-        </div>
-      }
+      onNavigate={onNavigate}
     >
       <div className="space-y-6">
+        {/* ActionBar - 标题和操作按钮 */}
+        <ActionBar
+          title="系统设置"
+          description="管理投票系统的全局设置和配置"
+          actions={
+            <>
+              <ActionBarButton variant="outline" onClick={handleBackup}>
+                <Database className="h-4 w-4 mr-2" />
+                备份数据
+              </ActionBarButton>
+              <ActionBarButton variant="outline" onClick={fetchSystemStatus}>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                刷新状态
+              </ActionBarButton>
+            </>
+          }
+        />
         {/* 系统状态概览 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>

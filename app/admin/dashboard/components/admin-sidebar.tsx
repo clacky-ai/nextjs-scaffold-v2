@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import {
   Users,
   FolderOpen,
@@ -62,9 +62,9 @@ const menuItems = [
   },
   {
     id: 'settings',
-    label: '系统设置',
+    label: '管理员设置',
     icon: Settings,
-    description: '管理系统全局设置'
+    description: '管理管理员账号和个人设置'
   }
 ]
 
@@ -94,10 +94,46 @@ export function AdminSidebar({
   }, [])
 
   const handleSignOut = async () => {
-    // 删除管理员token
-    document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-    // 重定向到管理员登录页
-    router.push('/admin/sign-in')
+    try {
+      // 调用服务端退出登录API
+      const response = await fetch('/api/admin/auth/signout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        // 额外清理客户端cookie（双重保险）
+        const cookiesToClear = [
+          'admin-token',
+          'next-auth.session-token',
+          '__Secure-next-auth.session-token',
+          'next-auth.csrf-token',
+          '__Host-next-auth.csrf-token',
+          'next-auth.callback-url',
+          '__Secure-next-auth.callback-url'
+        ]
+
+        cookiesToClear.forEach(cookieName => {
+          // 清除根路径
+          document.cookie = `${cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;`
+          // 清除admin路径
+          document.cookie = `${cookieName}=; path=/admin; expires=Thu, 01 Jan 1970 00:00:01 GMT;`
+        })
+
+        // 强制刷新页面以确保状态完全清除
+        window.location.href = '/admin/sign-in'
+      } else {
+        console.error('退出登录失败')
+        // 即使API失败，也尝试客户端清理
+        document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+        router.push('/admin/sign-in')
+      }
+    } catch (error) {
+      console.error('退出登录错误:', error)
+      // 发生错误时的降级处理
+      document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
+      router.push('/admin/sign-in')
+    }
   }
 
   const toggleCollapse = () => {

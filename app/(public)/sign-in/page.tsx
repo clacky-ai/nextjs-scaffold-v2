@@ -33,7 +33,7 @@ export default function SignInPage() {
         toast.error('邮箱或密码错误')
       } else {
         toast.success('登录成功！')
-        router.push('/dashboard')
+        router.push('/app/dashboard')
         router.refresh()
       }
     } catch (error) {

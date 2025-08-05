@@ -79,6 +79,14 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+
+          <div className="mt-8 text-center">
+            <Link href="/about">
+              <Button variant="outline" size="lg">
+                了解更多关于投票系统
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

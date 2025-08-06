@@ -2,13 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
-import { useRouter, usePathname } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
-  Users,
-  FolderOpen,
-  Vote,
-  Settings,
-  BarChart3,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -18,63 +13,42 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import type { MenuItem } from '../layout'
 
 interface AdminSidebarProps {
+  menuItems: MenuItem[]
+  onNavigate: (path: string) => void
   systemStatus?: {
     isVotingEnabled: boolean
     maxVotesPerUser: number
   } | null
 }
 
-const menuItems = [
-  {
-    id: 'overview',
-    path: '/admin/dashboard/overview',
-    label: '概览',
-    icon: BarChart3,
-    description: '系统统计和概览'
-  },
-  {
-    id: 'users',
-    path: '/admin/dashboard/users',
-    label: '用户管理',
-    icon: Users,
-    description: '管理所有注册用户'
-  },
-  {
-    id: 'projects',
-    path: '/admin/dashboard/projects',
-    label: '项目管理',
-    icon: FolderOpen,
-    description: '管理所有提交的项目'
-  },
-  {
-    id: 'votes',
-    path: '/admin/dashboard/votes',
-    label: '投票管理',
-    icon: Vote,
-    description: '查看和管理投票记录'
-  },
-  {
-    id: 'settings',
-    path: '/admin/dashboard/settings',
-    label: '管理员设置',
-    icon: Settings,
-    description: '管理管理员账号和个人设置'
-  }
-]
-
 export function AdminSidebar({
+  menuItems,
+  onNavigate,
   systemStatus
 }: AdminSidebarProps) {
   const { data: session } = useSession()
-  const router = useRouter()
   const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   
-  const activeTab = menuItems.find(item => pathname === item.path)?.id || 'overview'
+  // 智能匹配活跃状态：支持子路径匹配
+  const activeTab = (() => {
+    // 首先尝试精确匹配
+    const exactMatch = menuItems.find(item => pathname === item.path)
+    if (exactMatch) return exactMatch.id
+
+    // 如果没有精确匹配，尝试路径前缀匹配
+    const pathMatch = menuItems.find(item => {
+      // 确保不是根路径匹配，并且当前路径以菜单项路径开头
+      return item.path !== '/admin/dashboard' && pathname.startsWith(item.path + '/')
+    })
+    
+    return pathMatch?.id || 'overview'
+  })()
 
   // 检测移动端
   useEffect(() => {
@@ -132,10 +106,11 @@ export function AdminSidebar({
           <MobileSidebarContent
             systemStatus={systemStatus}
             activeTab={activeTab}
+            menuItems={menuItems}
             onTabChange={(tab) => {
               const menuItem = menuItems.find(item => item.id === tab)
               if (menuItem) {
-                router.push(menuItem.path)
+                onNavigate(menuItem.path)
               }
               setIsMobileOpen(false)
             }}
@@ -249,7 +224,7 @@ export function AdminSidebar({
           return (
             <button
               key={item.id}
-              onClick={() => router.push(item.path)}
+              onClick={() => onNavigate(item.path)}
               className={cn(
                 "w-full flex items-center text-sm font-medium rounded-lg transition-all duration-200 group",
                 isCollapsed ? "px-2 py-3 justify-center" : "px-3 py-2",
@@ -304,12 +279,14 @@ export function AdminSidebar({
 function MobileSidebarContent({
   systemStatus,
   activeTab,
+  menuItems,
   onTabChange,
   onClose,
   handleSignOut
 }: {
   systemStatus: AdminSidebarProps['systemStatus']
   activeTab: string
+  menuItems: MenuItem[]
   onTabChange: (tab: string) => void
   onClose: () => void
   handleSignOut: () => void
@@ -365,12 +342,7 @@ function MobileSidebarContent({
           return (
             <button
               key={item.id}
-              onClick={() => {
-                const menuItem = menuItems.find(i => i.id === item.id)
-                if (menuItem) {
-                  router.push(menuItem.path)
-                }
-              }}
+              onClick={() => onTabChange(item.id)}
               className={cn(
                 "w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200",
                 isActive

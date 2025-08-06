@@ -135,12 +135,7 @@ export default function UserDetailPage() {
 
   if (isLoading) {
     return (
-      <AdminPageLayout
-        breadcrumbs={[
-          { label: '用户管理', icon: User, href: '/admin/dashboard/users' },
-          { label: '用户详情' }
-        ]}
-      >
+      <AdminPageLayout breadcrumb={{ label: '用户详情' }}>
         <ActionBar
           title="用户详情"
           description="加载中..."
@@ -154,12 +149,7 @@ export default function UserDetailPage() {
 
   if (!user) {
     return (
-      <AdminPageLayout
-        breadcrumbs={[
-          { label: '用户管理', icon: User, href: '/admin/dashboard/users' },
-          { label: '用户详情' }
-        ]}
-      >
+      <AdminPageLayout breadcrumb={{ label: '用户详情' }}>
         <ActionBar
           title="用户详情"
           description="用户不存在"
@@ -180,12 +170,7 @@ export default function UserDetailPage() {
   }
 
   return (
-    <AdminPageLayout
-      breadcrumbs={[
-        { label: '用户管理', icon: User, href: '/admin/dashboard/users' },
-        { label: '用户详情' }
-      ]}
-    >
+    <AdminPageLayout breadcrumb={{ label: '用户详情', icon: User }}>
       <div className="space-y-6">
         {/* ActionBar - 标题和操作按钮 */}
         <ActionBar

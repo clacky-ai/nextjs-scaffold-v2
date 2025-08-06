@@ -56,9 +56,7 @@ export default function UsersPage() {
   }
 
   return (
-    <AdminPageLayout
-      breadcrumbs={[{ label: '用户管理', icon: Users, href: '/admin/dashboard/users' }]}
-    >
+    <AdminPageLayout breadcrumb={{ label: '用户管理', icon: Users, href: '/admin/dashboard/users' }}>
       <div className="space-y-6">
         {/* ActionBar - 标题、搜索和操作按钮 */}
         <ActionBar

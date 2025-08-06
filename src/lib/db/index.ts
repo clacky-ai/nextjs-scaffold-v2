@@ -2,14 +2,14 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import * as schema from './schema'
 
-// 使用明确的连接配置
+// 使用环境变量的连接配置
 const client = postgres({
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: '123456',
-  database: 'voting_system',
-  ssl: false,
+  host: process.env.DB_HOST || 'localhost',
+  port: parseInt(process.env.DB_PORT || '5432'),
+  username: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'default',
+  ssl: process.env.DB_SSL === 'true',
   prepare: false,
 })
 

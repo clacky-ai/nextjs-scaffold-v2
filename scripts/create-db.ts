@@ -1,4 +1,10 @@
 import postgres from 'postgres'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// 加载环境变量
+config({ path: resolve(process.cwd(), '.env.local') })
+config({ path: resolve(process.cwd(), '.env') })
 
 async function createDatabase() {
   const dbName = process.env.DB_NAME || 'default'

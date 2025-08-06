@@ -1,6 +1,12 @@
-import { db } from '../lib/db'
-import { adminUsers, votingSystemStatus } from '../lib/db/schema'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+import { db } from '../src/lib/db'
+import { adminUsers, votingSystemStatus } from '../src/lib/db/schema'
 import bcrypt from 'bcryptjs'
+
+// 加载环境变量
+config({ path: resolve(process.cwd(), '.env.local') })
+config({ path: resolve(process.cwd(), '.env') })
 
 async function seed() {
   try {
@@ -36,6 +42,9 @@ async function seed() {
   } catch (error) {
     console.error('❌ 种子数据初始化失败:', error)
     process.exit(1)
+  } finally {
+    // 确保进程正常退出
+    process.exit(0)
   }
 }
 

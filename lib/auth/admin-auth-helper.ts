@@ -1,28 +1,24 @@
-import { jwtVerify } from 'jose'
-import { cookies } from 'next/headers'
+import { getServerSession } from 'next-auth'
+import { adminAuthOptions } from './admin-auth'
 
 export async function verifyAdminAuth() {
   try {
-    const cookieStore = await cookies()
-    const adminToken = cookieStore.get('admin-token')?.value
-
-    if (!adminToken) {
+    const session = await getServerSession(adminAuthOptions)
+    
+    if (!session?.user) {
       return null
     }
-
-    const secret = new TextEncoder().encode(process.env.ADMIN_NEXTAUTH_SECRET)
-    const { payload } = await jwtVerify(adminToken, secret)
     
     return {
       user: {
-        id: payload.id as string,
-        username: payload.username as string,
-        name: payload.name as string,
-        email: payload.email as string,
+        id: (session.user as any).id,
+        username: (session.user as any).username,
+        name: session.user.name || '',
+        email: session.user.email || '',
       }
     }
   } catch (error) {
-    console.error('管理员token验证失败:', error)
+    console.error('管理员session验证失败:', error)
     return null
   }
 }

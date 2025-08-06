@@ -16,9 +16,9 @@ export function middleware(req: NextRequest) {
 
   // 管理员路由保护
   if (pathname.startsWith('/admin')) {
-    const adminToken = req.cookies.get('admin-token')?.value
+    const adminSessionToken = req.cookies.get('admin-session-token')?.value
 
-    if (!adminToken) {
+    if (!adminSessionToken) {
       return NextResponse.redirect(new URL('/admin/sign-in', req.url))
     }
 

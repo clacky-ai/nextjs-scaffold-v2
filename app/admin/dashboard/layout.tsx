@@ -1,16 +1,9 @@
-import { AdminAuthGuard } from '@/components/admin-auth-guard'
-import { AdminSessionProvider } from '@/components/providers/admin-session-provider'
+import { AdminAuthGuard } from "@/components/admin-auth-guard";
 
 export default function AdminDashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  return (
-    <AdminSessionProvider>
-      <AdminAuthGuard>
-        {children}
-      </AdminAuthGuard>
-    </AdminSessionProvider>
-  )
+  return <AdminAuthGuard>{children}</AdminAuthGuard>;
 }

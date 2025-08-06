@@ -1,9 +1,10 @@
 'use client'
 
+import { UserSessionProvider } from '@/components/providers/user-session-provider'
 import { useSession } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 
-export default function CookieDebugPage() {
+function CookieDebugPageInner() {
   const { data: session, status } = useSession()
   const [cookies, setCookies] = useState<string[]>([])
 
@@ -54,5 +55,14 @@ export default function CookieDebugPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+
+export default function CookieDebugPage() {
+  return (
+    <UserSessionProvider>
+      <CookieDebugPageInner />
+    </UserSessionProvider>
   )
 }

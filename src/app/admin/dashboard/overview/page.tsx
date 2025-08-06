@@ -189,7 +189,7 @@ export default function OverviewPage() {
 
   return (
     <AdminPageLayout
-      breadcrumbs={[{ label: '系统概览', icon: BarChart3 }]}
+      breadcrumbs={[{ label: '系统概览', icon: BarChart3, href: '/admin/dashboard/overview' }]}
     >
       <div className="space-y-6">
         {/* ActionBar - 标题和刷新按钮 */}

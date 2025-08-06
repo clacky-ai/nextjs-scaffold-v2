@@ -137,7 +137,7 @@ export default function UserDetailPage() {
     return (
       <AdminPageLayout
         breadcrumbs={[
-          { label: '用户管理', icon: User },
+          { label: '用户管理', icon: User, href: '/admin/dashboard/users' },
           { label: '用户详情' }
         ]}
       >
@@ -156,7 +156,7 @@ export default function UserDetailPage() {
     return (
       <AdminPageLayout
         breadcrumbs={[
-          { label: '用户管理', icon: User },
+          { label: '用户管理', icon: User, href: '/admin/dashboard/users' },
           { label: '用户详情' }
         ]}
       >
@@ -182,7 +182,7 @@ export default function UserDetailPage() {
   return (
     <AdminPageLayout
       breadcrumbs={[
-        { label: '用户管理', icon: User },
+        { label: '用户管理', icon: User, href: '/admin/dashboard/users' },
         { label: '用户详情' }
       ]}
     >

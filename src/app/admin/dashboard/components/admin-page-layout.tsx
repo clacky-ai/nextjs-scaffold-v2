@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
 import { ChevronRight, Home } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -22,11 +23,13 @@ export function AdminPageLayout({
   children,
   onNavigate
 }: AdminPageLayoutProps) {
+  const router = useRouter()
+  
   const defaultBreadcrumbs: BreadcrumbItem[] = [
     {
       label: '管理后台',
       icon: Home,
-      onClick: onNavigate ? () => onNavigate('overview') : undefined
+      href: '/admin/dashboard/overview'
     },
     ...breadcrumbs
   ]
@@ -51,8 +54,7 @@ export function AdminPageLayout({
                         if (item.onClick) {
                           item.onClick()
                         } else if (item.href) {
-                          // 这里可以添加路由跳转逻辑
-                          console.log('Navigate to:', item.href)
+                          router.push(item.href)
                         }
                       }}
                     >

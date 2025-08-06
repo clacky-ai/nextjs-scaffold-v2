@@ -18,7 +18,7 @@ export default function SettingsPage() {
 
   return (
     <AdminPageLayout
-      breadcrumbs={[{ label: '管理员设置', icon: Settings }]}
+      breadcrumbs={[{ label: '管理员设置', icon: Settings, href: '/admin/dashboard/settings' }]}
     >
       <div className="space-y-6">
         {/* ActionBar - 标题和操作按钮 */}

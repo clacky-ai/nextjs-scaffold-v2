@@ -73,7 +73,7 @@ export default function VotesPage() {
 
   return (
     <AdminPageLayout
-      breadcrumbs={[{ label: '投票管理', icon: Vote }]}
+      breadcrumbs={[{ label: '投票管理', icon: Vote, href: '/admin/dashboard/votes' }]}
     >
       <div className="space-y-6">
         {/* ActionBar - 标题、搜索和操作按钮 */}

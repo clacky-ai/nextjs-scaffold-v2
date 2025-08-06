@@ -62,7 +62,7 @@ export default function ProjectsPage() {
 
   return (
     <AdminPageLayout
-      breadcrumbs={[{ label: '项目管理', icon: FolderOpen }]}
+      breadcrumbs={[{ label: '项目管理', icon: FolderOpen, href: '/admin/dashboard/projects' }]}
     >
       <div className="space-y-6">
         {/* ActionBar - 标题、搜索和操作按钮 */}

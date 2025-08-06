@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Session } from 'next-auth'
-import { signOut } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -13,11 +12,9 @@ import { MyVotesSection } from './components/my-votes-section'
 import { useSocket } from '@/hooks/use-socket'
 import { toast } from 'sonner'
 
-interface DashboardContentProps {
-  session: Session
-}
 
-export function DashboardContent({ session }: DashboardContentProps) {
+export function DashboardContent() {
+  const { data: session } = useSession()
   const [systemStatus, setSystemStatus] = useState<{
     isVotingEnabled: boolean
     maxVotesPerUser: number
@@ -69,7 +66,7 @@ export function DashboardContent({ session }: DashboardContentProps) {
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">投票系统</h1>
-              <p className="text-sm text-gray-600">欢迎，{session.user?.name}</p>
+              <p className="text-sm text-gray-600">欢迎，{session?.user?.name}</p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
@@ -115,7 +112,7 @@ export function DashboardContent({ session }: DashboardContentProps) {
                 </CardHeader>
                 <CardContent>
                   <VotingSection 
-                    userId={(session.user as any)?.id} 
+                    userId={(session?.user as any)?.id} 
                     systemStatus={systemStatus}
                   />
                 </CardContent>
@@ -131,7 +128,7 @@ export function DashboardContent({ session }: DashboardContentProps) {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ProjectSubmissionForm userId={(session.user as any)?.id} />
+                  <ProjectSubmissionForm userId={(session?.user as any)?.id} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -160,7 +157,7 @@ export function DashboardContent({ session }: DashboardContentProps) {
                 </CardHeader>
                 <CardContent>
                   <VotingSection 
-                    userId={(session.user as any)?.id} 
+                    userId={(session?.user as any)?.id} 
                     systemStatus={systemStatus}
                     viewOnly={true}
                   />

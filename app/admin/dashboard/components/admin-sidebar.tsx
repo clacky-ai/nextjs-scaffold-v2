@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import {
   Users,
   FolderOpen,
@@ -19,14 +20,6 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 interface AdminSidebarProps {
-  session: {
-    user: {
-      id: string
-      username: string
-      name: string
-      email: string
-    }
-  }
   systemStatus?: {
     isVotingEnabled: boolean
     maxVotesPerUser: number
@@ -69,11 +62,11 @@ const menuItems = [
 ]
 
 export function AdminSidebar({
-  session,
   systemStatus,
   activeTab,
   onTabChange
 }: AdminSidebarProps) {
+  const { data: session } = useSession()
   const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
@@ -172,7 +165,6 @@ export function AdminSidebar({
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         )}>
           <MobileSidebarContent
-            session={session}
             systemStatus={systemStatus}
             activeTab={activeTab}
             onTabChange={(tab) => {
@@ -199,20 +191,20 @@ export function AdminSidebar({
           <div className="flex items-center space-x-3 flex-1 min-w-0 transition-opacity duration-200">
             <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-medium text-blue-600">
-                {session.user?.name?.charAt(0) || 'A'}
+                {session?.user?.name?.charAt(0) || 'A'}
               </span>
             </div>
             <div className="flex-1 min-w-0 group relative">
               <p className="text-sm font-medium text-gray-900 truncate">
-                {session.user?.name}
+                {session?.user?.name}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                {session.user?.email}
+                {session?.user?.email}
               </p>
               {/* Hover 时显示完整信息的 tooltip */}
               <div className="absolute left-0 top-full mt-1 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 z-50 whitespace-nowrap shadow-lg">
-                <div>{session.user?.name}</div>
-                <div className="text-gray-300">{session.user?.email}</div>
+                <div>{session?.user?.name}</div>
+                <div className="text-gray-300">{session?.user?.email}</div>
                 {/* 小箭头 */}
                 <div className="absolute bottom-full left-2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900"></div>
               </div>
@@ -231,8 +223,8 @@ export function AdminSidebar({
               <ChevronRight className="h-4 w-4" />
               {/* 折叠状态下的 hover 提示 */}
               <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 z-50 whitespace-nowrap shadow-lg">
-                <div>{session.user?.name}</div>
-                <div className="text-gray-300">{session.user?.email}</div>
+                <div>{session?.user?.name}</div>
+                <div className="text-gray-300">{session?.user?.email}</div>
                 {/* 小箭头 */}
                 <div className="absolute right-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-t-4 border-b-4 border-r-4 border-transparent border-r-gray-900"></div>
               </div>
@@ -342,20 +334,19 @@ export function AdminSidebar({
 
 // 移动端侧边栏内容组件
 function MobileSidebarContent({
-  session,
   systemStatus,
   activeTab,
   onTabChange,
   onClose,
   handleSignOut
 }: {
-  session: AdminSidebarProps['session']
   systemStatus: AdminSidebarProps['systemStatus']
   activeTab: string
   onTabChange: (tab: string) => void
   onClose: () => void
   handleSignOut: () => void
 }) {
+  const { data: session } = useSession()
   return (
     <div className="flex flex-col h-full">
       {/* 移动端头部 - 管理员信息区域 */}
@@ -363,15 +354,15 @@ function MobileSidebarContent({
         <div className="flex items-center space-x-3 flex-1 min-w-0">
           <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
             <span className="text-sm font-medium text-blue-600">
-              {session.user?.name?.charAt(0) || 'A'}
+              {session?.user?.name?.charAt(0) || 'A'}
             </span>
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">
-              {session.user?.name}
+              {session?.user?.name}
             </p>
             <p className="text-xs text-gray-500 truncate">
-              {session.user?.email}
+              {session?.user?.email}
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 import { AdminSidebar } from './components/admin-sidebar'
 import { OverviewPage } from './components/overview'
 import { UsersPage } from './pages/users-page'
@@ -8,18 +9,8 @@ import { ProjectsPage } from './pages/projects-page'
 import { VotesPage } from './pages/votes-page'
 import { SettingsPage } from './pages/settings-page'
 
-interface AdminDashboardContentProps {
-  session: {
-    user: {
-      id: string
-      username: string
-      name: string
-      email: string
-    }
-  }
-}
 
-export function AdminDashboardContent({ session }: AdminDashboardContentProps) {
+export function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState('overview')
 
   // 导航处理函数
@@ -48,7 +39,6 @@ export function AdminDashboardContent({ session }: AdminDashboardContentProps) {
     <div className="flex h-screen bg-gray-50">
       {/* 侧边栏 */}
       <AdminSidebar
-        session={session}
         activeTab={activeTab}
         onTabChange={setActiveTab}
       />

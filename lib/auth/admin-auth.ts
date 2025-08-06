@@ -48,6 +48,20 @@ export const adminAuthOptions: NextAuthOptions = {
   pages: {
     signIn: '/admin/sign-in',
   },
+  cookies: {
+    sessionToken: {
+      name: 'admin-session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      }
+    },
+    csrfToken: {
+      name: 'admin-csrf-token',
+    }
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

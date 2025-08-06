@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import { signIn } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { toast } from 'sonner'
 
 export default function AdminSignInPage() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
     username: '',
@@ -20,29 +23,18 @@ export default function AdminSignInPage() {
     setIsLoading(true)
 
     try {
-      // 使用管理员专用的API端点
-      const response = await fetch('/api/admin/auth/signin', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username: formData.username,
-          password: formData.password,
-        }),
+      const result = await signIn('admin-credentials', {
+        username: formData.username,
+        password: formData.password,
+        redirect: false,
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success('登录成功！')
-        // 等待一下确保cookie被设置，然后重定向
-        setTimeout(() => {
-          window.location.href = '/admin/dashboard'
-        }, 100)
-        return
+      if (result?.error) {
+        toast.error('用户名或密码错误')
       } else {
-        toast.error(data.error || '用户名或密码错误')
+        toast.success('登录成功！')
+        router.push('/admin/dashboard')
+        router.refresh()
       }
     } catch (error) {
       toast.error('登录失败，请稍后重试')

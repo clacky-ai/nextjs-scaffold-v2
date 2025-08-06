@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 import {
   Users,
   FolderOpen,
@@ -67,7 +66,6 @@ export function AdminSidebar({
   onTabChange
 }: AdminSidebarProps) {
   const { data: session } = useSession()
-  const router = useRouter()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
@@ -86,47 +84,8 @@ export function AdminSidebar({
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  const handleSignOut = async () => {
-    try {
-      // 调用服务端退出登录API
-      const response = await fetch('/api/admin/auth/signout', {
-        method: 'POST',
-        credentials: 'include'
-      })
-
-      if (response.ok) {
-        // 额外清理客户端cookie（双重保险）
-        const cookiesToClear = [
-          'admin-token',
-          'next-auth.session-token',
-          '__Secure-next-auth.session-token',
-          'next-auth.csrf-token',
-          '__Host-next-auth.csrf-token',
-          'next-auth.callback-url',
-          '__Secure-next-auth.callback-url'
-        ]
-
-        cookiesToClear.forEach(cookieName => {
-          // 清除根路径
-          document.cookie = `${cookieName}=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;`
-          // 清除admin路径
-          document.cookie = `${cookieName}=; path=/admin; expires=Thu, 01 Jan 1970 00:00:01 GMT;`
-        })
-
-        // 强制刷新页面以确保状态完全清除
-        window.location.href = '/admin/sign-in'
-      } else {
-        console.error('退出登录失败')
-        // 即使API失败，也尝试客户端清理
-        document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-        router.push('/admin/sign-in')
-      }
-    } catch (error) {
-      console.error('退出登录错误:', error)
-      // 发生错误时的降级处理
-      document.cookie = 'admin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;'
-      router.push('/admin/sign-in')
-    }
+  const handleSignOut = () => {
+    signOut({ callbackUrl: '/admin/sign-in' })
   }
 
   const toggleCollapse = () => {

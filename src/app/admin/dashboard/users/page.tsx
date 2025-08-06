@@ -1,13 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Users, UserPlus, Search, Filter } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Users, UserPlus, Filter } from 'lucide-react'
 import { AdminPageLayout } from '../components/admin-page-layout'
 import { ActionBar, ActionBarButton } from '../components/action-bar'
 import { UserManagement } from '../components/user-management'
-import { UserDetailPage } from './user-detail-page'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 interface UserStats {
@@ -16,18 +14,14 @@ interface UserStats {
   blocked: number
 }
 
-interface UsersPageProps {
-  onNavigate?: (tabId: string) => void
-}
-
-export function UsersPage({ onNavigate }: UsersPageProps) {
+export default function UsersPage() {
+  const router = useRouter()
   const [userStats, setUserStats] = useState<UserStats>({
     total: 0,
     active: 0,
     blocked: 0
   })
   const [isLoading, setIsLoading] = useState(true)
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
@@ -58,28 +52,12 @@ export function UsersPage({ onNavigate }: UsersPageProps) {
   }
 
   const handleUserSelect = (userId: string) => {
-    setSelectedUserId(userId)
-  }
-
-  const handleBackToList = () => {
-    setSelectedUserId(null)
-  }
-
-  // 如果选择了用户，显示用户详情页面
-  if (selectedUserId) {
-    return (
-      <UserDetailPage
-        userId={selectedUserId}
-        onBack={handleBackToList}
-        onNavigate={onNavigate}
-      />
-    )
+    router.push(`/admin/dashboard/users/${userId}`)
   }
 
   return (
     <AdminPageLayout
       breadcrumbs={[{ label: '用户管理', icon: Users }]}
-      onNavigate={onNavigate}
     >
       <div className="space-y-6">
         {/* ActionBar - 标题、搜索和操作按钮 */}
@@ -150,8 +128,6 @@ export function UsersPage({ onNavigate }: UsersPageProps) {
             </CardContent>
           </Card>
         </div>
-
-
 
         {/* 用户管理组件 */}
         <Card>

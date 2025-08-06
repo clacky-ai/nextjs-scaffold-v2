@@ -1,5 +1,5 @@
-import { AdminDashboardContent } from './admin-dashboard-content'
+import { redirect } from 'next/navigation'
 
 export default function AdminDashboardPage() {
-  return <AdminDashboardContent />
+  redirect('/admin/dashboard/overview')
 }

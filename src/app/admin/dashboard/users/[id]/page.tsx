@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import { User, Mail, Calendar, Shield, Vote, ArrowLeft, Edit, Ban, CheckCircle } from 'lucide-react'
-import { AdminPageLayout } from '../components/admin-page-layout'
-import { ActionBar, ActionBarButton } from '../components/action-bar'
-import { Button } from '@/components/ui/button'
+import { AdminPageLayout } from '../../components/admin-page-layout'
+import { ActionBar, ActionBarButton } from '../../components/action-bar'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -28,21 +28,21 @@ interface UserVote {
   createdAt: string
 }
 
-interface UserDetailPageProps {
-  userId: string
-  onBack: () => void
-  onNavigate?: (tabId: string) => void
-}
+export default function UserDetailPage() {
+  const router = useRouter()
+  const params = useParams()
+  const userId = params?.id as string
 
-export function UserDetailPage({ userId, onBack, onNavigate }: UserDetailPageProps) {
   const [user, setUser] = useState<UserDetail | null>(null)
   const [userVotes, setUserVotes] = useState<UserVote[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isUpdating, setIsUpdating] = useState(false)
 
   useEffect(() => {
-    fetchUserDetail()
-    fetchUserVotes()
+    if (userId) {
+      fetchUserDetail()
+      fetchUserVotes()
+    }
   }, [userId])
 
   const fetchUserDetail = async () => {
@@ -129,14 +129,17 @@ export function UserDetailPage({ userId, onBack, onNavigate }: UserDetailPagePro
     }
   }
 
+  const handleBack = () => {
+    router.push('/admin/dashboard/users')
+  }
+
   if (isLoading) {
     return (
       <AdminPageLayout
         breadcrumbs={[
-          { label: '用户管理', icon: User, onClick: onBack },
+          { label: '用户管理', icon: User },
           { label: '用户详情' }
         ]}
-        onNavigate={onNavigate}
       >
         <ActionBar
           title="用户详情"
@@ -153,16 +156,15 @@ export function UserDetailPage({ userId, onBack, onNavigate }: UserDetailPagePro
     return (
       <AdminPageLayout
         breadcrumbs={[
-          { label: '用户管理', icon: User, onClick: onBack },
+          { label: '用户管理', icon: User },
           { label: '用户详情' }
         ]}
-        onNavigate={onNavigate}
       >
         <ActionBar
           title="用户详情"
           description="用户不存在"
           actions={
-            <ActionBarButton variant="outline" onClick={onBack}>
+            <ActionBarButton variant="outline" onClick={handleBack}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               返回用户列表
             </ActionBarButton>
@@ -180,10 +182,9 @@ export function UserDetailPage({ userId, onBack, onNavigate }: UserDetailPagePro
   return (
     <AdminPageLayout
       breadcrumbs={[
-        { label: '用户管理', icon: User, onClick: onBack },
+        { label: '用户管理', icon: User },
         { label: '用户详情' }
       ]}
-      onNavigate={onNavigate}
     >
       <div className="space-y-6">
         {/* ActionBar - 标题和操作按钮 */}
@@ -192,7 +193,7 @@ export function UserDetailPage({ userId, onBack, onNavigate }: UserDetailPagePro
           description={`查看和管理用户 ${user.username} 的详细信息`}
           actions={
             <>
-              <ActionBarButton variant="outline" onClick={onBack}>
+              <ActionBarButton variant="outline" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 返回列表
               </ActionBarButton>
@@ -220,6 +221,7 @@ export function UserDetailPage({ userId, onBack, onNavigate }: UserDetailPagePro
             </>
           }
         />
+        
         {/* 用户基本信息 */}
         <Card>
           <CardHeader>

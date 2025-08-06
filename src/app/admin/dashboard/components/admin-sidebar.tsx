@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   Users,
   FolderOpen,
@@ -23,37 +24,40 @@ interface AdminSidebarProps {
     isVotingEnabled: boolean
     maxVotesPerUser: number
   } | null
-  activeTab: string
-  onTabChange: (tab: string) => void
 }
 
 const menuItems = [
   {
     id: 'overview',
+    path: '/admin/dashboard/overview',
     label: '概览',
     icon: BarChart3,
     description: '系统统计和概览'
   },
   {
     id: 'users',
+    path: '/admin/dashboard/users',
     label: '用户管理',
     icon: Users,
     description: '管理所有注册用户'
   },
   {
     id: 'projects',
+    path: '/admin/dashboard/projects',
     label: '项目管理',
     icon: FolderOpen,
     description: '管理所有提交的项目'
   },
   {
     id: 'votes',
+    path: '/admin/dashboard/votes',
     label: '投票管理',
     icon: Vote,
     description: '查看和管理投票记录'
   },
   {
     id: 'settings',
+    path: '/admin/dashboard/settings',
     label: '管理员设置',
     icon: Settings,
     description: '管理管理员账号和个人设置'
@@ -61,14 +65,16 @@ const menuItems = [
 ]
 
 export function AdminSidebar({
-  systemStatus,
-  activeTab,
-  onTabChange
+  systemStatus
 }: AdminSidebarProps) {
   const { data: session } = useSession()
+  const router = useRouter()
+  const pathname = usePathname()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  
+  const activeTab = menuItems.find(item => pathname === item.path)?.id || 'overview'
 
   // 检测移动端
   useEffect(() => {
@@ -127,7 +133,10 @@ export function AdminSidebar({
             systemStatus={systemStatus}
             activeTab={activeTab}
             onTabChange={(tab) => {
-              onTabChange(tab)
+              const menuItem = menuItems.find(item => item.id === tab)
+              if (menuItem) {
+                router.push(menuItem.path)
+              }
               setIsMobileOpen(false)
             }}
             onClose={toggleMobile}
@@ -240,7 +249,7 @@ export function AdminSidebar({
           return (
             <button
               key={item.id}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => router.push(item.path)}
               className={cn(
                 "w-full flex items-center text-sm font-medium rounded-lg transition-all duration-200 group",
                 isCollapsed ? "px-2 py-3 justify-center" : "px-3 py-2",
@@ -356,7 +365,12 @@ function MobileSidebarContent({
           return (
             <button
               key={item.id}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => {
+                const menuItem = menuItems.find(i => i.id === item.id)
+                if (menuItem) {
+                  router.push(menuItem.path)
+                }
+              }}
               className={cn(
                 "w-full flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200",
                 isActive

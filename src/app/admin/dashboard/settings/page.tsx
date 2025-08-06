@@ -8,11 +8,7 @@ import { PasswordChangeForm } from '../components/password-change-form'
 import { AdminManagement } from '../components/admin-management'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
-interface SettingsPageProps {
-  onNavigate?: (tabId: string) => void
-}
-
-export function SettingsPage({ onNavigate }: SettingsPageProps) {
+export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'password' | 'admins'>('password')
   const [refreshKey, setRefreshKey] = useState(0)
 
@@ -23,7 +19,6 @@ export function SettingsPage({ onNavigate }: SettingsPageProps) {
   return (
     <AdminPageLayout
       breadcrumbs={[{ label: '管理员设置', icon: Settings }]}
-      onNavigate={onNavigate}
     >
       <div className="space-y-6">
         {/* ActionBar - 标题和操作按钮 */}

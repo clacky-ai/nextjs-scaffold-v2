@@ -1,5 +1,6 @@
 import { AuthGuard } from '@/components/auth-guard'
 import { UserSessionProvider } from '@/components/providers/user-session-provider'
+import { WebSocketProvider } from '@/components/providers/websocket-provider'
 
 export default function AuthLayout({
   children,
@@ -8,9 +9,11 @@ export default function AuthLayout({
 }) {
   return (
     <UserSessionProvider>
-      <AuthGuard>
-        {children}
-      </AuthGuard>
+      <WebSocketProvider>
+        <AuthGuard>
+          {children}
+        </AuthGuard>
+      </WebSocketProvider>
     </UserSessionProvider>
   )
 }

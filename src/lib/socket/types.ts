@@ -40,6 +40,29 @@ export interface ServerToClientEvents {
     type: 'success' | 'error' | 'info' | 'warning'
     message: string
   }) => void
+
+  // 管理员推送消息
+  'admin-message': (data: {
+    id: string
+    title: string
+    message: string
+    type: 'info' | 'warning' | 'success' | 'error'
+    from: string
+    timestamp: number
+  }) => void
+
+  // 在线用户更新
+  'online-users-update': (data: {
+    count: number
+    users: Array<{
+      id: string
+      socketId: string
+      name: string
+      email: string
+      connectedAt: number
+      lastActive: number
+    }>
+  }) => void
   
   // 心跳包
   pong: (data: { timestamp: number }) => void
@@ -50,7 +73,7 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
   // 用户认证
-  auth: (data: { userId?: string; isAdmin?: boolean }) => void
+  auth: (data: { userId?: string; userName?: string; userEmail?: string; isAdmin?: boolean }) => void
   
   // 房间管理
   'join-room': (data: { room: string }) => void
@@ -59,6 +82,17 @@ export interface ClientToServerEvents {
   // 兼容旧的投票房间事件
   'join-voting': () => void
   'leave-voting': () => void
+
+  // 获取在线用户
+  'get-online-users': () => void
+
+  // 管理员发送消息
+  'admin-send-message': (data: {
+    targetUserId?: string // 如果为空则发送给所有在线用户
+    title: string
+    message: string
+    type: 'info' | 'warning' | 'success' | 'error'
+  }) => void
   
   // 心跳包
   ping: () => void
@@ -70,6 +104,10 @@ export interface ClientToServerEvents {
 // Socket.IO 客户端信息接口
 export interface SocketClient {
   userId?: string
+  userName?: string
+  userEmail?: string
   isAdmin?: boolean
   rooms: Set<string>
+  connectedAt: Date
+  lastActive: Date
 }

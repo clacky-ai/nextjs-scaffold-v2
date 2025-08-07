@@ -1,8 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Users, FolderOpen, Vote, Settings, BarChart3 } from 'lucide-react'
+import { Users, FolderOpen, Vote, Settings, BarChart3, Wifi } from 'lucide-react'
 import { AdminAuthGuard } from "@/components/admin-auth-guard";
+import { AdminWebSocketProvider } from '@/components/providers/admin-websocket-provider'
 import { AdminSidebar } from './components/admin-sidebar';
 import { AdminStoreProvider } from '@/components/providers/admin-store-provider'
 import type { MenuItem } from '@/stores/admin'
@@ -37,6 +38,13 @@ const menuItems: MenuItem[] = [
     description: '查看和管理投票记录'
   },
   {
+    id: 'online-users',
+    path: '/admin/dashboard/online-users',
+    label: '在线用户',
+    icon: Wifi,
+    description: '查看在线用户并发送消息'
+  },
+  {
     id: 'settings',
     path: '/admin/dashboard/settings',
     label: '管理员设置',
@@ -60,15 +68,17 @@ export default function AdminDashboardLayout({
   return (
     <AdminAuthGuard>
       <AdminStoreProvider>
-        <div className="flex h-screen bg-gray-50">
-          <AdminSidebar 
-            menuItems={menuItems}
-            onNavigate={handleNavigation}
-          />
-          <main className="flex-1 overflow-auto">
-            {children}
-          </main>
-        </div>
+        <AdminWebSocketProvider>
+          <div className="flex h-screen bg-gray-50">
+            <AdminSidebar 
+              menuItems={menuItems}
+              onNavigate={handleNavigation}
+            />
+            <main className="flex-1 overflow-auto">
+              {children}
+            </main>
+          </div>
+        </AdminWebSocketProvider>
       </AdminStoreProvider>
     </AdminAuthGuard>
   );

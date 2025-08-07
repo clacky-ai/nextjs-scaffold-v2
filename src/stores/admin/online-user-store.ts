@@ -38,7 +38,7 @@ export const useOnlineUserStore = create<OnlineUserStore>((set, get) => ({
   })),
   setSearchTerm: (searchTerm) => set({ searchTerm }),
   
-  // API actions
+  // API actions (fallback for when WebSocket is not available)
   fetchOnlineUsers: async () => {
     const { setLoading, setOnlineUsers, loading } = get()
     

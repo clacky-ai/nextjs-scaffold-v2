@@ -1,63 +1,41 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { FolderOpen, Plus, Search, Filter, Eye } from 'lucide-react'
 import { AdminPageLayout } from '../components/admin-page-layout'
 import { ActionBar, ActionBarButton } from '../components/action-bar'
 import { ProjectManagement } from '../components/project-management'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-
-interface ProjectStats {
-  total: number
-  active: number
-  blocked: number
-  totalVotes: number
-}
+import { useProjectStore, useVoteStore } from '@/stores/admin'
 
 export default function ProjectsPage() {
-  const [projectStats, setProjectStats] = useState<ProjectStats>({
-    total: 0,
-    active: 0,
-    blocked: 0,
-    totalVotes: 0
-  })
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const {
+    stats: projectStats,
+    loading: projectLoading,
+    searchTerm,
+    setSearchTerm,
+    fetchProjects
+  } = useProjectStore()
+  
+  const {
+    stats: voteStats,
+    fetchVotes
+  } = useVoteStore()
+  
+  const [searchTermLocal, setSearchTermLocal] = useState('')
+  
+  // Computed stats including votes
+  const currentProjectStats = projectStats()
+  const currentVoteStats = voteStats()
+  const isLoading = projectLoading.fetchProjects
 
   useEffect(() => {
-    fetchProjectStats()
+    fetchProjects()
+    fetchVotes() // Also fetch votes for totalVotes display
   }, [])
 
-  const fetchProjectStats = async () => {
-    try {
-      setIsLoading(true)
-      const [projectsRes, votesRes] = await Promise.all([
-        fetch('/api/admin/projects'),
-        fetch('/api/admin/votes')
-      ])
-
-      if (projectsRes.ok && votesRes.ok) {
-        const [projects, votes] = await Promise.all([
-          projectsRes.json(),
-          votesRes.json()
-        ])
-
-        setProjectStats({
-          total: projects.length,
-          active: projects.filter((p: any) => !p.isBlocked).length,
-          blocked: projects.filter((p: any) => p.isBlocked).length,
-          totalVotes: votes.length
-        })
-      }
-    } catch (error) {
-      console.error('获取项目统计失败:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleStatsUpdate = () => {
-    fetchProjectStats()
+    // Stats are computed automatically, no need for manual refresh
   }
 
   return (
@@ -69,8 +47,8 @@ export default function ProjectsPage() {
           description="管理所有提交的项目，可以屏蔽或恢复项目的投票资格"
           showSearch={true}
           searchPlaceholder="搜索项目标题、描述或提交者..."
-          searchValue={searchTerm}
-          onSearchChange={setSearchTerm}
+          searchValue={searchTermLocal}
+          onSearchChange={setSearchTermLocal}
           actions={
             <>
               <ActionBarButton variant="outline">
@@ -97,7 +75,7 @@ export default function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoading ? '...' : projectStats.total}
+                {isLoading ? '...' : currentProjectStats.total}
               </div>
               <p className="text-xs text-muted-foreground">
                 提交的项目总数
@@ -112,7 +90,7 @@ export default function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {isLoading ? '...' : projectStats.active}
+                {isLoading ? '...' : currentProjectStats.active}
               </div>
               <p className="text-xs text-muted-foreground">
                 可正常投票的项目
@@ -127,7 +105,7 @@ export default function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {isLoading ? '...' : projectStats.blocked}
+                {isLoading ? '...' : currentProjectStats.blocked}
               </div>
               <p className="text-xs text-muted-foreground">
                 被屏蔽无法投票的项目
@@ -142,7 +120,7 @@ export default function ProjectsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">
-                {isLoading ? '...' : projectStats.totalVotes}
+                {isLoading ? '...' : currentVoteStats.total}
               </div>
               <p className="text-xs text-muted-foreground">
                 所有项目获得的投票
@@ -162,7 +140,7 @@ export default function ProjectsPage() {
           <CardContent>
             <ProjectManagement
               onStatsUpdate={handleStatsUpdate}
-              searchTerm={searchTerm}
+              searchTerm={searchTermLocal}
             />
           </CardContent>
         </Card>

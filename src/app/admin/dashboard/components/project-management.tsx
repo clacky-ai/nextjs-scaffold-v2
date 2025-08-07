@@ -1,26 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { toast } from 'sonner'
-
-interface Project {
-  id: string
-  title: string
-  description: string
-  teamMembers: string
-  demoLink?: string
-  category?: string
-  tags?: string
-  submitterName: string
-  submitterEmail: string
-  isBlocked: boolean
-  voteCount: number
-  createdAt: string
-}
+import { useProjectStore } from '@/stores/admin'
 
 interface ProjectManagementProps {
   onStatsUpdate: () => void
@@ -28,78 +12,36 @@ interface ProjectManagementProps {
 }
 
 export function ProjectManagement({ onStatsUpdate, searchTerm = '' }: ProjectManagementProps) {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchProjects()
-  }, [])
-
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch('/api/admin/projects')
-      if (response.ok) {
-        const data = await response.json()
-        setProjects(data)
-      } else {
-        toast.error('获取项目列表失败')
-      }
-    } catch (error) {
-      toast.error('网络错误，请稍后重试')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const {
+    projects,
+    loading,
+    toggleProjectStatus,
+    deleteProject
+  } = useProjectStore()
+  
+  const isLoading = loading.fetchProjects
 
   const handleToggleProjectStatus = async (projectId: string, isBlocked: boolean) => {
-    setActionLoading(projectId)
-
-    try {
-      const response = await fetch('/api/admin/projects', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          projectId,
-          isBlocked: !isBlocked,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success(data.message)
-        setProjects(prev => prev.map(project => 
-          project.id === projectId 
-            ? { ...project, isBlocked: !isBlocked }
-            : project
-        ))
-        onStatsUpdate()
-      } else {
-        toast.error(data.error || '操作失败')
-      }
-    } catch (error) {
-      toast.error('网络错误，请稍后重试')
-    } finally {
-      setActionLoading(null)
+    const success = await toggleProjectStatus(projectId, isBlocked)
+    if (success && onStatsUpdate) {
+      onStatsUpdate()
     }
   }
 
-  // 过滤项目列表
-  const filteredProjects = projects.filter(project => {
-    if (!searchTerm) return true
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      project.title.toLowerCase().includes(searchLower) ||
-      project.description.toLowerCase().includes(searchLower) ||
-      project.submitterName.toLowerCase().includes(searchLower) ||
-      project.submitterEmail.toLowerCase().includes(searchLower) ||
-      (project.category && project.category.toLowerCase().includes(searchLower)) ||
-      (project.tags && project.tags.toLowerCase().includes(searchLower))
-    )
-  })
+  // 使用 store 的过滤功能，但支持本地 searchTerm
+  const displayProjects = searchTerm 
+    ? projects.filter(project => {
+        const searchLower = searchTerm.toLowerCase()
+        return (
+          project.title.toLowerCase().includes(searchLower) ||
+          project.description.toLowerCase().includes(searchLower) ||
+          project.submitterName.toLowerCase().includes(searchLower) ||
+          project.submitterEmail.toLowerCase().includes(searchLower) ||
+          (project.category && project.category.toLowerCase().includes(searchLower)) ||
+          (project.tags && project.tags.toLowerCase().includes(searchLower))
+        )
+      })
+    : projects
 
   if (isLoading) {
     return <div className="text-center py-8">加载中...</div>
@@ -110,7 +52,7 @@ export function ProjectManagement({ onStatsUpdate, searchTerm = '' }: ProjectMan
       <div className="text-sm text-gray-600">
         {searchTerm ? (
           <>
-            搜索到 {filteredProjects.length} 个项目，共 {projects.length} 个项目
+            搜索到 {displayProjects.length} 个项目，共 {projects.length} 个项目
             {searchTerm && (
               <span className="ml-2 text-blue-600">
                 搜索: "{searchTerm}"
@@ -136,8 +78,8 @@ export function ProjectManagement({ onStatsUpdate, searchTerm = '' }: ProjectMan
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredProjects.length > 0 ? (
-              filteredProjects.map((project) => (
+            {displayProjects.length > 0 ? (
+              displayProjects.map((project) => (
               <TableRow key={project.id}>
                 <TableCell>
                   <Dialog>
@@ -221,9 +163,9 @@ export function ProjectManagement({ onStatsUpdate, searchTerm = '' }: ProjectMan
                     variant={project.isBlocked ? 'default' : 'destructive'}
                     size="sm"
                     onClick={() => handleToggleProjectStatus(project.id, project.isBlocked)}
-                    disabled={actionLoading === project.id}
+                    disabled={loading[`toggleProject_${project.id}`]}
                   >
-                    {actionLoading === project.id 
+                    {loading[`toggleProject_${project.id}`] 
                       ? '处理中...' 
                       : project.isBlocked ? '恢复' : '屏蔽'
                     }

@@ -1,20 +1,8 @@
 'use client'
-
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { toast } from 'sonner'
-
-interface User {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  team?: string
-  isBlocked: boolean
-  createdAt: string
-}
+import { useUserStore } from '@/stores/admin'
 
 interface UserManagementProps {
   onStatsUpdate: () => void
@@ -23,76 +11,33 @@ interface UserManagementProps {
 }
 
 export function UserManagement({ onStatsUpdate, onUserSelect, searchTerm = '' }: UserManagementProps) {
-  const [users, setUsers] = useState<User[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [actionLoading, setActionLoading] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('/api/admin/users')
-      if (response.ok) {
-        const data = await response.json()
-        setUsers(data)
-      } else {
-        toast.error('获取用户列表失败')
-      }
-    } catch (error) {
-      toast.error('网络错误，请稍后重试')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const {
+    users,
+    loading,
+    toggleUserStatus
+  } = useUserStore()
+  
+  const isLoading = loading.fetchUsers
 
   const handleToggleUserStatus = async (userId: string, isBlocked: boolean) => {
-    setActionLoading(userId)
-
-    try {
-      const response = await fetch('/api/admin/users', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId,
-          isBlocked: !isBlocked,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success(data.message)
-        setUsers(prev => prev.map(user => 
-          user.id === userId 
-            ? { ...user, isBlocked: !isBlocked }
-            : user
-        ))
-        onStatsUpdate()
-      } else {
-        toast.error(data.error || '操作失败')
-      }
-    } catch (error) {
-      toast.error('网络错误，请稍后重试')
-    } finally {
-      setActionLoading(null)
+    const success = await toggleUserStatus(userId, isBlocked)
+    if (success && onStatsUpdate) {
+      onStatsUpdate()
     }
   }
 
-  // 过滤用户列表
-  const filteredUsers = users.filter(user => {
-    if (!searchTerm) return true
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      user.name.toLowerCase().includes(searchLower) ||
-      user.email.toLowerCase().includes(searchLower) ||
-      (user.phone && user.phone.toLowerCase().includes(searchLower)) ||
-      (user.team && user.team.toLowerCase().includes(searchLower))
-    )
-  })
+  // 使用 store 的过滤功能，但支持本地 searchTerm
+  const displayUsers = searchTerm 
+    ? users.filter(user => {
+        const searchLower = searchTerm.toLowerCase()
+        return (
+          user.name.toLowerCase().includes(searchLower) ||
+          user.email.toLowerCase().includes(searchLower) ||
+          (user.phone && user.phone.toLowerCase().includes(searchLower)) ||
+          (user.team && user.team.toLowerCase().includes(searchLower))
+        )
+      })
+    : users
 
   if (isLoading) {
     return <div className="text-center py-8">加载中...</div>
@@ -103,7 +48,7 @@ export function UserManagement({ onStatsUpdate, onUserSelect, searchTerm = '' }:
       <div className="text-sm text-gray-600">
         {searchTerm ? (
           <>
-            搜索到 {filteredUsers.length} 个用户，共 {users.length} 个用户
+            搜索到 {displayUsers.length} 个用户，共 {users.length} 个用户
             {searchTerm && (
               <span className="ml-2 text-blue-600">
                 搜索: "{searchTerm}"
@@ -129,8 +74,8 @@ export function UserManagement({ onStatsUpdate, onUserSelect, searchTerm = '' }:
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((user) => (
+            {displayUsers.length > 0 ? (
+              displayUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className="font-medium">
                   {onUserSelect ? (
@@ -160,9 +105,9 @@ export function UserManagement({ onStatsUpdate, onUserSelect, searchTerm = '' }:
                     variant={user.isBlocked ? 'default' : 'destructive'}
                     size="sm"
                     onClick={() => handleToggleUserStatus(user.id, user.isBlocked)}
-                    disabled={actionLoading === user.id}
+                    disabled={loading[`toggleUser_${user.id}`]}
                   >
-                    {actionLoading === user.id 
+                    {loading[`toggleUser_${user.id}`] 
                       ? '处理中...' 
                       : user.isBlocked ? '恢复' : '屏蔽'
                     }

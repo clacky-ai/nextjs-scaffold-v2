@@ -1,54 +1,35 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Users, UserPlus, Filter } from 'lucide-react'
 import { AdminPageLayout } from '../components/admin-page-layout'
 import { ActionBar, ActionBarButton } from '../components/action-bar'
 import { UserManagement } from '../components/user-management'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-
-interface UserStats {
-  total: number
-  active: number
-  blocked: number
-}
+import { useUserStore } from '@/stores/admin'
 
 export default function UsersPage() {
   const router = useRouter()
-  const [userStats, setUserStats] = useState<UserStats>({
-    total: 0,
-    active: 0,
-    blocked: 0
-  })
-  const [isLoading, setIsLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
+  const { 
+    stats, 
+    loading, 
+    searchTerm,
+    setSearchTerm,
+    fetchUsers
+  } = useUserStore()
+  
+  // stats is now a computed function
+  const currentStats = stats()
+  const isLoading = loading.fetchUsers
 
   useEffect(() => {
-    fetchUserStats()
+    fetchUsers()
   }, [])
 
-  const fetchUserStats = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/admin/users')
-      if (response.ok) {
-        const users = await response.json()
-        setUserStats({
-          total: users.length,
-          active: users.filter((u: any) => !u.isBlocked).length,
-          blocked: users.filter((u: any) => u.isBlocked).length
-        })
-      }
-    } catch (error) {
-      console.error('获取用户统计失败:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   const handleStatsUpdate = () => {
-    fetchUserStats()
+    // No need to refresh data since stats are computed automatically
+    // This function can be removed or kept for compatibility
   }
 
   const handleUserSelect = (userId: string) => {
@@ -88,7 +69,7 @@ export default function UsersPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoading ? '...' : userStats.total}
+                {isLoading ? '...' : currentStats.total}
               </div>
               <p className="text-xs text-muted-foreground">
                 注册用户总数
@@ -103,7 +84,7 @@ export default function UsersPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">
-                {isLoading ? '...' : userStats.active}
+                {isLoading ? '...' : currentStats.active}
               </div>
               <p className="text-xs text-muted-foreground">
                 可正常投票的用户
@@ -118,7 +99,7 @@ export default function UsersPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
-                {isLoading ? '...' : userStats.blocked}
+                {isLoading ? '...' : currentStats.blocked}
               </div>
               <p className="text-xs text-muted-foreground">
                 被屏蔽无法投票的用户

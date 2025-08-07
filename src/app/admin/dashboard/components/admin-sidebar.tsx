@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import type { MenuItem } from '../layout'
+import { useNavigationStore, useSystemStore, type MenuItem } from '@/stores/admin'
 
 interface AdminSidebarProps {
   menuItems: MenuItem[]
@@ -31,49 +31,58 @@ export function AdminSidebar({
 }: AdminSidebarProps) {
   const { data: session } = useSession()
   const pathname = usePathname()
-  const [isCollapsed, setIsCollapsed] = useState(false)
-  const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+  const {
+    activeTab,
+    isCollapsed,
+    isMobileOpen,
+    setActiveTab,
+    setMenuItems,
+    setCollapsed,
+    setMobileOpen,
+    setActiveTabByPath
+  } = useNavigationStore()
+  const { settings } = useSystemStore()
   
-  // 智能匹配活跃状态：支持子路径匹配
-  const activeTab = (() => {
-    // 首先尝试精确匹配
-    const exactMatch = menuItems.find(item => pathname === item.path)
-    if (exactMatch) return exactMatch.id
+  const [isMobile, setIsMobile] = useState(false)
 
-    // 如果没有精确匹配，尝试路径前缀匹配
-    const pathMatch = menuItems.find(item => {
-      // 确保不是根路径匹配，并且当前路径以菜单项路径开头
-      return item.path !== '/admin/dashboard' && pathname.startsWith(item.path + '/')
-    })
-    
-    return pathMatch?.id || 'overview'
-  })()
+  // 初始化菜单项和路径监听
+  useEffect(() => {
+    setMenuItems(menuItems)
+    setActiveTabByPath(pathname)
+  }, [menuItems, pathname, setMenuItems, setActiveTabByPath])
 
   // 检测移动端
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
       if (window.innerWidth >= 768) {
-        setIsMobileOpen(false)
+        setMobileOpen(false)
       }
     }
 
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  }, [setMobileOpen])
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/admin/sign-in' })
   }
 
   const toggleCollapse = () => {
-    setIsCollapsed(!isCollapsed)
+    setCollapsed(!isCollapsed)
   }
 
   const toggleMobile = () => {
-    setIsMobileOpen(!isMobileOpen)
+    setMobileOpen(!isMobileOpen)
+  }
+  
+  const handleNavigate = (path: string) => {
+    const menuItem = menuItems.find(item => item.path === path)
+    if (menuItem) {
+      setActiveTab(menuItem.id)
+    }
+    onNavigate(path)
   }
 
   // 移动端侧边栏
@@ -110,9 +119,9 @@ export function AdminSidebar({
             onTabChange={(tab) => {
               const menuItem = menuItems.find(item => item.id === tab)
               if (menuItem) {
-                onNavigate(menuItem.path)
+                handleNavigate(menuItem.path)
               }
-              setIsMobileOpen(false)
+              setMobileOpen(false)
             }}
             onClose={toggleMobile}
             handleSignOut={handleSignOut}
@@ -190,7 +199,7 @@ export function AdminSidebar({
       </div>
 
       {/* System Status */}
-      {systemStatus && (
+      {(systemStatus || settings) && (
         <div className={cn(
           "border-b border-gray-200 transition-all duration-300",
           isCollapsed ? "p-2" : "p-4"
@@ -198,18 +207,18 @@ export function AdminSidebar({
           {!isCollapsed ? (
             <div className="transition-opacity duration-200">
               <Badge
-                variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}
+                variant={(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? 'default' : 'secondary'}
                 className="text-xs"
               >
-                {systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'}
+                {(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? '投票开启' : '投票暂停'}
               </Badge>
             </div>
           ) : (
             <div className="flex justify-center">
               <div className={cn(
                 "w-2 h-2 rounded-full",
-                systemStatus.isVotingEnabled ? "bg-green-500" : "bg-gray-400"
-              )} title={systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'} />
+                (systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? "bg-green-500" : "bg-gray-400"
+              )} title={(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? '投票开启' : '投票暂停'} />
             </div>
           )}
         </div>
@@ -224,7 +233,7 @@ export function AdminSidebar({
           return (
             <button
               key={item.id}
-              onClick={() => onNavigate(item.path)}
+              onClick={() => handleNavigate(item.path)}
               className={cn(
                 "w-full flex items-center text-sm font-medium rounded-lg transition-all duration-200 group",
                 isCollapsed ? "px-2 py-3 justify-center" : "px-3 py-2",
@@ -325,10 +334,10 @@ function MobileSidebarContent({
       {systemStatus && (
         <div className="p-4 border-b border-gray-200">
           <Badge
-            variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}
+            variant={(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? 'default' : 'secondary'}
             className="text-xs"
           >
-            {systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'}
+            {(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? '投票开启' : '投票暂停'}
           </Badge>
         </div>
       )}

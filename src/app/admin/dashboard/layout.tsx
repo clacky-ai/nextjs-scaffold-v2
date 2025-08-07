@@ -4,15 +4,8 @@ import { useRouter } from 'next/navigation'
 import { Users, FolderOpen, Vote, Settings, BarChart3 } from 'lucide-react'
 import { AdminAuthGuard } from "@/components/admin-auth-guard";
 import { AdminSidebar } from './components/admin-sidebar';
-
-// 菜单项配置
-export interface MenuItem {
-  id: string
-  path: string
-  label: string
-  icon: React.ComponentType<{ className?: string }>
-  description: string
-}
+import { AdminStoreProvider } from '@/components/providers/admin-store-provider'
+import type { MenuItem } from '@/stores/admin'
 
 const menuItems: MenuItem[] = [
   {
@@ -66,15 +59,17 @@ export default function AdminDashboardLayout({
 
   return (
     <AdminAuthGuard>
-      <div className="flex h-screen bg-gray-50">
-        <AdminSidebar 
-          menuItems={menuItems}
-          onNavigate={handleNavigation}
-        />
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
-      </div>
+      <AdminStoreProvider>
+        <div className="flex h-screen bg-gray-50">
+          <AdminSidebar 
+            menuItems={menuItems}
+            onNavigate={handleNavigation}
+          />
+          <main className="flex-1 overflow-auto">
+            {children}
+          </main>
+        </div>
+      </AdminStoreProvider>
     </AdminAuthGuard>
   );
 }

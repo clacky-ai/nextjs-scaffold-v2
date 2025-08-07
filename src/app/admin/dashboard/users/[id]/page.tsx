@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { User, Mail, Calendar, Shield, Vote, ArrowLeft, Edit, Ban, CheckCircle } from 'lucide-react'
 import { AdminPageLayout } from '../../components/admin-page-layout'
@@ -10,16 +10,8 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
-
-interface UserDetail {
-  id: string
-  username: string
-  name: string
-  email: string
-  isBlocked: boolean
-  createdAt: string
-  updatedAt: string
-}
+import { useUserStore, useVoteStore, useProjectStore } from '@/stores/admin'
+import { User as UserType, Vote as VoteType, Project } from '@/stores/admin/types'
 
 interface UserVote {
   id: string
@@ -33,90 +25,51 @@ export default function UserDetailPage() {
   const params = useParams()
   const userId = params?.id as string
 
-  const [user, setUser] = useState<UserDetail | null>(null)
-  const [userVotes, setUserVotes] = useState<UserVote[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const { users, fetchUsers, toggleUserStatus, loading: userLoading } = useUserStore()
+  const { votes, fetchVotes, loading: voteLoading } = useVoteStore()
+  const { projects, fetchProjects, loading: projectLoading } = useProjectStore()
+  
   const [isUpdating, setIsUpdating] = useState(false)
 
-  useEffect(() => {
-    if (userId) {
-      fetchUserDetail()
-      fetchUserVotes()
-    }
-  }, [userId])
+  // 从 stores 中获取用户数据
+  const user = useMemo(() => 
+    users.find((u: UserType) => u.id === userId) || null, 
+    [users, userId]
+  )
 
-  const fetchUserDetail = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/admin/users')
-      if (response.ok) {
-        const users = await response.json()
-        const foundUser = users.find((u: any) => u.id === userId)
-        if (foundUser) {
-          setUser(foundUser)
-        } else {
-          toast.error('用户不存在')
+  // 从 stores 中计算用户的投票记录
+  const userVotes = useMemo(() => {
+    if (!userId || !votes || !projects) return []
+    
+    return votes
+      .filter((vote: VoteType) => vote.userId === userId)
+      .map((vote: VoteType) => {
+        const project = projects.find((p: Project) => p.id === vote.projectId)
+        return {
+          id: vote.id,
+          projectId: vote.projectId,
+          projectTitle: project?.title || '未知项目',
+          createdAt: vote.createdAt
         }
-      }
-    } catch (error) {
-      console.error('获取用户详情失败:', error)
-      toast.error('获取用户详情失败')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+      })
+  }, [votes, projects, userId])
 
-  const fetchUserVotes = async () => {
-    try {
-      const [votesRes, projectsRes] = await Promise.all([
-        fetch('/api/admin/votes'),
-        fetch('/api/admin/projects')
-      ])
+  const isLoading = userLoading.fetchUsers || voteLoading.fetchVotes || projectLoading.fetchProjects
 
-      if (votesRes.ok && projectsRes.ok) {
-        const [votes, projects] = await Promise.all([
-          votesRes.json(),
-          projectsRes.json()
-        ])
-
-        // 筛选该用户的投票记录
-        const userVoteRecords = votes
-          .filter((vote: any) => vote.userId === userId)
-          .map((vote: any) => {
-            const project = projects.find((p: any) => p.id === vote.projectId)
-            return {
-              id: vote.id,
-              projectId: vote.projectId,
-              projectTitle: project?.title || '未知项目',
-              createdAt: vote.createdAt
-            }
-          })
-
-        setUserVotes(userVoteRecords)
-      }
-    } catch (error) {
-      console.error('获取用户投票记录失败:', error)
-    }
-  }
+  useEffect(() => {
+    // 获取所有需要的数据
+    fetchUsers()
+    fetchVotes()
+    fetchProjects()
+  }, [fetchUsers, fetchVotes, fetchProjects])
 
   const handleToggleUserStatus = async () => {
     if (!user) return
 
     try {
       setIsUpdating(true)
-      const response = await fetch('/api/admin/users', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          isBlocked: !user.isBlocked
-        })
-      })
-
-      if (response.ok) {
-        setUser(prev => prev ? { ...prev, isBlocked: !prev.isBlocked } : null)
+      const success = await toggleUserStatus(user.id, !user.isBlocked)
+      if (success) {
         toast.success(user.isBlocked ? '用户已解除屏蔽' : '用户已屏蔽')
       } else {
         toast.error('操作失败')
@@ -175,7 +128,7 @@ export default function UserDetailPage() {
         {/* ActionBar - 标题和操作按钮 */}
         <ActionBar
           title={`用户详情 - ${user.name}`}
-          description={`查看和管理用户 ${user.username} 的详细信息`}
+          description={`查看和管理用户 ${user.name} 的详细信息`}
           actions={
             <>
               <ActionBarButton variant="outline" onClick={handleBack}>
@@ -226,9 +179,9 @@ export default function UserDetailPage() {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <User className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">用户名</span>
+                      <span className="text-sm text-gray-600">用户ID</span>
                     </div>
-                    <p className="font-medium">{user.username}</p>
+                    <p className="font-medium">{user.id}</p>
                   </div>
                   
                   <div className="space-y-2">
@@ -273,10 +226,10 @@ export default function UserDetailPage() {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">最后更新</span>
+                      <span className="text-sm text-gray-600">账户状态</span>
                     </div>
                     <p className="text-sm">
-                      {new Date(user.updatedAt).toLocaleString('zh-CN')}
+                      {user.isBlocked ? '已屏蔽' : '正常'}
                     </p>
                   </div>
                 </div>

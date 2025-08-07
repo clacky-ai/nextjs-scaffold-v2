@@ -1,26 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
-import { toast } from 'sonner'
-
-interface Vote {
-  id: string
-  reason: string
-  createdAt: string
-  voter: {
-    id: string
-    name: string
-    email: string
-  }
-  project: {
-    id: string
-    title: string
-  }
-}
+import { useVoteStore } from '@/stores/admin'
 
 interface VoteManagementProps {
   onStatsUpdate: () => void
@@ -28,69 +12,33 @@ interface VoteManagementProps {
 }
 
 export function VoteManagement({ onStatsUpdate, searchTerm = '' }: VoteManagementProps) {
-  const [votes, setVotes] = useState<Vote[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
-
-  useEffect(() => {
-    fetchVotes()
-  }, [])
-
-  const fetchVotes = async () => {
-    try {
-      const response = await fetch('/api/admin/votes')
-      if (response.ok) {
-        const data = await response.json()
-        setVotes(data)
-      } else {
-        toast.error('获取投票列表失败')
-      }
-    } catch (error) {
-      toast.error('网络错误，请稍后重试')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const {
+    votes,
+    loading,
+    deleteVote
+  } = useVoteStore()
+  
+  const isLoading = loading.fetchVotes
 
   const handleDeleteVote = async (voteId: string) => {
-    setDeleteLoading(voteId)
-
-    try {
-      const response = await fetch('/api/admin/votes', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ voteId }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success(data.message)
-        setVotes(prev => prev.filter(vote => vote.id !== voteId))
-        onStatsUpdate()
-      } else {
-        toast.error(data.error || '删除失败')
-      }
-    } catch (error) {
-      toast.error('网络错误，请稍后重试')
-    } finally {
-      setDeleteLoading(null)
+    const success = await deleteVote(voteId)
+    if (success && onStatsUpdate) {
+      onStatsUpdate()
     }
   }
 
-  // 过滤投票记录
-  const filteredVotes = votes.filter(vote => {
-    if (!searchTerm) return true
-    const searchLower = searchTerm.toLowerCase()
-    return (
-      vote.voter.name.toLowerCase().includes(searchLower) ||
-      vote.voter.email.toLowerCase().includes(searchLower) ||
-      vote.project.title.toLowerCase().includes(searchLower) ||
-      vote.reason.toLowerCase().includes(searchLower)
-    )
-  })
+  // 使用 store 的过滤功能，但支持本地 searchTerm
+  const displayVotes = searchTerm 
+    ? votes.filter(vote => {
+        const searchLower = searchTerm.toLowerCase()
+        return (
+          vote.voter.name.toLowerCase().includes(searchLower) ||
+          vote.voter.email.toLowerCase().includes(searchLower) ||
+          vote.project.title.toLowerCase().includes(searchLower) ||
+          vote.reason.toLowerCase().includes(searchLower)
+        )
+      })
+    : votes
 
   if (isLoading) {
     return <div className="text-center py-8">加载中...</div>
@@ -101,7 +49,7 @@ export function VoteManagement({ onStatsUpdate, searchTerm = '' }: VoteManagemen
       <div className="text-sm text-gray-600">
         {searchTerm ? (
           <>
-            搜索到 {filteredVotes.length} 条投票记录，共 {votes.length} 条记录
+            搜索到 {displayVotes.length} 条投票记录，共 {votes.length} 条记录
             {searchTerm && (
               <span className="ml-2 text-blue-600">
                 搜索: "{searchTerm}"
@@ -125,8 +73,8 @@ export function VoteManagement({ onStatsUpdate, searchTerm = '' }: VoteManagemen
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredVotes.length > 0 ? (
-              filteredVotes.map((vote) => (
+            {displayVotes.length > 0 ? (
+              displayVotes.map((vote) => (
               <TableRow key={vote.id}>
                 <TableCell>
                   <div>
@@ -169,9 +117,9 @@ export function VoteManagement({ onStatsUpdate, searchTerm = '' }: VoteManagemen
                       <Button 
                         variant="destructive" 
                         size="sm"
-                        disabled={deleteLoading === vote.id}
+                        disabled={loading[`deleteVote_${vote.id}`]}
                       >
-                        {deleteLoading === vote.id ? '删除中...' : '删除'}
+                        {loading[`deleteVote_${vote.id}`] ? '删除中...' : '删除'}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>

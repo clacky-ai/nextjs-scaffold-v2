@@ -4,21 +4,9 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Users, FolderOpen, Vote, Activity, RefreshCw, BarChart3 } from 'lucide-react'
-import { toast } from 'sonner'
 import { AdminPageLayout } from '../components/admin-page-layout'
 import { ActionBar, ActionBarButton } from '../components/action-bar'
-
-interface Stats {
-  totalUsers: number
-  totalProjects: number
-  totalVotes: number
-  activeUsers: number
-}
-
-interface SystemStatus {
-  isVotingEnabled: boolean
-  maxVotesPerUser: number
-}
+import { useUserStore, useProjectStore, useVoteStore } from '@/stores/admin'
 
 interface RecentActivity {
   id: string
@@ -28,65 +16,27 @@ interface RecentActivity {
 }
 
 export default function OverviewPage() {
-  const [stats, setStats] = useState<Stats>({
-    totalUsers: 0,
-    totalProjects: 0,
-    totalVotes: 0,
-    activeUsers: 0,
-  })
-  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null)
+  const { stats: userStats, fetchUsers, loading: userLoading } = useUserStore()
+  const { stats: projectStats, fetchProjects, loading: projectLoading } = useProjectStore()
+  const { stats: voteStats, fetchVotes, loading: voteLoading } = useVoteStore()
+  
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([])
   const [isLoadingActivities, setIsLoadingActivities] = useState(true)
-  const [isLoadingStats, setIsLoadingStats] = useState(true)
+  
+  // Computed stats from stores
+  const currentUserStats = userStats()
+  const currentProjectStats = projectStats()
+  const currentVoteStats = voteStats()
+  
+  const isLoadingStats = userLoading.fetchUsers || projectLoading.fetchProjects || voteLoading.fetchVotes
 
   useEffect(() => {
-    fetchStats()
-    fetchSystemStatus()
+    fetchUsers()
+    fetchProjects()
+    fetchVotes()
     fetchRecentActivities()
-  }, [])
+  }, [fetchUsers, fetchProjects, fetchVotes])
 
-  const fetchStats = async () => {
-    try {
-      setIsLoadingStats(true)
-      const [usersRes, projectsRes, votesRes] = await Promise.all([
-        fetch('/api/admin/users'),
-        fetch('/api/admin/projects'),
-        fetch('/api/admin/votes')
-      ])
-
-      if (usersRes.ok && projectsRes.ok && votesRes.ok) {
-        const [users, projects, votes] = await Promise.all([
-          usersRes.json(),
-          projectsRes.json(),
-          votesRes.json()
-        ])
-
-        setStats({
-          totalUsers: users.length,
-          totalProjects: projects.length,
-          totalVotes: votes.length,
-          activeUsers: users.filter((u: any) => !u.isBlocked).length
-        })
-      }
-    } catch (error) {
-      console.error('获取统计数据失败:', error)
-      toast.error('获取统计数据失败')
-    } finally {
-      setIsLoadingStats(false)
-    }
-  }
-
-  const fetchSystemStatus = async () => {
-    try {
-      const response = await fetch('/api/admin/system')
-      if (response.ok) {
-        const data = await response.json()
-        setSystemStatus(data)
-      }
-    } catch (error) {
-      console.error('获取系统状态失败:', error)
-    }
-  }
 
   const fetchRecentActivities = async () => {
     try {
@@ -149,15 +99,15 @@ export default function OverviewPage() {
   const statCards = [
     {
       title: '总用户数',
-      value: stats.totalUsers,
-      description: `活跃用户: ${stats.activeUsers}`,
+      value: currentUserStats.total,
+      description: `活跃用户: ${currentUserStats.active}`,
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
     },
     {
       title: '总项目数',
-      value: stats.totalProjects,
+      value: currentProjectStats.total,
       description: '已提交的项目',
       icon: FolderOpen,
       color: 'text-green-600',
@@ -165,7 +115,7 @@ export default function OverviewPage() {
     },
     {
       title: '总投票数',
-      value: stats.totalVotes,
+      value: currentVoteStats.total,
       description: '累计投票次数',
       icon: Vote,
       color: 'text-purple-600',
@@ -173,7 +123,7 @@ export default function OverviewPage() {
     },
     {
       title: '活跃度',
-      value: stats.totalUsers > 0 ? Math.round((stats.totalVotes / stats.totalUsers) * 100) / 100 : 0,
+      value: currentUserStats.total > 0 ? Math.round((currentVoteStats.total / currentUserStats.total) * 100) / 100 : 0,
       description: '平均每用户投票数',
       icon: Activity,
       color: 'text-orange-600',
@@ -182,8 +132,9 @@ export default function OverviewPage() {
   ]
 
   const handleRefresh = () => {
-    fetchStats()
-    fetchSystemStatus()
+    fetchUsers()
+    fetchProjects()
+    fetchVotes()
     fetchRecentActivities()
   }
 
@@ -206,36 +157,32 @@ export default function OverviewPage() {
           }
         />
 
-        {/* 系统状态卡片 */}
-        {systemStatus && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>系统状态</span>
-                <Badge variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}>
-                  {systemStatus.isVotingEnabled ? '运行中' : '已暂停'}
-                </Badge>
-              </CardTitle>
-              <CardDescription>
-                当前投票系统的运行状态和配置信息
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-700">投票状态</p>
-                  <p className="text-lg">
-                    {systemStatus.isVotingEnabled ? '✅ 投票开启' : '⏸️ 投票暂停'}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-700">每用户最大投票数</p>
-                  <p className="text-lg">{systemStatus.maxVotesPerUser} 票</p>
-                </div>
+        {/* 系统状态卡片 - 系统设置功能已移除，显示基本信息 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <span>系统状态</span>
+              <Badge variant="default">
+                运行中
+              </Badge>
+            </CardTitle>
+            <CardDescription>
+              当前投票系统的运行状态
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">系统状态</p>
+                <p className="text-lg">✅ 正常运行</p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-gray-700">统计数据</p>
+                <p className="text-lg">实时更新</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 统计卡片网格 */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -315,12 +262,12 @@ export default function OverviewPage() {
                       <div 
                         className="h-2 bg-green-500 rounded-full" 
                         style={{ 
-                          width: `${Math.min((stats.activeUsers / stats.totalUsers) * 100, 100)}%` 
+                          width: `${Math.min((currentUserStats.active / currentUserStats.total) * 100, 100)}%` 
                         }}
                       ></div>
                     </div>
                     <span className="text-sm font-medium">
-                      {stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0}%
+                      {currentUserStats.total > 0 ? Math.round((currentUserStats.active / currentUserStats.total) * 100) : 0}%
                     </span>
                   </div>
                 </div>
@@ -332,12 +279,12 @@ export default function OverviewPage() {
                       <div 
                         className="h-2 bg-blue-500 rounded-full" 
                         style={{ 
-                          width: `${Math.min((stats.totalVotes / (stats.totalUsers * 5)) * 100, 100)}%` 
+                          width: `${Math.min((currentVoteStats.total / (currentUserStats.total * 5)) * 100, 100)}%` 
                         }}
                       ></div>
                     </div>
                     <span className="text-sm font-medium">
-                      {stats.totalUsers > 0 ? Math.round((stats.totalVotes / (stats.totalUsers * 5)) * 100) : 0}%
+                      {currentUserStats.total > 0 ? Math.round((currentVoteStats.total / (currentUserStats.total * 5)) * 100) : 0}%
                     </span>
                   </div>
                 </div>

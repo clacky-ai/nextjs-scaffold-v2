@@ -3,14 +3,13 @@ import { io, Socket } from 'socket.io-client'
 import { toast } from 'sonner'
 import type { 
   WebSocketConnectionState, 
-  AdminMessageData, 
   VoteUpdateData, 
   SystemStatusUpdateData,
   OnlineUser,
   LoadingState 
 } from './types'
 
-interface WebSocketStore {
+interface AdminWebSocketStore {
   // Connection State
   connection: WebSocketConnectionState
   socket: Socket | null
@@ -62,7 +61,7 @@ interface WebSocketStore {
   getActiveUsers: () => OnlineUser[]
 }
 
-export const useWebSocketStore = create<WebSocketStore>((set, get) => {
+export const useAdminWebSocketStore = create<AdminWebSocketStore>((set, get) => {
   let voteUpdateCallback: ((data: VoteUpdateData) => void) | null = null
   let systemStatusCallback: ((data: SystemStatusUpdateData) => void) | null = null
   

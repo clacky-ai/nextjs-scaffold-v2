@@ -28,7 +28,8 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     disconnect, 
     authenticate,
     onAdminMessage,
-    offAdminMessage
+    offAdminMessage,
+    joinVotingRoom
   } = useUserWebSocketStore()
 
   // 初始化连接
@@ -40,18 +41,21 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
     }
   }, [connect, disconnect])
 
-  // 当用户登录状态改变时，进行Socket认证
+  // 当用户登录状态改变时，进行Socket认证和房间管理
   useEffect(() => {
     if (status === 'authenticated' && session?.user && connection.isConnected) {
       // 用户认证
       authenticate({
-        userId: session.user.id,
+        userId: (session.user as any).id,
         userName: session.user.name || '',
         userEmail: session.user.email || '',
         isAdmin: false
       })
+      
+      // 自动加入投票房间
+      joinVotingRoom()
     }
-  }, [session, status, connection.isConnected, authenticate])
+  }, [session, status, connection.isConnected, authenticate, joinVotingRoom])
 
   // 监听管理员消息
   useEffect(() => {

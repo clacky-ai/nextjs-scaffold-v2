@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Users, MessageCircle, Send, RefreshCw, Clock, Wifi } from 'lucide-react'
 import { ActionBar, ActionBarButton } from './action-bar'
-import { useWebSocketStore, useOnlineUserStore } from '@/stores/admin'
+import { useAdminWebSocketStore, useOnlineUserStore } from '@/stores/admin'
 import { formatDistanceToNow, format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import type { OnlineUser } from '@/stores/admin/types'
@@ -35,7 +35,7 @@ export function OnlineUsersManagement() {
     sendMessageToUser, 
     sendBroadcastMessage,
     loading 
-  } = useWebSocketStore()
+  } = useAdminWebSocketStore()
   
   // Legacy online user store for fallback API calls
   const { fetchOnlineUsers } = useOnlineUserStore()

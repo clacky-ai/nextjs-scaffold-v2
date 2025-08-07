@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { ProjectSubmissionForm } from './components/project-submission-form'
 import { VotingSection } from './components/voting-section'
 import { MyVotesSection } from './components/my-votes-section'
-import { useSocket } from '@/hooks/use-socket'
+import { useUserWebSocketStore } from '@/stores/user'
 import { toast } from 'sonner'
 
 
@@ -20,7 +20,11 @@ export function DashboardContent() {
     maxVotesPerUser: number
   } | null>(null)
   
-  const { isConnected, joinVotingRoom, leaveVotingRoom, onSystemStatusUpdate, offSystemStatusUpdate } = useSocket()
+  const { 
+    connection, 
+    onSystemStatusUpdate, 
+    offSystemStatusUpdate 
+  } = useUserWebSocketStore()
 
   useEffect(() => {
     // 获取系统状态
@@ -40,20 +44,18 @@ export function DashboardContent() {
   }, []) // 只在组件挂载时获取一次系统状态
 
   useEffect(() => {
-    // 加入投票房间
-    joinVotingRoom()
+    if (connection.isConnected) {
+      // 监听系统状态更新
+      onSystemStatusUpdate((data) => {
+        setSystemStatus(data)
+        toast.info(`系统状态已更新: ${data.isVotingEnabled ? '投票开启' : '投票暂停'}`)
+      })
 
-    // 监听系统状态更新
-    onSystemStatusUpdate((data) => {
-      setSystemStatus(data)
-      toast.info(`系统状态已更新: ${data.isVotingEnabled ? '投票开启' : '投票暂停'}`)
-    })
-
-    return () => {
-      leaveVotingRoom()
-      offSystemStatusUpdate()
+      return () => {
+        offSystemStatusUpdate()
+      }
     }
-  }, [joinVotingRoom, leaveVotingRoom, onSystemStatusUpdate, offSystemStatusUpdate])
+  }, [connection.isConnected, onSystemStatusUpdate, offSystemStatusUpdate])
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/sign-in' })
@@ -70,8 +72,8 @@ export function DashboardContent() {
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Badge variant={isConnected ? 'default' : 'destructive'}>
-                  {isConnected ? '已连接' : '未连接'}
+                <Badge variant={connection.isConnected ? 'default' : 'destructive'}>
+                  {connection.isConnected ? '已连接' : '未连接'}
                 </Badge>
                 {systemStatus && (
                   <Badge variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}>

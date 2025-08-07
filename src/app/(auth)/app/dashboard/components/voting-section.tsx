@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
-import { useSocket } from '@/hooks/use-socket'
+import { useUserWebSocketStore } from '@/stores/user'
 import { toast } from 'sonner'
 
 interface Project {
@@ -39,7 +39,7 @@ export function VotingSection({ userId, systemStatus, viewOnly = false }: Voting
   const [votingProject, setVotingProject] = useState<string | null>(null)
   const [voteReason, setVoteReason] = useState('')
   
-  const { onVoteUpdate, offVoteUpdate } = useSocket()
+  const { connection, onVoteUpdate, offVoteUpdate } = useUserWebSocketStore()
 
   useEffect(() => {
     fetchProjects()
@@ -47,23 +47,25 @@ export function VotingSection({ userId, systemStatus, viewOnly = false }: Voting
   }, []) // 只在组件挂载时执行一次
 
   useEffect(() => {
-    // 监听投票更新
-    onVoteUpdate((data) => {
-      setProjects(prev => prev.map(project =>
-        project.id === data.projectId
-          ? { ...project, voteCount: data.newVoteCount }
-          : project
-      ))
+    if (connection.isConnected) {
+      // 监听投票更新
+      onVoteUpdate((data) => {
+        setProjects(prev => prev.map(project =>
+          project.id === data.projectId
+            ? { ...project, voteCount: data.newVoteCount }
+            : project
+        ))
 
-      if (!viewOnly) {
-        toast.success(`${data.voterName} 给 "${data.projectTitle}" 投了一票！`)
+        if (!viewOnly) {
+          toast.success(`${data.voterName} 给 "${data.projectTitle}" 投了一票！`)
+        }
+      })
+
+      return () => {
+        offVoteUpdate()
       }
-    })
-
-    return () => {
-      offVoteUpdate()
     }
-  }, [onVoteUpdate, offVoteUpdate, viewOnly])
+  }, [connection.isConnected, onVoteUpdate, offVoteUpdate, viewOnly])
 
   const fetchProjects = async () => {
     try {

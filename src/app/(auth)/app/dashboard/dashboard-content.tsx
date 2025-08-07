@@ -1,65 +1,35 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { ProjectSubmissionForm } from './components/project-submission-form'
-import { VotingSection } from './components/voting-section'
-import { MyVotesSection } from './components/my-votes-section'
-import { useUserWebSocketStore } from '@/stores/user'
-import { toast } from 'sonner'
-
+import { useSession, signOut } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { ProjectSubmissionForm } from "./components/project-submission-form";
+import { VotingSection } from "./components/voting-section";
+import { MyVotesSection } from "./components/my-votes-section";
+import { useSystemStore, useVoteStore } from "@/stores/user";
 
 export function DashboardContent() {
-  const { data: session } = useSession()
-  const [systemStatus, setSystemStatus] = useState<{
-    isVotingEnabled: boolean
-    maxVotesPerUser: number
-  } | null>(null)
-  
-  const { 
-    connection, 
-    onSystemStatusUpdate, 
-    offSystemStatusUpdate 
-  } = useUserWebSocketStore()
+  const { data: session } = useSession();
+  const {
+    settings: systemStatus,
+    isVotingEnabled,
+    getMaxVotesPerUser,
+  } = useSystemStore();
+  const { stats } = useVoteStore();
 
-  useEffect(() => {
-    // 获取系统状态
-    const fetchSystemStatus = async () => {
-      try {
-        const response = await fetch('/api/admin/system')
-        if (response.ok) {
-          const data = await response.json()
-          setSystemStatus(data)
-        }
-      } catch (error) {
-        console.error('获取系统状态失败:', error)
-      }
-    }
-
-    fetchSystemStatus()
-  }, []) // 只在组件挂载时获取一次系统状态
-
-  useEffect(() => {
-    if (connection.isConnected) {
-      // 监听系统状态更新
-      onSystemStatusUpdate((data) => {
-        setSystemStatus(data)
-        toast.info(`系统状态已更新: ${data.isVotingEnabled ? '投票开启' : '投票暂停'}`)
-      })
-
-      return () => {
-        offSystemStatusUpdate()
-      }
-    }
-  }, [connection.isConnected, onSystemStatusUpdate, offSystemStatusUpdate])
+  const voteStats = stats(getMaxVotesPerUser());
 
   const handleSignOut = () => {
-    signOut({ callbackUrl: '/sign-in' })
-  }
+    signOut({ callbackUrl: "/sign-in" });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -68,18 +38,18 @@ export function DashboardContent() {
           <div className="flex justify-between items-center py-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">投票系统</h1>
-              <p className="text-sm text-gray-600">欢迎，{session?.user?.name}</p>
+              <p className="text-sm text-gray-600">
+                欢迎，{session?.user?.name}
+              </p>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Badge variant={connection.isConnected ? 'default' : 'destructive'}>
-                  {connection.isConnected ? '已连接' : '未连接'}
+                <Badge variant={isVotingEnabled() ? "default" : "secondary"}>
+                  {isVotingEnabled() ? "投票开启" : "投票暂停"}
                 </Badge>
-                {systemStatus && (
-                  <Badge variant={systemStatus.isVotingEnabled ? 'default' : 'secondary'}>
-                    {systemStatus.isVotingEnabled ? '投票开启' : '投票暂停'}
-                  </Badge>
-                )}
+                <Badge variant="outline">
+                  剩余 {voteStats.remainingVotes} 票
+                </Badge>
               </div>
               <Button variant="outline" onClick={handleSignOut}>
                 退出登录
@@ -105,18 +75,13 @@ export function DashboardContent() {
                   <CardTitle>参赛项目</CardTitle>
                   <CardDescription>
                     浏览所有参赛项目并进行投票
-                    {systemStatus && (
-                      <span className="ml-2">
-                        （每人最多 {systemStatus.maxVotesPerUser} 票）
-                      </span>
-                    )}
+                    <span className="ml-2">
+                      （每人最多 {getMaxVotesPerUser()} 票）
+                    </span>
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <VotingSection 
-                    userId={(session?.user as any)?.id} 
-                    systemStatus={systemStatus}
-                  />
+                  <VotingSection userId={(session?.user as any)?.id} />
                 </CardContent>
               </Card>
             </TabsContent>
@@ -125,9 +90,7 @@ export function DashboardContent() {
               <Card>
                 <CardHeader>
                   <CardTitle>提交项目</CardTitle>
-                  <CardDescription>
-                    提交您的参赛项目信息
-                  </CardDescription>
+                  <CardDescription>提交您的参赛项目信息</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ProjectSubmissionForm userId={(session?.user as any)?.id} />
@@ -139,9 +102,7 @@ export function DashboardContent() {
               <Card>
                 <CardHeader>
                   <CardTitle>我的投票</CardTitle>
-                  <CardDescription>
-                    查看您的投票记录
-                  </CardDescription>
+                  <CardDescription>查看您的投票记录</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <MyVotesSection />
@@ -153,14 +114,11 @@ export function DashboardContent() {
               <Card>
                 <CardHeader>
                   <CardTitle>投票结果</CardTitle>
-                  <CardDescription>
-                    实时投票结果统计
-                  </CardDescription>
+                  <CardDescription>实时投票结果统计</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <VotingSection 
-                    userId={(session?.user as any)?.id} 
-                    systemStatus={systemStatus}
+                  <VotingSection
+                    userId={(session?.user as any)?.id}
                     viewOnly={true}
                   />
                 </CardContent>
@@ -170,5 +128,5 @@ export function DashboardContent() {
         </div>
       </main>
     </div>
-  )
+  );
 }

@@ -1,87 +1,73 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useProjectStore } from "@/stores/user";
 
 interface ProjectSubmissionFormProps {
-  userId: string
+  userId: string;
 }
 
 export function ProjectSubmissionForm({ userId }: ProjectSubmissionFormProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const { submitProject, loading } = useProjectStore();
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    teamMembers: '',
-    demoLink: '',
-    category: '',
-    tags: '',
-  })
+    title: "",
+    description: "",
+    teamMembers: "",
+    demoLink: "",
+    category: "",
+    tags: "",
+  });
+
+  const isLoading = loading.submitProject;
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
 
-    try {
-      // 处理团队成员（假设以逗号分隔的用户ID）
-      const teamMemberIds = formData.teamMembers
-        .split(',')
-        .map(id => id.trim())
-        .filter(id => id)
+    // 处理团队成员（假设以逗号分隔的用户ID）
+    const teamMemberIds = formData.teamMembers
+      .split(",")
+      .map((id) => id.trim())
+      .filter((id) => id);
 
-      // 处理标签
-      const tags = formData.tags
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(tag => tag)
+    // 处理标签
+    const tags = formData.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
 
-      const response = await fetch('/api/projects', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          teamMembers: teamMemberIds,
-          demoLink: formData.demoLink,
-          category: formData.category,
-          tags: tags,
-        }),
-      })
+    const success = await submitProject({
+      title: formData.title,
+      description: formData.description,
+      teamMembers: teamMemberIds,
+      demoLink: formData.demoLink,
+      category: formData.category,
+      tags: tags,
+    });
 
-      const data = await response.json()
-
-      if (response.ok) {
-        toast.success('项目提交成功！')
-        setFormData({
-          title: '',
-          description: '',
-          teamMembers: '',
-          demoLink: '',
-          category: '',
-          tags: '',
-        })
-      } else {
-        toast.error(data.error || '项目提交失败')
-      }
-    } catch (error) {
-      toast.error('网络错误，请稍后重试')
-    } finally {
-      setIsLoading(false)
+    if (success) {
+      setFormData({
+        title: "",
+        description: "",
+        teamMembers: "",
+        demoLink: "",
+        category: "",
+        tags: "",
+      });
     }
-  }
+  };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
-    })
-  }
+    });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -160,8 +146,8 @@ export function ProjectSubmissionForm({ userId }: ProjectSubmissionFormProps) {
       </div>
 
       <Button type="submit" disabled={isLoading}>
-        {isLoading ? '提交中...' : '提交项目'}
+        {isLoading ? "提交中..." : "提交项目"}
       </Button>
     </form>
-  )
+  );
 }

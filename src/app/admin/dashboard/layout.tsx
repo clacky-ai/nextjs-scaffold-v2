@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Users, FolderOpen, Vote, Settings, BarChart3, Wifi } from 'lucide-react'
+import { Users, Settings, Wifi } from 'lucide-react'
 import { AdminAuthGuard } from "@/components/admin-auth-guard";
 import { AdminWebSocketProvider } from '@/components/providers/admin-websocket-provider'
 import { AdminSidebar } from './components/admin-sidebar';
@@ -10,32 +10,11 @@ import type { MenuItem } from '@/stores/admin'
 
 const menuItems: MenuItem[] = [
   {
-    id: 'overview',
-    path: '/admin/dashboard/overview',
-    label: '概览',
-    icon: BarChart3,
-    description: '系统统计和概览'
-  },
-  {
     id: 'users',
     path: '/admin/dashboard/users',
     label: '用户管理',
     icon: Users,
     description: '管理所有注册用户'
-  },
-  {
-    id: 'projects',
-    path: '/admin/dashboard/projects',
-    label: '项目管理',
-    icon: FolderOpen,
-    description: '管理所有提交的项目'
-  },
-  {
-    id: 'votes',
-    path: '/admin/dashboard/votes',
-    label: '投票管理',
-    icon: Vote,
-    description: '查看和管理投票记录'
   },
   {
     id: 'online-users',

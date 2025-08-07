@@ -137,14 +137,6 @@ export const useUserWebSocketStore = create<UserWebSocketStore>((set, get) => {
         }));
       });
 
-      // Real-time events
-      newSocket.on("vote-update", (data: VoteUpdateData) => {
-        console.log("收到投票更新:", data);
-        if (voteUpdateCallback) {
-          voteUpdateCallback(data);
-        }
-      });
-
       newSocket.on("system-status-update", (data: SystemStatusUpdateData) => {
         console.log("收到系统状态更新:", data);
         if (systemStatusCallback) {
@@ -208,25 +200,6 @@ export const useUserWebSocketStore = create<UserWebSocketStore>((set, get) => {
 
     offAdminMessage: () => {
       adminMessageCallback = null;
-    },
-
-    // Room management
-    joinVotingRoom: () => {
-      const { socket } = get();
-      if (socket) {
-        socket.emit("join-voting");
-        socket.emit("join-room", { room: "voting" });
-        console.log("已加入投票房间");
-      }
-    },
-
-    leaveVotingRoom: () => {
-      const { socket } = get();
-      if (socket) {
-        socket.emit("leave-voting");
-        socket.emit("leave-room", { room: "voting" });
-        console.log("已离开投票房间");
-      }
     },
 
     // Utility

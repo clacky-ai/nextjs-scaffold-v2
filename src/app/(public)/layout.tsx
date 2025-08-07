@@ -1,5 +1,4 @@
 import { UserSessionProvider } from '@/components/providers/user-session-provider'
-import { WebSocketProvider } from '@/components/providers/websocket-provider'
 
 export default function PublicLayout({
   children,
@@ -8,9 +7,7 @@ export default function PublicLayout({
 }) {
   return (
     <UserSessionProvider>
-      <WebSocketProvider>
-        {children}
-      </WebSocketProvider>
+      {children}
     </UserSessionProvider>
   )
 }

@@ -3,8 +3,8 @@ import { Providers } from '@/components/providers/providers'
 import '@/app/globals.css'
 
 export const metadata: Metadata = {
-  title: '投票系统',
-  description: '实名投票系统'
+  title: 'Clacky AI',
+  description: 'Clacky AI'
 }
 
 export default function RootLayout({

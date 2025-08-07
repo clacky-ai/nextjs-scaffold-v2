@@ -11,9 +11,8 @@ import {
   X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
-import { useNavigationStore, useSystemStore, type MenuItem } from '@/stores/admin'
+import { useNavigationStore, type MenuItem } from '@/stores/admin'
 
 interface AdminSidebarProps {
   menuItems: MenuItem[]
@@ -41,7 +40,6 @@ export function AdminSidebar({
     setMobileOpen,
     setActiveTabByPath
   } = useNavigationStore()
-  const { settings } = useSystemStore()
   
   const [isMobile, setIsMobile] = useState(false)
 
@@ -198,32 +196,6 @@ export function AdminSidebar({
         )}
       </div>
 
-      {/* System Status */}
-      {(systemStatus || settings) && (
-        <div className={cn(
-          "border-b border-gray-200 transition-all duration-300",
-          isCollapsed ? "p-2" : "p-4"
-        )}>
-          {!isCollapsed ? (
-            <div className="transition-opacity duration-200">
-              <Badge
-                variant={(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? 'default' : 'secondary'}
-                className="text-xs"
-              >
-                {(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? '投票开启' : '投票暂停'}
-              </Badge>
-            </div>
-          ) : (
-            <div className="flex justify-center">
-              <div className={cn(
-                "w-2 h-2 rounded-full",
-                (systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? "bg-green-500" : "bg-gray-400"
-              )} title={(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? '投票开启' : '投票暂停'} />
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Navigation Menu */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
@@ -329,18 +301,6 @@ function MobileSidebarContent({
           <X className="h-4 w-4" />
         </Button>
       </div>
-
-      {/* 移动端系统状态 */}
-      {systemStatus && (
-        <div className="p-4 border-b border-gray-200">
-          <Badge
-            variant={(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? 'default' : 'secondary'}
-            className="text-xs"
-          >
-            {(systemStatus?.isVotingEnabled ?? settings.isVotingEnabled) ? '投票开启' : '投票暂停'}
-          </Badge>
-        </div>
-      )}
 
       {/* 移动端导航菜单 */}
       <nav className="flex-1 p-4 space-y-2">

@@ -52,8 +52,6 @@ export function WebSocketProvider({ children }: WebSocketProviderProps) {
         isAdmin: false
       })
       
-      // 自动加入投票房间
-      joinVotingRoom()
     }
   }, [session, status, connection.isConnected, authenticate, joinVotingRoom])
 

@@ -1,8 +1,7 @@
 import { config } from 'dotenv'
 import { resolve } from 'path'
 import { db } from '../src/lib/db'
-import { adminUsers, votingSystemStatus } from '../src/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { adminUsers } from '../src/lib/db/schema'
 import bcrypt from 'bcryptjs'
 
 // 加载环境变量
@@ -22,7 +21,7 @@ async function seed() {
         username: 'admin',
         password: hashedPassword,
         name: '系统管理员',
-        email: 'admin@voting-system.com',
+        email: 'admin@test.com',
       }).returning()
       console.log('✅ 管理员账号创建成功:', admin.username)
     } catch (error: any) {
@@ -40,22 +39,7 @@ async function seed() {
       }
     }
 
-    // 创建投票系统状态（如果不存在）
-    try {
-      await db.insert(votingSystemStatus).values({
-        isVotingEnabled: true,
-        maxVotesPerUser: 3,
-        updatedBy: admin.id,
-      })
-      console.log('✅ 投票系统状态初始化成功')
-    } catch (error: any) {
-      if (error.cause?.code === '23505') {
-        console.log('ℹ️ 投票系统状态已存在')
-      } else {
-        throw error
-      }
-    }
-
+    console.log('✅ 管理员账号创建成功:', admin.username)
     console.log('🎉 种子数据初始化完成!')
     console.log('')
     console.log('管理员登录信息:')

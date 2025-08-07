@@ -16,18 +16,10 @@ export interface NextApiResponseWithSocket extends NextApiResponse {
   socket: SocketWithIO
 }
 
-// 定义投票系统的事件类型
+
 export interface ServerToClientEvents {
   // 连接确认
   connection: (data: { message: string }) => void
-  
-  // 投票更新事件
-  'vote-update': (data: {
-    projectId: string
-    projectTitle: string
-    newVoteCount: number
-    voterName: string
-  }) => void
   
   // 系统状态更新事件
   'system-status-update': (data: {

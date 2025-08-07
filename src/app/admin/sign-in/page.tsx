@@ -56,7 +56,7 @@ export default function AdminSignInPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">管理员登录</CardTitle>
           <CardDescription className="text-center">
-            登录投票系统管理后台
+            登录系统管理后台
           </CardDescription>
         </CardHeader>
         <CardContent>

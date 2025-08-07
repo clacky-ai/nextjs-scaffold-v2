@@ -33,7 +33,7 @@ interface NavigationStore {
 
 export const useNavigationStore = create<NavigationStore>((set, get) => ({
   // Initial state
-  activeTab: 'overview',
+  activeTab: 'users',
   menuItems: [],
   breadcrumbs: [],
   isCollapsed: false,
@@ -84,8 +84,8 @@ export const useNavigationStore = create<NavigationStore>((set, get) => ({
     if (pathMatch) {
       set({ activeTab: pathMatch.id })
     } else {
-      // Default to overview if no match
-      set({ activeTab: 'overview' })
+      // Default to users if no match
+      set({ activeTab: 'users' })
     }
   },
   

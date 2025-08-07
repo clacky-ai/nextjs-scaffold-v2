@@ -56,7 +56,7 @@ export default function SignInPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">用户登录</CardTitle>
           <CardDescription className="text-center">
-            登录您的投票系统账号
+            登录您的账号
           </CardDescription>
         </CardHeader>
         <CardContent>

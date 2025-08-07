@@ -10,8 +10,8 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
-import { useUserStore, useVoteStore, useProjectStore } from '@/stores/admin'
-import { User as UserType, Vote as VoteType, Project } from '@/stores/admin/types'
+import { useUserStore } from '@/stores/admin'
+import { User as UserType } from '@/stores/admin/types'
 
 interface UserVote {
   id: string
@@ -26,9 +26,6 @@ export default function UserDetailPage() {
   const userId = params?.id as string
 
   const { users, fetchUsers, toggleUserStatus, loading: userLoading } = useUserStore()
-  const { votes, fetchVotes, loading: voteLoading } = useVoteStore()
-  const { projects, fetchProjects, loading: projectLoading } = useProjectStore()
-  
   const [isUpdating, setIsUpdating] = useState(false)
 
   // 从 stores 中获取用户数据
@@ -37,31 +34,12 @@ export default function UserDetailPage() {
     [users, userId]
   )
 
-  // 从 stores 中计算用户的投票记录
-  const userVotes = useMemo(() => {
-    if (!userId || !votes || !projects) return []
-    
-    return votes
-      .filter((vote: VoteType) => vote.userId === userId)
-      .map((vote: VoteType) => {
-        const project = projects.find((p: Project) => p.id === vote.projectId)
-        return {
-          id: vote.id,
-          projectId: vote.projectId,
-          projectTitle: project?.title || '未知项目',
-          createdAt: vote.createdAt
-        }
-      })
-  }, [votes, projects, userId])
-
-  const isLoading = userLoading.fetchUsers || voteLoading.fetchVotes || projectLoading.fetchProjects
+  const isLoading = userLoading.fetchUsers;
 
   useEffect(() => {
     // 获取所有需要的数据
     fetchUsers()
-    fetchVotes()
-    fetchProjects()
-  }, [fetchUsers, fetchVotes, fetchProjects])
+  }, [])
 
   const handleToggleUserStatus = async () => {
     if (!user) return
@@ -238,64 +216,8 @@ export default function UserDetailPage() {
           </CardContent>
         </Card>
 
-        {/* 投票记录 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Vote className="h-5 w-5" />
-              <span>投票记录</span>
-              <Badge variant="secondary">{userVotes.length}</Badge>
-            </CardTitle>
-            <CardDescription>
-              该用户的所有投票记录
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {userVotes.length > 0 ? (
-              <div className="space-y-3">
-                {userVotes.map((vote) => (
-                  <div
-                    key={vote.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
-                  >
-                    <div className="flex-1">
-                      <p className="font-medium">{vote.projectTitle}</p>
-                      <p className="text-sm text-gray-500">
-                        项目ID: {vote.projectId}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-500">
-                        {new Date(vote.createdAt).toLocaleString('zh-CN')}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <Vote className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <p className="text-gray-500">该用户还没有投票记录</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* 统计信息 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">总投票数</CardTitle>
-              <Vote className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{userVotes.length}</div>
-              <p className="text-xs text-muted-foreground">
-                累计投票次数
-              </p>
-            </CardContent>
-          </Card>
-          
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">账户状态</CardTitle>

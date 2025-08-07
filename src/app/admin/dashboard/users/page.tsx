@@ -42,7 +42,7 @@ export default function UsersPage() {
         {/* ActionBar - 标题、搜索和操作按钮 */}
         <ActionBar
           title="用户管理"
-          description="管理所有注册用户，可以屏蔽或恢复用户的投票权限"
+          description="管理所有注册用户"
           showSearch={true}
           searchPlaceholder="搜索用户名、邮箱或姓名..."
           searchValue={searchTerm}
@@ -87,7 +87,7 @@ export default function UsersPage() {
                 {isLoading ? '...' : currentStats.active}
               </div>
               <p className="text-xs text-muted-foreground">
-                可正常投票的用户
+                正常用户
               </p>
             </CardContent>
           </Card>
@@ -102,7 +102,7 @@ export default function UsersPage() {
                 {isLoading ? '...' : currentStats.blocked}
               </div>
               <p className="text-xs text-muted-foreground">
-                被屏蔽无法投票的用户
+                被屏蔽的用户
               </p>
             </CardContent>
           </Card>

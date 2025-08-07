@@ -177,13 +177,7 @@ export const useAdminWebSocketStore = create<AdminWebSocketStore>((set, get) => 
         get().setOnlineUserCount(data.count)
       })
       
-      newSocket.on('vote-update', (data: VoteUpdateData) => {
-        console.log('收到投票更新:', data)
-        if (voteUpdateCallback) {
-          voteUpdateCallback(data)
-        }
-      })
-      
+
       newSocket.on('system-status-update', (data: SystemStatusUpdateData) => {
         console.log('收到系统状态更新:', data)
         if (systemStatusCallback) {

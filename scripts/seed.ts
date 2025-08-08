@@ -2,6 +2,7 @@ import { config } from 'dotenv'
 import { resolve } from 'path'
 import { db } from '../src/lib/db'
 import { adminUsers } from '../src/lib/db/schema'
+import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 
 // 加载环境变量

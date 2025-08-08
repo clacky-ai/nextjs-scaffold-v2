@@ -1,0 +1,5 @@
+run_command: "npm run dev"
+dependency_command: "npm install"
+linter_config:
+  - command: "npm run lint"
+    description: "Run Next.js ESLint"

@@ -7,13 +7,8 @@ set -e  # Exit immediately on error
 
 echo "Starting installation script..."
 
-# Step 1: Execute npm install
-echo "Step 1: Executing npm install..."
-npm install
-echo "✓ npm install completed"
-
-# Step 2: Move .1024 file to /home/runner/.clackyai/.environments.yaml
-echo "Step 2: Moving configuration file..."
+# Step 1: Move .1024 file to /home/runner/.clackyai/.environments.yaml
+echo "Step 1: Moving configuration file..."
 if ! mkdir -p /home/runner/.clackyai/; then
     echo "❌ Failed to create directory /home/runner/.clackyai/"
     echo "Suggestion: Agent please check the 'Handling environment configuration file' playbook"
@@ -28,13 +23,13 @@ if ! cp .1024 /home/runner/.clackyai/.environments.yaml; then
 fi
 echo "✓ Configuration file move completed"
 
-# Step 3: Check PostgreSQL database connection
-echo "Step 3: Checking PostgreSQL database connection..."
-if ! command -v psql &> /dev/null; then
-    echo "❌ psql command not found"
-    echo "Please check if PostgreSQL is installed"
-    echo "Suggestion: Please check middleware-related playbook to install postgres database"
-    exit 1
+# Step 2: Check PostgreSQL database connection
+echo "Step 2: Checking PostgreSQL database connection..."
+if which psql >/dev/null 2>&1; then
+  echo "psql exists"
+else
+  echo "psql not found"
+  echo "Suggestion: Please check middleware-related playbook to install postgres database and run install.sh again"
 fi
 
 # Check if .env.local file exists, copy from .env.example if it doesn't
@@ -60,13 +55,7 @@ else
     exit 1
 fi
 
-# Set database connection parameters (use default values if environment variables are not set)
-DB_HOST=${DB_HOST:-localhost}
-DB_PORT=${DB_PORT:-5432}
-DB_USER=${DB_USER:-postgres}
-DB_PASSWORD=${DB_PASSWORD:-123456}
-DB_NAME=${DB_NAME:-voting_system}
-
+# Set database connection parameters
 echo "Attempting to connect to database: $DB_HOST:$DB_PORT/$DB_NAME (user: $DB_USER)"
 
 # Attempt to connect to database
@@ -74,45 +63,37 @@ if ! PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d
     echo "❌ PostgreSQL database connection failed"
     echo "Connection parameters: Host=$DB_HOST, Port=$DB_PORT, User=$DB_USER, Database=$DB_NAME"
     echo "Please check if database service is running and connection parameters are correct"
-    echo "Suggestion: Agent please check middleware-related playbook to install postgres database"
+    echo "Suggestion: Agent please check middleware-related playbook to install postgres database and run install.sh again"
     exit 1
 fi
 echo "✓ PostgreSQL database connection successful"
 
-# Step 4: Execute database initialization
-echo "Step 4: Executing database initialization..."
-npx tsx scripts/init-db.ts
+# Step 3: Execute database initialization
+echo "Step 3: Executing database initialization..."
+npm run db:init
 echo "✓ Database initialization completed"
 
-# Step 5: Execute npm run build
-echo "Step 5: Executing build..."
-npm run build
-echo "✓ Build completed"
-
-# Step 6: Test server connection (server needs to be started first)
-echo "Step 6: Testing server connection..."
-echo "Note: Please ensure server is running on localhost:3000"
-if curl -s http://localhost:3000/ > /dev/null; then
-    echo "✓ Server connection test passed"
-else
-    echo "⚠️ Server connection test failed, please check if server is running"
-    echo "You can run 'npm run dev' to start the development server"
-fi
-
-# Step 7: Execute ls
-echo "Step 7: Listing current directory files..."
+# Step 4: Execute ls
+echo "Step 4: Listing current directory files..."
 ls -la
 echo "✓ Directory listing completed"
 
-# Step 8: Print package.json file to console
-echo "Step 8: Displaying package.json content..."
+# Step 5: Print package.json file to console
+echo "Step 5: Displaying package.json content..."
 echo "==================== package.json ===================="
 cat package.json
 echo "==================== package.json end ===================="
 echo "✓ package.json display completed"
 
-# Step 9: Clean up files
-echo "Step 9: Cleaning up files..."
+# Step 6: Print tailwind.config.ts file to console
+echo "Step 6: Displaying tailwind.config.ts content..."
+echo "==================== tailwind.config.ts ===================="
+cat tailwind.config.ts
+echo "==================== tailwind.config.ts end ===================="
+echo "✓ tailwind.config.ts display completed"
+
+# Step 7: Clean up files
+echo "Step 7: Cleaning up files..."
 
 # Delete .1024 file
 if [ -f ".1024" ]; then

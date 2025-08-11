@@ -67,7 +67,7 @@ async function runMigrations() {
     
     // 执行迁移
     console.log('执行数据库迁移...')
-    const migrateResult = await execAsync('npx drizzle-kit push', {
+    const migrateResult = await execAsync('npx drizzle-kit migrate', {
       cwd: process.cwd()
     })
     if (migrateResult.stdout) {

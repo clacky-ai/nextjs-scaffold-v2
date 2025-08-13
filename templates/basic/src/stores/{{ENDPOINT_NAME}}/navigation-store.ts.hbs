@@ -1,0 +1,99 @@
+{{#if hasSidebar}}
+import { create } from 'zustand'
+
+interface NavigationItem {
+  id: string
+  label: string
+  path: string
+  icon?: string
+  badge?: number
+}
+
+interface {{pascalCase name}}NavigationState {
+  activeItem: string
+  sidebarOpen: boolean
+  navigationItems: NavigationItem[]
+}
+
+interface {{pascalCase name}}NavigationActions {
+  setActiveItem: (itemId: string) => void
+  setSidebarOpen: (open: boolean) => void
+  toggleSidebar: () => void
+  updateBadge: (itemId: string, count: number) => void
+}
+
+export const {{camelCase name}}NavigationStore = create<{{pascalCase name}}NavigationState & {{pascalCase name}}NavigationActions>((set, get) => ({
+  // State
+  activeItem: 'dashboard',
+  sidebarOpen: true,
+  navigationItems: [
+    {
+      id: 'dashboard',
+      label: '仪表板',
+      path: '{{#if useRouteGroup}}/{{defaultPage}}{{else}}{{pathPrefix}}/{{defaultPage}}{{/if}}',
+      icon: 'LayoutDashboard'
+    },
+    {{#if (eq name 'merchant')}}
+    {
+      id: 'products',
+      label: '商品管理',
+      path: '{{#if useRouteGroup}}/dashboard/products{{else}}{{pathPrefix}}/dashboard/products{{/if}}',
+      icon: 'Package'
+    },
+    {
+      id: 'orders',
+      label: '订单管理',
+      path: '{{#if useRouteGroup}}/dashboard/orders{{else}}{{pathPrefix}}/dashboard/orders{{/if}}',
+      icon: 'ShoppingCart'
+    },
+    {{#if roles}}
+    {
+      id: 'analytics',
+      label: '数据分析',
+      path: '{{#if useRouteGroup}}/dashboard/analytics{{else}}{{pathPrefix}}/dashboard/analytics{{/if}}',
+      icon: 'BarChart'
+    },
+    {{/if}}
+    {{else if (eq name 'admin')}}
+    {
+      id: 'users',
+      label: '用户管理',
+      path: '{{#if useRouteGroup}}/dashboard/users{{else}}{{pathPrefix}}/dashboard/users{{/if}}',
+      icon: 'Users'
+    },
+    {
+      id: 'merchants',
+      label: '商家管理',
+      path: '{{#if useRouteGroup}}/dashboard/merchants{{else}}{{pathPrefix}}/dashboard/merchants{{/if}}',
+      icon: 'Store'
+    },
+    {
+      id: 'system',
+      label: '系统设置',
+      path: '{{#if useRouteGroup}}/dashboard/system{{else}}{{pathPrefix}}/dashboard/system{{/if}}',
+      icon: 'Settings'
+    },
+    {{/if}}
+    {
+      id: 'settings',
+      label: '设置',
+      path: '{{#if useRouteGroup}}/dashboard/settings{{else}}{{pathPrefix}}/dashboard/settings{{/if}}',
+      icon: 'Settings'
+    },
+  ],
+
+  // Actions
+  setActiveItem: (itemId) => set({ activeItem: itemId }),
+  setSidebarOpen: (sidebarOpen) => set({ sidebarOpen }),
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  updateBadge: (itemId, count) => 
+    set((state) => ({
+      navigationItems: state.navigationItems.map(item =>
+        item.id === itemId ? { ...item, badge: count } : item
+      )
+    })),
+}))
+{{else}}
+// {{displayName}}不需要导航状态管理
+export const {{camelCase name}}NavigationStore = null
+{{/if}}

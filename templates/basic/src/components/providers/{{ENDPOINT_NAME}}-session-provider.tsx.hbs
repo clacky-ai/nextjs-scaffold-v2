@@ -1,0 +1,20 @@
+'use client'
+
+import { SessionProvider } from 'next-auth/react'
+
+interface {{pascalCase name}}SessionProviderProps {
+  children: React.ReactNode
+}
+
+export function {{pascalCase name}}SessionProvider({ children }: {{pascalCase name}}SessionProviderProps) {
+  return (
+    <SessionProvider
+      {{#if (eq authType 'custom')}}
+      // 自定义认证配置
+      basePath="/api/{{name}}/auth"
+      {{/if}}
+    >
+      {children}
+    </SessionProvider>
+  )
+}

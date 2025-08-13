@@ -1,0 +1,6 @@
+import NextAuth from 'next-auth'
+import { {{camelCase name}}AuthOptions } from '@/lib/auth/{{name}}-auth'
+
+const handler = NextAuth({{camelCase name}}AuthOptions)
+
+export { handler as GET, handler as POST }

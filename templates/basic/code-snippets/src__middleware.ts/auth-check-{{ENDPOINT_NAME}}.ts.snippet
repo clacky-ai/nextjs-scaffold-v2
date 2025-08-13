@@ -1,0 +1,36 @@
+{
+  "targetFile": "src/middleware.ts",
+  "insertPosition": "function-body",
+  "order": 100
+}
+---
+// {{displayName}}路由保护
+if (pathname.startsWith('{{#if useRouteGroup}}/{{else}}{{pathPrefix}}{{/if}}')) {
+  {{#if hasUnauthorized}}
+  // 检查是否为公开路径
+  const {{camelCase name}}PublicPaths = [
+    '{{#if useRouteGroup}}/{{else}}{{pathPrefix}}{{/if}}',
+    '{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}'{{#if hasSignUp}},
+    '{{#if useRouteGroup}}/sign-up{{else}}{{pathPrefix}}/sign-up{{/if}}'{{/if}}
+  ]
+  const isPublicPath = {{camelCase name}}PublicPaths.some(path => 
+    pathname === path || pathname.startsWith(path + '/')
+  )
+  if (!isPublicPath) {
+  {{else}}
+  // 检查是否为登录页面（必须公开）
+  const {{camelCase name}}AuthPaths = [
+    '{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}'{{#if hasSignUp}},
+    '{{#if useRouteGroup}}/sign-up{{else}}{{pathPrefix}}/sign-up{{/if}}'{{/if}}
+  ]
+  const isAuthPath = {{camelCase name}}AuthPaths.includes(pathname)
+  if (!isAuthPath) {
+  {{/if}}
+    // 检查{{displayName}}认证
+    const {{camelCase name}}Token = req.cookies.get('{{cookiePrefix}}-session-token')?.value{{#if (eq authType 'nextauth')}} || req.cookies.get('__Secure-{{cookiePrefix}}-session-token')?.value{{/if}}
+    
+    if (!{{camelCase name}}Token) {
+      return NextResponse.redirect(new URL('{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}', req.url))
+    }
+  }
+}

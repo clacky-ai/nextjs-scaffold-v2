@@ -1,0 +1,28 @@
+import { create } from 'zustand'
+import { {{pascalCase name}}User } from '@/lib/db/schema/{{kebabCase name}}-users'
+
+interface {{pascalCase name}}AuthState {
+  user: {{pascalCase name}}User | null
+  isLoading: boolean
+  error: string | null
+}
+
+interface {{pascalCase name}}AuthActions {
+  setUser: (user: {{pascalCase name}}User | null) => void
+  setLoading: (loading: boolean) => void
+  setError: (error: string | null) => void
+  clearAuth: () => void
+}
+
+export const {{camelCase name}}AuthStore = create<{{pascalCase name}}AuthState & {{pascalCase name}}AuthActions>((set) => ({
+  // State
+  user: null,
+  isLoading: false,
+  error: null,
+
+  // Actions
+  setUser: (user) => set({ user }),
+  setLoading: (isLoading) => set({ isLoading }),
+  setError: (error) => set({ error }),
+  clearAuth: () => set({ user: null, error: null, isLoading: false }),
+}))

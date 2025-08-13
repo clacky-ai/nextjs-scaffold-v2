@@ -1,0 +1,42 @@
+import { {{pascalCase name}}User } from '@/lib/db/schema/{{kebabCase name}}-users'
+
+// 认证相关类型
+export interface {{pascalCase name}}Session {
+  user: {{pascalCase name}}User
+  expires: string
+}
+
+// 用户角色类型
+{{#if roles}}
+export type {{pascalCase name}}Role = {{#each roles}}'{{this}}'{{#unless @last}} | {{/unless}}{{/each}}
+
+export interface {{pascalCase name}}UserWithRole extends {{pascalCase name}}User {
+  role: {{pascalCase name}}Role
+}
+{{/if}}
+
+// 通用响应类型
+export interface {{pascalCase name}}ApiResponse<T = any> {
+  success: boolean
+  data?: T
+  message?: string
+  error?: string
+}
+
+// 分页类型
+export interface {{pascalCase name}}PaginationParams {
+  page: number
+  limit: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+}
+
+export interface {{pascalCase name}}PaginatedResponse<T> {
+  data: T[]
+  pagination: {
+    page: number
+    limit: number
+    total: number
+    totalPages: number
+  }
+}

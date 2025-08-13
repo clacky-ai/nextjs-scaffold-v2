@@ -1,0 +1,178 @@
+{{#if isDataDriven}}
+'use client'
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+
+export default function {{pascalCase name}}Dashboard() {
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">{{displayName}}仪表板</h1>
+          <p className="text-gray-600">欢迎回来！查看您的最新数据</p>
+        </div>
+        <Button>刷新数据</Button>
+      </div>
+
+      {/* 统计卡片 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">总览数据</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">1,234</div>
+            <p className="text-xs text-muted-foreground">
+              +20.1% 较上月
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">活跃数据</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">+567</div>
+            <p className="text-xs text-muted-foreground">
+              +10.5% 较上月
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">转化率</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">12.5%</div>
+            <p className="text-xs text-muted-foreground">
+              +2.1% 较上月
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">收入</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">¥89,400</div>
+            <p className="text-xs text-muted-foreground">
+              +15.3% 较上月
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* 最近活动 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>最近活动</CardTitle>
+          <CardDescription>
+            查看最新的系统活动和更新
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">新的数据已更新</p>
+                <p className="text-xs text-gray-600">2分钟前</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-green-600 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">系统运行正常</p>
+                <p className="text-xs text-gray-600">5分钟前</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+{{else}}
+'use client'
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { useSession } from 'next-auth/react'
+
+export default function {{pascalCase name}}Account() {
+  const { data: session } = useSession()
+
+  return (
+    <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">个人中心</h1>
+          <p className="text-gray-600">管理您的账户信息和偏好设置</p>
+        </div>
+      </div>
+
+      {/* 个人信息卡片 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>个人信息</CardTitle>
+          <CardDescription>
+            查看和编辑您的基本信息
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700">姓名</label>
+              <p className="text-gray-900">{session?.user?.name || '未设置'}</p>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">邮箱</label>
+              <p className="text-gray-900">{session?.user?.email || '未设置'}</p>
+            </div>
+          </div>
+          <Button variant="outline">编辑信息</Button>
+        </CardContent>
+      </Card>
+
+      {/* 快速操作 */}
+      <Card>
+        <CardHeader>
+          <CardTitle>快速操作</CardTitle>
+          <CardDescription>
+            常用功能快速入口
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {{#if (eq name 'customer')}}
+            <Button variant="outline" className="h-20">
+              查看订单
+            </Button>
+            <Button variant="outline" className="h-20">
+              收藏商品
+            </Button>
+            <Button variant="outline" className="h-20">
+              地址管理
+            </Button>
+            {{else}}
+            <Button variant="outline" className="h-20">
+              数据概览
+            </Button>
+            <Button variant="outline" className="h-20">
+              设置管理
+            </Button>
+            <Button variant="outline" className="h-20">
+              帮助支持
+            </Button>
+            {{/if}}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+{{/if}}

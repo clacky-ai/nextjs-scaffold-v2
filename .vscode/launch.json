@@ -43,6 +43,22 @@
       },
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Debug render.ts with tsx",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/templates/render.ts",
+      "runtimeExecutable": "tsx",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+          // Node.js internal core modules
+          "<node_internals>/**",
+
+          // Ignore all dependencies (optional)
+          "${workspaceFolder}/node_modules/**",
+      ],
     }
   ]
 }

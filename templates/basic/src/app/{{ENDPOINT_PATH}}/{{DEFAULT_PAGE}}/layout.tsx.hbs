@@ -1,0 +1,38 @@
+'use client'
+
+import { {{pascalCase name}}AuthGuard } from '@/components/{{name}}/{{name}}-auth-guard'
+{{#if hasSidebar}}
+import { {{pascalCase name}}Sidebar } from '@/components/{{name}}/{{name}}-sidebar'
+{{/if}}
+{{#if hasNavigation}}
+import { {{pascalCase name}}Nav } from '@/components/{{name}}/{{name}}-nav'
+{{/if}}
+
+export default function {{pascalCase name}}{{pascalCase defaultPage}}Layout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <{{pascalCase name}}AuthGuard>
+      <div className="min-h-screen bg-gray-50">
+        {{#if hasNavigation}}
+        <{{pascalCase name}}Nav />
+        {{/if}}
+        
+        {{#if hasSidebar}}
+        <div className="flex">
+          <{{pascalCase name}}Sidebar />
+          <main className="flex-1 p-6">
+            {children}
+          </main>
+        </div>
+        {{else}}
+        <main className="container mx-auto px-4 py-8">
+          {children}
+        </main>
+        {{/if}}
+      </div>
+    </{{pascalCase name}}AuthGuard>
+  )
+}

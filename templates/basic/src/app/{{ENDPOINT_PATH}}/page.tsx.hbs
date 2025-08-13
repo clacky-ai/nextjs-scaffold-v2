@@ -1,0 +1,53 @@
+{{#if hasUnauthorized}}
+{{#if hasNavigation}}
+import { {{pascalCase name}}Nav } from '@/components/{{name}}/{{name}}-nav'
+{{/if}}
+
+export default function {{pascalCase name}}HomePage() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {{#if hasNavigation}}
+      <{{pascalCase name}}Nav />
+      {{/if}}
+      
+      <div className="space-y-8 container mx-auto px-4 py-8">
+        <section className="text-center py-20">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            欢迎来到{{displayName}}
+          </h1>
+          <p className="text-xl text-gray-600 mb-8">
+            {{#if (eq name 'customer')}}
+            发现最优质的咖啡豆和器具
+            {{else}}
+            专业的管理平台
+            {{/if}}
+          </p>
+          <div className="space-x-4">
+            <a 
+              href="{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}"
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+            >
+              立即登录
+            </a>
+            {{#if hasSignUp}}
+            <a 
+              href="{{#if useRouteGroup}}/sign-up{{else}}{{pathPrefix}}/sign-up{{/if}}"
+              className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50"
+            >
+              注册账号
+            </a>
+            {{/if}}
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}
+{{else}}
+import { redirect } from 'next/navigation'
+
+export default function {{pascalCase name}}HomePage() {
+  // {{displayName}}无公开页面，直接重定向到登录
+  redirect('{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}')
+}
+{{/if}}

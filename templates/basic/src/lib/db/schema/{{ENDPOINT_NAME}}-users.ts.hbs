@@ -1,0 +1,34 @@
+import { pgTable, text, timestamp, boolean, uuid, varchar } from 'drizzle-orm/pg-core'
+
+// {{displayName}}用户表
+export const {{tableName}} = pgTable('{{snakeCase tableName}}', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  {{#if (eq loginField 'email')}}
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  {{else}}
+  username: varchar('username', { length: 100 }).notNull().unique(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  {{/if}}
+  password: text('password').notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  
+  {{#if (eq name 'customer')}}
+  phone: varchar('phone', { length: 20 }),
+  address: text('address'),
+  isBlocked: boolean('is_blocked').default(false).notNull(),
+  {{else if (eq name 'merchant')}}
+  companyName: varchar('company_name', { length: 255 }).notNull(),
+  businessLicense: varchar('business_license', { length: 100 }),
+  isVerified: boolean('is_verified').default(false).notNull(),
+  isBlocked: boolean('is_blocked').default(false).notNull(),
+  {{else if (eq name 'admin')}}
+  permissions: text('permissions'), // JSON格式的权限配置
+  {{/if}}
+  
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+// 类型导出
+export type {{pascalCase name}}User = typeof {{tableName}}.$inferSelect
+export type New{{pascalCase name}}User = typeof {{tableName}}.$inferInsert

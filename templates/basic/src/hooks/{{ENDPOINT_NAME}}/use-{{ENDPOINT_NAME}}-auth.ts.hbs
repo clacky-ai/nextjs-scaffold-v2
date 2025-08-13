@@ -1,0 +1,33 @@
+import { useSession } from 'next-auth/react'
+import { {{camelCase name}}AuthStore } from '@/stores/{{name}}'
+import { {{pascalCase name}}User } from '@/lib/db/schema/{{kebabCase name}}-users'
+
+export function use{{pascalCase name}}Auth() {
+  const { data: session, status } = useSession()
+  const { user, setUser, setLoading, setError, clearAuth } = {{camelCase name}}AuthStore()
+
+  const isLoading = status === 'loading'
+  const isAuthenticated = !!session
+  const {{name}}User = session?.user as {{pascalCase name}}User | undefined
+
+  // 同步 session 到 store
+  if (session?.user && !user) {
+    setUser({{name}}User as {{pascalCase name}}User)
+  }
+
+  // 清除认证状态
+  if (!session && user) {
+    clearAuth()
+  }
+
+  return {
+    user: {{name}}User,
+    isLoading,
+    isAuthenticated,
+    session,
+    setUser,
+    setLoading,
+    setError,
+    clearAuth,
+  }
+}

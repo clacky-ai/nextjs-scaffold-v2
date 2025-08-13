@@ -1,0 +1,13 @@
+import { {{pascalCase name}}SessionProvider } from '@/components/providers/{{kebabCase name}}-session-provider'
+
+export default function {{pascalCase name}}Layout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <{{pascalCase name}}SessionProvider>
+      {children}
+    </{{pascalCase name}}SessionProvider>
+  )
+}

@@ -1,0 +1,59 @@
+{
+  "scenario": "卖咖啡独立网站",
+  "endpoints": [
+    {
+      "name": "customer",
+      "displayName": "顾客端",
+      "pathPrefix": "/(customer)",
+      "defaultPage": "account",
+      "hasSignUp": true,
+      "hasUnauthorized": true,
+      "useRouteGroup": true,
+      "authType": "nextauth",
+      "tableName": "users",
+      "loginField": "email",
+      "cookiePrefix": "customer",
+      "hasNavigation": true,
+      "hasSidebar": false,
+      "isDataDriven": false,
+      "isManagementEnd": false,
+      "roles": []
+    },
+    {
+      "name": "merchant",
+      "displayName": "商家端",
+      "pathPrefix": "/merchant",
+      "defaultPage": "dashboard",
+      "hasSignUp": true,
+      "hasUnauthorized": false,
+      "useRouteGroup": false,
+      "authType": "nextauth",
+      "tableName": "merchant_users",
+      "loginField": "email",
+      "cookiePrefix": "merchant",
+      "hasNavigation": false,
+      "hasSidebar": true,
+      "isDataDriven": true,
+      "isManagementEnd": true,
+      "roles": ["店长", "员工"]
+    },
+    {
+      "name": "admin",
+      "displayName": "超级管理员端",
+      "pathPrefix": "/admin",
+      "defaultPage": "dashboard",
+      "hasSignUp": false,
+      "hasUnauthorized": false,
+      "useRouteGroup": false,
+      "authType": "custom",
+      "tableName": "admin_users",
+      "loginField": "username",
+      "cookiePrefix": "admin",
+      "hasNavigation": false,
+      "hasSidebar": true,
+      "isDataDriven": true,
+      "isManagementEnd": true,
+      "roles": []
+    }
+  ]
+}

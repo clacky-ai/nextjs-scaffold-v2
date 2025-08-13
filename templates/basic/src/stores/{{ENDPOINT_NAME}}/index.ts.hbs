@@ -1,0 +1,5 @@
+export { {{camelCase name}}AuthStore } from './auth-store'
+{{#if hasSidebar}}
+export { {{camelCase name}}NavigationStore } from './navigation-store'
+{{/if}}
+export type * from './types'

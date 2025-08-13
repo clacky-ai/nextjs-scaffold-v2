@@ -1,0 +1,73 @@
+{{#if hasSignUp}}
+import { NextRequest, NextResponse } from 'next/server'
+import bcrypt from 'bcryptjs'
+import { db } from '@/lib/db'
+import { {{tableName}} } from '@/lib/db/schema/{{kebabCase name}}-users'
+import { eq } from 'drizzle-orm'
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { name, {{loginField}}, password{{#if (eq name 'merchant')}}, companyName{{/if}} } = body
+
+    // 验证必填字段
+    if (!name || !{{loginField}} || !password) {
+      return NextResponse.json(
+        { message: '请填写所有必填字段' },
+        { status: 400 }
+      )
+    }
+
+    // 检查{{#if (eq loginField 'email')}}邮箱{{else}}用户名{{/if}}是否已存在
+    const existingUser = await db.query.{{tableName}}.findFirst({
+      where: eq({{tableName}}.{{loginField}}, {{loginField}})
+    })
+
+    if (existingUser) {
+      return NextResponse.json(
+        { message: '{{#if (eq loginField 'email')}}邮箱{{else}}用户名{{/if}}已被使用' },
+        { status: 400 }
+      )
+    }
+
+    // 加密密码
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // 创建用户
+    const [newUser] = await db.insert({{tableName}}).values({
+      name,
+      {{loginField}},
+      password: hashedPassword,
+      {{#if (eq name 'merchant')}}
+      companyName,
+      isVerified: false,
+      {{/if}}
+    }).returning()
+
+    // 返回成功响应（不包含密码）
+    const { password: _, ...userWithoutPassword } = newUser
+
+    return NextResponse.json(
+      { 
+        message: '注册成功',
+        user: userWithoutPassword
+      },
+      { status: 201 }
+    )
+  } catch (error) {
+    console.error('Registration error:', error)
+    return NextResponse.json(
+      { message: '注册失败，请稍后重试' },
+      { status: 500 }
+    )
+  }
+}
+{{else}}
+// 该端不支持注册
+export async function POST() {
+  return NextResponse.json(
+    { message: '该端不支持用户注册' },
+    { status: 403 }
+  )
+}
+{{/if}}

@@ -1,0 +1,7 @@
+export { {{pascalCase name}}AuthGuard } from './{{name}}-auth-guard'
+{{#if hasNavigation}}
+export { {{pascalCase name}}Nav } from './{{name}}-nav'
+{{/if}}
+{{#if hasSidebar}}
+export { {{pascalCase name}}Sidebar } from './{{name}}-sidebar'
+{{/if}}

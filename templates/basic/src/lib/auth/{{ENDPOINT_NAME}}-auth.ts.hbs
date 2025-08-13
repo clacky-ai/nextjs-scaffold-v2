@@ -1,0 +1,111 @@
+import { NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import bcrypt from 'bcryptjs'
+import { db } from '../db'
+import { {{tableName}} } from '../db/schema/{{kebabCase name}}-users'
+import { eq } from 'drizzle-orm'
+
+export const {{camelCase name}}AuthOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      {{#if (eq authType 'custom')}}
+      id: '{{name}}-credentials',
+      name: '{{name}}-credentials',
+      {{else}}
+      name: 'credentials',
+      {{/if}}
+      credentials: {
+        {{loginField}}: { 
+          label: '{{#if (eq loginField 'email')}}Email{{else}}Username{{/if}}', 
+          type: '{{#if (eq loginField 'email')}}email{{else}}text{{/if}}' 
+        },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.{{loginField}} || !credentials?.password) {
+          return null
+        }
+
+        const user = await db.query.{{tableName}}.findFirst({
+          where: eq({{tableName}}.{{loginField}}, credentials.{{loginField}})
+        })
+
+        if (!user) {
+          return null
+        }
+
+        {{#if (or (eq name 'customer') (eq name 'merchant'))}}
+        // 检查用户是否被屏蔽
+        if (user.isBlocked) {
+          throw new Error('账号已被禁用')
+        }
+        {{/if}}
+
+        {{#if (eq name 'merchant')}}
+        // 检查商家是否已验证
+        if (!user.isVerified) {
+          throw new Error('账号尚未通过验证，请联系管理员')
+        }
+        {{/if}}
+
+        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+
+        if (!isPasswordValid) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          {{#if (eq loginField 'username')}}
+          username: user.username,
+          {{/if}}
+        }
+      }
+    })
+  ],
+  session: {
+    strategy: 'jwt',
+  },
+  pages: {
+    signIn: '{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}',
+  },
+  {{#if (eq authType 'custom')}}
+  cookies: {
+    sessionToken: {
+      name: '{{cookiePrefix}}-session-token',
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      }
+    },
+    csrfToken: {
+      name: '{{cookiePrefix}}-csrf-token',
+    }
+  },
+  {{/if}}
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+        {{#if (eq loginField 'username')}}
+        token.username = (user as any).username
+        {{/if}}
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id as string
+        {{#if (eq loginField 'username')}}
+        ;(session.user as any).username = token.username
+        {{/if}}
+      }
+      return session
+    },
+  },
+  secret: process.env.{{uppercaseSnakeCase name}}_NEXTAUTH_SECRET,
+}

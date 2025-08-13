@@ -1,0 +1,31 @@
+{
+  "targetFile": "src/middleware.ts",
+  "insertPosition": "endpoint-configs",
+  "order": 100
+}
+---
+  {
+    name: '{{name}}',
+    pathPrefix: '{{#if useRouteGroup}}/{{else}}{{pathPrefix}}{{/if}}',
+    apiPrefix: '/api/{{name}}',
+    cookieName: '{{cookiePrefix}}-session-token',
+    loginPath: '{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}',
+    publicPaths: [
+      {{#if hasUnauthorized}}
+      '{{#if useRouteGroup}}/{{else}}{{pathPrefix}}{{/if}}',
+      {{/if}}
+      '{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}'{{#if hasSignUp}},
+      '{{#if useRouteGroup}}/sign-up{{else}}{{pathPrefix}}/sign-up{{/if}}'{{/if}}
+    ],
+    publicApiPaths: [
+      {{#if hasUnauthorized}}
+      '/api/{{name}}/public-info'{{#if (eq name 'customer')}},
+      '/api/{{name}}/products'{{/if}}
+      {{/if}}
+    ],
+    authApiPaths: [
+      '/api/{{name}}/auth/[...nextauth]'{{#if hasSignUp}},
+      '/api/{{name}}/auth/register'{{/if}}
+    ],
+    hasSecureCookie: {{#if (eq authType 'nextauth')}}true{{else}}false{{/if}}
+  },

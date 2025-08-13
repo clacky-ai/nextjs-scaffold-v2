@@ -378,6 +378,9 @@ export const config = {
       case 'dependencies':
         fileContent = this.mergeDependencies(fileContent, snippet.content)
         break
+      case 'endpoint-configs':
+        fileContent = this.insertEndpointConfig(fileContent, snippet.content)
+        break
       default:
         console.warn(`Unknown insert position: ${snippet.config.insertPosition}`)
     }
@@ -451,6 +454,17 @@ export const config = {
     packageJson.dependencies = { ...packageJson.dependencies, ...newDeps }
 
     return JSON.stringify(packageJson, null, 2)
+  }
+
+  private insertEndpointConfig(content: string, snippet: string): string {
+    // 在 ENDPOINT_CONFIGS 数组中插入端配置
+    const configArrayPattern = /(const ENDPOINT_CONFIGS: EndpointConfig\[\] = \[)([\s\S]*?)(\];)/
+    
+    return content.replace(configArrayPattern, (match, start, existingConfigs, end) => {
+      // 如果已经有配置，在最后添加
+      const newConfig = existingConfigs.trim() ? existingConfigs + '\n  ' + snippet : '\n  ' + snippet
+      return start + newConfig + '\n' + end
+    })
   }
 
   private async ensureDir(dirPath: string) {

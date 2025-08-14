@@ -1,0 +1,42 @@
+{{#if hasUnauthorized}}
+export default function {{pascalCase name}}PublicHomePage() {
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-4">
+        Welcome to {{displayName}}
+      </h1>
+      <p className="text-lg text-gray-600 mb-6">
+        {{#if (eq name 'customer')}}
+        Discover our amazing products and services.
+        {{else if (eq name 'merchant')}}
+        Manage your business with our powerful tools.
+        {{else}}
+        {{displayName}} public homepage.
+        {{/if}}
+      </p>
+      
+      {{#if hasSignUp}}
+      <div className="space-x-4">
+        <a 
+          href="{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}" 
+          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+        >
+          Sign In
+        </a>
+        <a 
+          href="{{#if useRouteGroup}}/sign-up{{else}}{{pathPrefix}}/sign-up{{/if}}" 
+          className="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600"
+        >
+          Sign Up
+        </a>
+      </div>
+      {{/if}}
+    </div>
+  )
+}
+{{else}}
+// This endpoint does not have public pages
+export default function NotFound() {
+  return <div>Page not found</div>
+}
+{{/if}}

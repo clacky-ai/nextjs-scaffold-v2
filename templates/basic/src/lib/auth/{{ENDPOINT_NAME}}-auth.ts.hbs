@@ -8,12 +8,8 @@ import { eq } from 'drizzle-orm'
 export const {{camelCase name}}AuthOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      {{#if (eq authType 'custom')}}
       id: '{{name}}-credentials',
       name: '{{name}}-credentials',
-      {{else}}
-      name: 'credentials',
-      {{/if}}
       credentials: {
         {{loginField}}: { 
           label: '{{#if (eq loginField 'email')}}Email{{else}}Username{{/if}}', 

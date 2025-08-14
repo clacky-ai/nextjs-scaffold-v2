@@ -1,0 +1,175 @@
+{{#if hasSignUp}}
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+
+export default function {{pascalCase name}}SignUpPage() {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: ''
+  })
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  
+  const router = useRouter()
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError('')
+    setSuccess('')
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match')
+      setIsLoading(false)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/{{name}}/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setSuccess('Account created successfully! Please sign in.')
+        setTimeout(() => {
+          router.push('{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}')
+        }, 2000)
+      } else {
+        setError(data.error || 'Registration failed')
+      }
+    } catch (error) {
+      setError('An error occurred during registration')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-md">
+      <Card>
+        <CardHeader>
+          <CardTitle>{{displayName}} Sign Up</CardTitle>
+          <CardDescription>
+            Create your {{displayName}} account
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+            
+            {success && (
+              <Alert>
+                <AlertDescription>{success}</AlertDescription>
+              </Alert>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
+                name="name"
+                type="text"
+                value={formData.name}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </CardContent>
+          
+          <CardFooter className="flex flex-col space-y-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? 'Creating account...' : 'Sign Up'}
+            </Button>
+            
+            <p className="text-sm text-center text-gray-600">
+              Already have an account?{' '}
+              <a 
+                href="{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}" 
+                className="text-blue-600 hover:underline"
+              >
+                Sign in
+              </a>
+            </p>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  )
+}
+{{else}}
+// This endpoint does not support sign up
+export default function NotFound() {
+  return <div>Page not found</div>
+}
+{{/if}}

@@ -10,7 +10,7 @@
       "hasUnauthorized": true,
       "useRouteGroup": true,
       "authType": "nextauth",
-      "tableName": "users",
+      "tableName": "customer_users",
       "loginField": "email",
       "cookiePrefix": "customer",
       "hasNavigation": true,

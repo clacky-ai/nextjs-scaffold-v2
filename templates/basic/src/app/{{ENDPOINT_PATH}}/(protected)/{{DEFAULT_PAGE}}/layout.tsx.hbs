@@ -1,0 +1,34 @@
+import { {{pascalCase name}}AuthGuard } from '@/components/{{kebabCase name}}/{{kebabCase name}}-auth-guard'
+{{#if hasSidebar}}
+import { {{pascalCase name}}Sidebar } from '@/components/{{kebabCase name}}/{{kebabCase name}}-sidebar'
+{{/if}}
+
+export default function {{pascalCase name}}{{pascalCase defaultPage}}Layout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <{{pascalCase name}}AuthGuard>
+      {{#if hasSidebar}}
+      <div className="flex h-screen bg-gray-100">
+        <{{pascalCase name}}Sidebar />
+        <main className="flex-1 overflow-y-auto">
+          <div className="container mx-auto px-4 py-6">
+            {children}
+          </div>
+        </main>
+      </div>
+      {{else}}
+      <div className="min-h-screen bg-gray-50">
+        {{#if hasNavigation}}
+        <{{pascalCase name}}Nav />
+        {{/if}}
+        <main className="container mx-auto px-4 py-6">
+          {children}
+        </main>
+      </div>
+      {{/if}}
+    </{{pascalCase name}}AuthGuard>
+  )
+}

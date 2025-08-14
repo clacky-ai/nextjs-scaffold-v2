@@ -1,7 +1,7 @@
 import { config } from 'dotenv'
 import { resolve } from 'path'
 import { db } from '../src/lib/db'
-import { adminUsers, votingSystemStatus } from '../src/lib/db/schema'
+import { admin_users } from '../src/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 
@@ -18,7 +18,7 @@ async function seed() {
 
     let admin;
     try {
-      [admin] = await db.insert(adminUsers).values({
+      [admin] = await db.insert(admin_users).values({
         username: 'admin',
         password: hashedPassword,
         name: '系统管理员',
@@ -28,29 +28,13 @@ async function seed() {
     } catch (error: any) {
       if (error.cause?.code === '23505') {
         // 管理员已存在，获取现有管理员
-        const existingAdmin = await db.select().from(adminUsers).where(eq(adminUsers.username, 'admin')).limit(1)
+        const existingAdmin = await db.select().from(admin_users).where(eq(admin_users.username, 'admin')).limit(1)
         if (existingAdmin.length > 0) {
           admin = existingAdmin[0]
           console.log('ℹ️ 管理员账号已存在:', admin.username)
         } else {
           throw error
         }
-      } else {
-        throw error
-      }
-    }
-
-    // 创建投票系统状态（如果不存在）
-    try {
-      await db.insert(votingSystemStatus).values({
-        isVotingEnabled: true,
-        maxVotesPerUser: 3,
-        updatedBy: admin.id,
-      })
-      console.log('✅ 投票系统状态初始化成功')
-    } catch (error: any) {
-      if (error.cause?.code === '23505') {
-        console.log('ℹ️ 投票系统状态已存在')
       } else {
         throw error
       }

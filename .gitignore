@@ -2,6 +2,7 @@
 
 /rendered-output
 /rendered-output copy
+/rendered-output copy 2
 
 # dependencies
 /node_modules

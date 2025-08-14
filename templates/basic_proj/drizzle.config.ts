@@ -6,7 +6,7 @@ config({ path: resolve(process.cwd(), '.env.local') })
 config({ path: resolve(process.cwd(), '.env') })
 
 export default defineConfig({
-  schema: './src/lib/db/schema.ts',
+  schema: './src/lib/db/schema/index.ts',
   out: './src/lib/db/migrations',
   dialect: 'postgresql',
   dbCredentials: {

@@ -42,7 +42,7 @@ export default function {{pascalCase name}}SignUpPage() {
     }
 
     try {
-      const response = await fetch('/api/{{name}}/auth/register', {
+      const response = await fetch('{{#if useRouteGroup}}/api/auth/register{{else}}/api/{{name}}/auth/register{{/if}}', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

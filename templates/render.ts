@@ -381,6 +381,9 @@ export const config = {
       case 'endpoint-configs':
         fileContent = this.insertEndpointConfig(fileContent, snippet.content)
         break
+      case 'schema-exports':
+        fileContent = this.insertSchemaExport(fileContent, snippet.content)
+        break
       default:
         console.warn(`Unknown insert position: ${snippet.config.insertPosition}`)
     }
@@ -418,6 +421,9 @@ export const config = {
         dependencies: {}
       }
       fs.writeFileSync(targetPath, JSON.stringify(basePackage, null, 2))
+    } else if (targetPath.endsWith('schema/index.ts')) {
+      // 创建空的 schema index 文件
+      fs.writeFileSync(targetPath, '// Auto-generated schema exports\n')
     }
   }
 
@@ -454,6 +460,20 @@ export const config = {
     packageJson.dependencies = { ...packageJson.dependencies, ...newDeps }
 
     return JSON.stringify(packageJson, null, 2)
+  }
+
+  private insertSchemaExport(content: string, snippet: string): string {
+    // 在文件末尾添加 export 语句
+    const trimmedContent = content.trim()
+    const trimmedSnippet = snippet.trim()
+    
+    // 如果文件为空，直接返回 snippet
+    if (!trimmedContent) {
+      return trimmedSnippet + '\n'
+    }
+    
+    // 在文件末尾添加新的 export
+    return trimmedContent + '\n' + trimmedSnippet + '\n'
   }
 
   private insertEndpointConfig(content: string, snippet: string): string {

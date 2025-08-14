@@ -9,8 +9,9 @@ interface {{pascalCase name}}SessionProviderProps {
 export function {{pascalCase name}}SessionProvider({ children }: {{pascalCase name}}SessionProviderProps) {
   return (
     <SessionProvider
-      {{#if (eq authType 'custom')}}
-      // 自定义认证配置
+      {{#if useRouteGroup}}
+      basePath="/api/auth"
+      {{else}}
       basePath="/api/{{name}}/auth"
       {{/if}}
     >

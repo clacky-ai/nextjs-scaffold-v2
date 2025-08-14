@@ -27,19 +27,9 @@ export const {{camelCase name}}AuthOptions: NextAuthOptions = {
           return null
         }
 
-        {{#if (or (eq name 'customer') (eq name 'merchant'))}}
-        // 检查用户是否被屏蔽
         if (user.isBlocked) {
           throw new Error('账号已被禁用')
         }
-        {{/if}}
-
-        {{#if (eq name 'merchant')}}
-        // 检查商家是否已验证
-        if (!user.isVerified) {
-          throw new Error('账号尚未通过验证，请联系管理员')
-        }
-        {{/if}}
 
         const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
 
@@ -61,7 +51,6 @@ export const {{camelCase name}}AuthOptions: NextAuthOptions = {
   pages: {
     signIn: '{{#if useRouteGroup}}/sign-in{{else}}{{pathPrefix}}/sign-in{{/if}}',
   },
-  {{#if (eq authType 'custom')}}
   cookies: {
     sessionToken: {
       name: '{{cookiePrefix}}-session-token',
@@ -76,7 +65,6 @@ export const {{camelCase name}}AuthOptions: NextAuthOptions = {
       name: '{{cookiePrefix}}-csrf-token',
     }
   },
-  {{/if}}
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

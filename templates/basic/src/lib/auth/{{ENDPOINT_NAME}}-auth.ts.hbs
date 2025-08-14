@@ -11,19 +11,16 @@ export const {{camelCase name}}AuthOptions: NextAuthOptions = {
       id: '{{name}}-credentials',
       name: '{{name}}-credentials',
       credentials: {
-        {{loginField}}: { 
-          label: '{{#if (eq loginField 'email')}}Email{{else}}Username{{/if}}', 
-          type: '{{#if (eq loginField 'email')}}email{{else}}text{{/if}}' 
-        },
+        email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
       async authorize(credentials) {
-        if (!credentials?.{{loginField}} || !credentials?.password) {
+        if (!credentials?.email || !credentials?.password) {
           return null
         }
 
         const user = await db.query.{{tableName}}.findFirst({
-          where: eq({{tableName}}.{{loginField}}, credentials.{{loginField}})
+          where: eq({{tableName}}.email, credentials.email)
         })
 
         if (!user) {
@@ -54,9 +51,6 @@ export const {{camelCase name}}AuthOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          {{#if (eq loginField 'username')}}
-          username: user.username,
-          {{/if}}
         }
       }
     })
@@ -87,18 +81,12 @@ export const {{camelCase name}}AuthOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
-        {{#if (eq loginField 'username')}}
-        token.username = (user as any).username
-        {{/if}}
       }
       return token
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string
-        {{#if (eq loginField 'username')}}
-        ;(session.user as any).username = token.username
-        {{/if}}
       }
       return session
     },

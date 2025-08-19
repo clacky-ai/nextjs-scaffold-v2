@@ -9,8 +9,7 @@ import {
   boolean,
   unique,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod";
+import { relations } from 'drizzle-orm'
 
 // 用户表 - 支持实名制注册
 export const users = pgTable("users", {
@@ -111,47 +110,6 @@ export const sessions = pgTable("sessions", {
   expire: timestamp("expire").notNull(),
 });
 
-// Zod Schemas for validation
-export const insertUserSchema = createInsertSchema(users);
-
-export const registerUserSchema = z.object({
-  email: z.string().email("请输入有效的邮箱地址"),
-  password: z.string().min(6, "密码至少6位"),
-  realName: z.string().min(1, "请输入真实姓名"),
-  phone: z.string().optional(),
-  organization: z.string().optional(),
-  department: z.string().optional(),
-  position: z.string().optional(),
-});
-
-export const insertCategorySchema = createInsertSchema(categories, {
-  name: z.string().min(1, "分类名称不能为空"),
-  description: z.string().optional(),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, "请输入有效的颜色代码"),
-});
-
-export const insertProjectSchema = createInsertSchema(projects, {
-  title: z.string().min(1, "项目标题不能为空"),
-  description: z.string().min(10, "项目描述至少10个字符"),
-  demoUrl: z.string().url("请输入有效的演示链接").optional().or(z.literal("")),
-  repositoryUrl: z.string().url("请输入有效的代码仓库链接").optional().or(z.literal("")),
-  presentationUrl: z.string().url("请输入有效的演示文稿链接").optional().or(z.literal("")),
-  tags: z.array(z.string()).default([]),
-  teamMembers: z.array(z.object({
-    id: z.string(),
-    name: z.string(),
-    role: z.string().optional(),
-  })).default([]),
-});
-
-export const insertVoteSchema = createInsertSchema(votes, {
-  innovationScore: z.number().min(1).max(10),
-  technicalScore: z.number().min(1).max(10),
-  practicalityScore: z.number().min(1).max(10),
-  presentationScore: z.number().min(1).max(10),
-  teamworkScore: z.number().min(1).max(10),
-  comment: z.string().min(10, "评价至少10个字符"),
-});
 
 // Type exports
 export type User = typeof users.$inferSelect;

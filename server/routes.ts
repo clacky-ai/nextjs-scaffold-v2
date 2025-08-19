@@ -9,7 +9,6 @@ import {
   optionalAuth,
   type AuthenticatedRequest
 } from "./auth";
-import { registerUserSchema, insertProjectSchema, insertVoteSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
@@ -23,27 +22,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 用户注册
   app.post('/api/auth/register', async (req, res) => {
     try {
-      const validatedData = registerUserSchema.parse(req.body);
+      const data = {...req.body};
 
       // 检查邮箱是否已存在
-      const existingUser = await storage.getUserByEmail(validatedData.email);
+      const existingUser = await storage.getUserByEmail(data.email);
       if (existingUser) {
         return res.status(400).json({ message: "该邮箱已被注册" });
       }
 
       // 加密密码
-      const hashedPassword = await hashPassword(validatedData.password);
+      const hashedPassword = await hashPassword(data.password);
 
       // 创建用户
       const user = await storage.createUser({
         id: nanoid(),
-        email: validatedData.email,
+        email: data.email,
         password: hashedPassword,
-        realName: validatedData.realName,
-        phone: validatedData.phone || null,
-        organization: validatedData.organization || null,
-        department: validatedData.department || null,
-        position: validatedData.position || null,
+        realName: data.realName,
+        phone: data.phone || null,
+        organization: data.organization || null,
+        department: data.department || null,
+        position: data.position || null,
         isActive: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -270,9 +269,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // 提交投票
   app.post('/api/votes', authenticateToken, async (req: AuthenticatedRequest, res) => {
     try {
-      const validatedData = insertVoteSchema.parse(req.body);
+      const data = {...req.body};
       const userId = req.user!.id;
-      const { projectId } = validatedData;
+      const { projectId } = data;
 
       // 检查是否已投票
       const existingVote = await storage.getVote(userId, projectId);
@@ -305,15 +304,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // 计算总分
-      const totalScore = validatedData.innovationScore +
-                        validatedData.technicalScore +
-                        validatedData.practicalityScore +
-                        validatedData.presentationScore +
-                        validatedData.teamworkScore;
+      const totalScore = data.innovationScore +
+                        data.technicalScore +
+                        data.practicalityScore +
+                        data.presentationScore +
+                        data.teamworkScore;
 
       // 创建投票
       const vote = await storage.createVote({
-        ...validatedData,
+        ...data,
         id: nanoid(),
         userId,
         totalScore,

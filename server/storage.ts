@@ -4,7 +4,6 @@ import {
   categories,
   votes,
   userVoteStats,
-  projectFiles,
   type User,
   type InsertUser,
   type Project,
@@ -14,10 +13,8 @@ import {
   type Vote,
   type InsertVote,
   type UserVoteStats,
-  type ProjectFile,
-  type InsertProjectFile,
-} from "@shared/schema";
-import { db } from "./db";
+} from "server/db/schema";
+import { db } from "./db/index";
 import { eq, desc, and, count } from "drizzle-orm";
 
 export interface IStorage {

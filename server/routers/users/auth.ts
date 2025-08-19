@@ -3,8 +3,8 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
-import { storage } from '../storage';
-import { authenticateToken, type AuthenticatedRequest } from '../middleware/auth';
+import { storage } from '../../storage';
+import { authenticateToken, type AuthenticatedRequest } from '../../middleware/auth';
 
 const router = Router();
 
@@ -58,9 +58,18 @@ router.post('/register', async (req, res) => {
     // 生成JWT令牌
     const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '7d' });
 
+    // 设置HttpOnly cookie for user
+    res.cookie('user_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/'
+    });
+
     // 返回用户信息（不包含密码）
     const { password, ...userWithoutPassword } = newUser;
-    
+
     res.status(201).json({
       message: '注册成功',
       user: userWithoutPassword,
@@ -104,9 +113,18 @@ router.post('/login', async (req, res) => {
     // 生成JWT令牌
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
 
+    // 设置HttpOnly cookie for user
+    res.cookie('user_token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/'
+    });
+
     // 返回用户信息（不包含密码）
     const { password, ...userWithoutPassword } = user;
-    
+
     res.json({
       message: '登录成功',
       user: userWithoutPassword,
@@ -143,8 +161,8 @@ router.get('/me', authenticateToken, async (req: AuthenticatedRequest, res) => {
 
 // 用户登出
 router.post('/logout', authenticateToken, async (req: AuthenticatedRequest, res) => {
-  // 简单实现：客户端删除令牌即可
-  // 复杂实现：可以维护令牌黑名单
+  // 清除用户cookie
+  res.clearCookie('user_token', { path: '/' });
   res.json({ message: '登出成功' });
 });
 

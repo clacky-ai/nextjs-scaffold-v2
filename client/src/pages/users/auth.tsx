@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Vote, Users, Trophy, BarChart3 } from 'lucide-react';
-import { useAuth } from '@/stores/authStore';
+import { useAuth } from '@/stores/users/authStore';
 
 // 登录表单验证
 const loginSchema = z.object({

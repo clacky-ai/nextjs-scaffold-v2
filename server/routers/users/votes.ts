@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
-import { storage } from '../storage';
-import { authenticateToken, type AuthenticatedRequest } from '../middleware/auth';
+import { storage } from '../../storage';
+import { authenticateToken, type AuthenticatedRequest } from '../../middleware/auth';
 
 const router = Router();
 

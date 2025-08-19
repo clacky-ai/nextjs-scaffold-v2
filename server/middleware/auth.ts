@@ -10,8 +10,14 @@ export interface AuthenticatedRequest extends Request {
 
 export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    // 首先尝试从cookie中获取token
+    let token = req.cookies?.user_token;
+
+    // 如果cookie中没有，再尝试从Authorization header获取
+    if (!token) {
+      const authHeader = req.headers['authorization'];
+      token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+    }
 
     if (!token) {
       return res.status(401).json({ message: '访问令牌缺失' });

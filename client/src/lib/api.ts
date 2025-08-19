@@ -163,6 +163,14 @@ export const API_ENDPOINTS = {
     ME: '/api/auth/me',
     LOGOUT: '/api/auth/logout',
   },
+
+  // 管理员认证相关
+  ADMIN_AUTH: {
+    LOGIN: '/api/admin/auth/login',
+    REGISTER: '/api/admin/auth/register',
+    ME: '/api/admin/auth/me',
+    LOGOUT: '/api/admin/auth/logout',
+  },
   
   // 项目相关
   PROJECTS: {

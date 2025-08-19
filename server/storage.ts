@@ -1,5 +1,6 @@
 import {
   users,
+  adminUsers,
   categories,
   projects,
   votes,
@@ -7,6 +8,8 @@ import {
   scoreDimensions,
   type User,
   type InsertUser,
+  type AdminUser,
+  type InsertAdminUser,
   type Category,
   type InsertCategory,
   type Project,
@@ -72,12 +75,21 @@ interface VotingResults {
   totalProjects: number;
 }
 
+
+
 export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, user: Partial<InsertUser>): Promise<User>;
+
+  // Admin User operations
+  getAdminUser(id: string): Promise<AdminUser | undefined>;
+  getAdminUserByUsername(username: string): Promise<AdminUser | undefined>;
+  getAdminUserByEmail(email: string): Promise<AdminUser | undefined>;
+  createAdminUser(user: InsertAdminUser): Promise<AdminUser>;
+  updateAdminUser(id: string, user: Partial<InsertAdminUser>): Promise<AdminUser>;
 
   // Category operations
   getCategories(): Promise<Category[]>;
@@ -134,6 +146,44 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return user;
+  }
+
+  // Admin User operations
+  async getAdminUser(id: string): Promise<AdminUser | undefined> {
+    const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
+    return adminUser;
+  }
+
+  async getAdminUserByUsername(username: string): Promise<AdminUser | undefined> {
+    try {
+      const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
+      return adminUser;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async getAdminUserByEmail(email: string): Promise<AdminUser | undefined> {
+    try {
+      const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.email, email));
+      return adminUser;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async createAdminUser(userData: InsertAdminUser): Promise<AdminUser> {
+    const [adminUser] = await db.insert(adminUsers).values(userData).returning();
+    return adminUser;
+  }
+
+  async updateAdminUser(id: string, userData: Partial<InsertAdminUser>): Promise<AdminUser> {
+    const [adminUser] = await db
+      .update(adminUsers)
+      .set({ ...userData, updatedAt: new Date() })
+      .where(eq(adminUsers.id, id))
+      .returning();
+    return adminUser;
   }
 
   // Category operations

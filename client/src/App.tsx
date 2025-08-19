@@ -1,39 +1,59 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/components/providers/AuthProvider";
-import { useIsAuthenticated, useAuthLoading } from "@/stores/authStore";
-import AuthPage from "@/pages/auth";
-import HomePage from "@/pages/home";
-import ProjectsPage from "@/pages/projects";
-import VotingPage from "@/pages/voting";
-import ResultsPage from "@/pages/results";
-import MyVotesPage from "@/pages/my-votes";
-import MyProjectsPage from "@/pages/my-projects";
-import ProjectFormPage from "@/pages/project-form";
+import { AdminAuthProvider } from "@/components/providers/AdminAuthProvider";
+import { useIsAuthenticated, useAuthLoading } from "@/stores/users/authStore";
+import { useIsAdminAuthenticated, useAdminAuthLoading } from "@/stores/admin/authStore";
+
+// User pages
+import {
+  AuthPage,
+  LoginPage as UserLoginPage,
+  SignupPage as UserSignupPage,
+  HomePage,
+  ProjectsPage,
+  VotingPage,
+  ResultsPage,
+  MyVotesPage,
+  MyProjectsPage,
+  ProjectFormPage,
+} from "@/pages/users";
+
+// Admin pages
+import {
+  LoginPage as AdminLoginPage,
+  DashboardPage as AdminDashboardPage,
+} from "@/pages/admin";
+
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
 
-function Router() {
-  const isAuthenticated = useIsAuthenticated();
-  const isLoading = useAuthLoading();
+// Loading component
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-center">
+      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+      <p className="text-gray-600">加载中...</p>
+    </div>
+  </div>
+);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">加载中...</p>
-        </div>
-      </div>
-    );
+// Render function for user section
+function renderForUser(isUserAuthenticated: boolean, isUserLoading: boolean) {
+  if (isUserLoading) {
+    return <LoadingScreen />;
   }
 
   return (
     <Switch>
-      {isAuthenticated ? (
+      {/* Public routes */}
+      <Route path="/login" component={UserLoginPage} />
+      <Route path="/signup" component={UserSignupPage} />
+
+      {isUserAuthenticated ? (
         <>
           <Route path="/" component={HomePage} />
           <Route path="/projects" component={ProjectsPage} />
@@ -47,9 +67,9 @@ function Router() {
         </>
       ) : (
         <>
-          <Route path="/" component={AuthPage} />
+          <Route path="/" component={UserLoginPage} />
           <Route path="/auth" component={AuthPage} />
-          <Route component={AuthPage} />
+          <Route component={UserLoginPage} />
         </>
       )}
       <Route component={NotFound} />
@@ -57,14 +77,58 @@ function Router() {
   );
 }
 
+// Render function for admin section
+function renderForAdmin(isAdminAuthenticated: boolean, isAdminLoading: boolean) {
+  if (isAdminLoading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <Switch>
+      <Route path="/admin/login" component={AdminLoginPage} />
+      {isAdminAuthenticated ? (
+        <>
+          <Route path="/admin" component={AdminDashboardPage} />
+          <Route path="/admin/dashboard" component={AdminDashboardPage} />
+          {/* Add more admin routes here as needed */}
+        </>
+      ) : (
+        <Route component={AdminLoginPage} />
+      )}
+      <Route component={NotFound} />
+    </Switch>
+  );
+}
+
+// Main Router component
+function Router() {
+  const [location] = useLocation();
+  const isUserAuthenticated = useIsAuthenticated();
+  const isUserLoading = useAuthLoading();
+  const isAdminAuthenticated = useIsAdminAuthenticated();
+  const isAdminLoading = useAdminAuthLoading();
+
+  // Check if we're in admin section
+  const isAdminSection = location.startsWith('/admin');
+
+  // Render based on section
+  if (isAdminSection) {
+    return renderForAdmin(isAdminAuthenticated, isAdminLoading);
+  } else {
+    return renderForUser(isUserAuthenticated, isUserLoading);
+  }
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <AdminAuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </AdminAuthProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

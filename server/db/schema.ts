@@ -29,6 +29,17 @@ export const users = pgTable("users", {
   emailIdx: index("users_email_idx").on(table.email),
 }));
 
+// 管理员表
+export const adminUsers = pgTable('admin_users', {
+  id: varchar("id", { length: 255 }).primaryKey(),
+  username: varchar('username', { length: 100 }).notNull().unique(),
+  password: text('password').notNull(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
 // 项目分类表
 export const categories = pgTable("categories", {
   id: varchar("id", { length: 255 }).primaryKey(),
@@ -120,6 +131,9 @@ export const votingSessions = pgTable("voting_sessions", {
 // Type exports
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
+
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertAdminUser = typeof adminUsers.$inferInsert;
 
 export type Category = typeof categories.$inferSelect;
 export type InsertCategory = typeof categories.$inferInsert;

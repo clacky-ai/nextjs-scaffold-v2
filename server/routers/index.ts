@@ -1,18 +1,27 @@
 import { Express } from 'express';
 import { createServer, type Server } from 'http';
-import authRouter from './auth';
-import projectsRouter from './projects';
+import { authRouter as userAuthRouter, projectsRouter, votesRouter } from './users';
+import { authRouter as adminAuthRouter } from './admin';
 import categoriesRouter from './categories';
-import votesRouter from './votes';
 import scoreDimensionsRouter from './score-dimensions';
+import { authenticateToken } from '../middleware/auth';
+import { authenticateAdminToken } from '../middleware/admin-auth';
 
 export function registerRoutes(app: Express): Server {
-  // 注册所有路由
-  app.use('/api/auth', authRouter);
-  app.use('/api/projects', projectsRouter);
+  // 公开路由 (不需要认证)
+  app.use('/api/auth', userAuthRouter);
+  app.use('/api/admin/auth', adminAuthRouter);
   app.use('/api/categories', categoriesRouter);
-  app.use('/api/votes', votesRouter);
-  app.use('/api/score-dimensions', scoreDimensionsRouter);
+
+  // 用户认证路由 (需要用户认证)
+  app.use('/api/projects', authenticateToken, projectsRouter);
+  app.use('/api/votes', authenticateToken, votesRouter);
+  app.use('/api/score-dimensions', authenticateToken, scoreDimensionsRouter);
+
+  // 管理员认证路由 (需要管理员认证)
+  // 这里可以添加管理员专用的路由，例如：
+  // app.use('/api/admin/users', authenticateAdminToken, adminUsersRouter);
+  // app.use('/api/admin/projects', authenticateAdminToken, adminProjectsRouter);
 
   // 创建并返回 HTTP 服务器
   return createServer(app);

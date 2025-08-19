@@ -1,26 +1,20 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { apiRequestRaw, ApiError } from "./api";
 
-async function throwIfResNotOk(res: Response) {
-  if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
-  }
-}
-
+// 兼容原有的 apiRequest 函数
 export async function apiRequest(
   method: string,
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  return apiRequestRaw(method, url, data);
+}
 
-  await throwIfResNotOk(res);
-  return res;
+async function throwIfResNotOk(res: Response) {
+  if (!res.ok) {
+    const text = (await res.text()) || res.statusText;
+    throw new ApiError(`${res.status}: ${text}`, res.status, res);
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";

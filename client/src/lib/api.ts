@@ -1,0 +1,213 @@
+/**
+ * 统一的 API 客户端
+ * 支持认证、错误处理、类型安全等功能
+ */
+
+// 获取认证 token 的函数
+const getAuthToken = (): string | null => {
+  try {
+    const authStorage = localStorage.getItem('auth-storage');
+    if (!authStorage) return null;
+    
+    const authData = JSON.parse(authStorage);
+    return authData?.state?.token || null;
+  } catch {
+    return null;
+  }
+};
+
+// API 错误类
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public response?: Response
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+// API 请求配置
+interface ApiRequestConfig {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  url: string;
+  data?: unknown;
+  headers?: Record<string, string>;
+  requireAuth?: boolean;
+  token?: string; // 可以手动传入 token
+}
+
+// 基础 API 请求函数
+async function baseApiRequest(config: ApiRequestConfig): Promise<Response> {
+  const { method, url, data, headers = {}, requireAuth = false, token } = config;
+
+  // 构建请求头
+  const requestHeaders: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...headers,
+  };
+
+  // 添加认证头
+  if (requireAuth || token) {
+    const authToken = token || getAuthToken();
+    if (authToken) {
+      requestHeaders['Authorization'] = `Bearer ${authToken}`;
+    } else if (requireAuth) {
+      throw new ApiError('用户未登录', 401);
+    }
+  }
+
+  // 发送请求
+  const response = await fetch(url, {
+    method,
+    headers: requestHeaders,
+    body: data ? JSON.stringify(data) : undefined,
+    credentials: 'include',
+  });
+
+  // 检查响应状态
+  if (!response.ok) {
+    let errorMessage = response.statusText;
+    
+    try {
+      const errorData = await response.json();
+      errorMessage = errorData.message || errorMessage;
+    } catch {
+      // 如果无法解析 JSON，使用默认错误信息
+    }
+    
+    throw new ApiError(errorMessage, response.status, response);
+  }
+
+  return response;
+}
+
+// 返回 JSON 数据的 API 请求
+export async function apiRequest<T = any>(config: ApiRequestConfig): Promise<T> {
+  const response = await baseApiRequest(config);
+  return response.json();
+}
+
+// 返回 Response 对象的 API 请求（兼容原有的 queryClient）
+export async function apiRequestRaw(
+  method: string,
+  url: string,
+  data?: unknown
+): Promise<Response> {
+  return baseApiRequest({
+    method: method as any,
+    url,
+    data,
+  });
+}
+
+// 带认证的 API 请求
+export async function apiRequestWithAuth<T = any>(
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+  url: string,
+  data?: unknown,
+  token?: string
+): Promise<T> {
+  return apiRequest<T>({
+    method,
+    url,
+    data,
+    requireAuth: true,
+    token,
+  });
+}
+
+// 便捷的 HTTP 方法
+export const api = {
+  get: <T = any>(url: string, requireAuth = false): Promise<T> =>
+    apiRequest<T>({ method: 'GET', url, requireAuth }),
+
+  post: <T = any>(url: string, data?: unknown, requireAuth = false): Promise<T> =>
+    apiRequest<T>({ method: 'POST', url, data, requireAuth }),
+
+  put: <T = any>(url: string, data?: unknown, requireAuth = false): Promise<T> =>
+    apiRequest<T>({ method: 'PUT', url, data, requireAuth }),
+
+  delete: <T = any>(url: string, requireAuth = false): Promise<T> =>
+    apiRequest<T>({ method: 'DELETE', url, requireAuth }),
+
+  patch: <T = any>(url: string, data?: unknown, requireAuth = false): Promise<T> =>
+    apiRequest<T>({ method: 'PATCH', url, data, requireAuth }),
+};
+
+// 带认证的便捷方法
+export const authApi = {
+  get: <T = any>(url: string, token?: string): Promise<T> =>
+    apiRequestWithAuth<T>('GET', url, undefined, token),
+
+  post: <T = any>(url: string, data?: unknown, token?: string): Promise<T> =>
+    apiRequestWithAuth<T>('POST', url, data, token),
+
+  put: <T = any>(url: string, data?: unknown, token?: string): Promise<T> =>
+    apiRequestWithAuth<T>('PUT', url, data, token),
+
+  delete: <T = any>(url: string, token?: string): Promise<T> =>
+    apiRequestWithAuth<T>('DELETE', url, undefined, token),
+
+  patch: <T = any>(url: string, data?: unknown, token?: string): Promise<T> =>
+    apiRequestWithAuth<T>('PATCH', url, data, token),
+};
+
+// API 端点常量
+export const API_ENDPOINTS = {
+  // 认证相关
+  AUTH: {
+    LOGIN: '/api/auth/login',
+    REGISTER: '/api/auth/register',
+    ME: '/api/auth/me',
+    LOGOUT: '/api/auth/logout',
+  },
+  
+  // 项目相关
+  PROJECTS: {
+    LIST: '/api/projects',
+    CREATE: '/api/projects',
+    DETAIL: (id: string) => `/api/projects/${id}`,
+    UPDATE: (id: string) => `/api/projects/${id}`,
+    DELETE: (id: string) => `/api/projects/${id}`,
+    CAN_VOTE: (id: string) => `/api/projects/${id}/can-vote`,
+    VOTES: (id: string) => `/api/projects/${id}/votes`,
+  },
+  
+  // 分类相关
+  CATEGORIES: {
+    LIST: '/api/categories',
+  },
+  
+  // 投票相关
+  VOTES: {
+    STATS: '/api/votes/stats',
+    MY_VOTES: '/api/votes/my-votes',
+    RESULTS: '/api/votes/results',
+    SUBMIT: '/api/votes',
+  },
+  
+  // 评分维度
+  SCORE_DIMENSIONS: {
+    LIST: '/api/score-dimensions',
+  },
+} as const;
+
+// 类型定义
+export interface ApiResponse<T = any> {
+  data?: T;
+  message?: string;
+  success?: boolean;
+}
+
+// 分页响应类型
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+

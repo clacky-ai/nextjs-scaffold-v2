@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { api, authApi, API_ENDPOINTS } from '@/lib/api';
+import { api, API_ENDPOINTS } from '@/lib/api';
 
 export interface User {
   id: string;
@@ -122,7 +122,7 @@ export const useAuthStore = create<AuthState>()(
 
         // 异步调用登出API，但不等待结果
         if (token) {
-          authApi.post(API_ENDPOINTS.AUTH.LOGOUT, undefined, token).catch(console.error);
+          api.post(API_ENDPOINTS.AUTH.LOGOUT).catch(console.error);
         }
 
         // 立即清除本地状态
@@ -146,7 +146,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true, error: null });
 
-          const response = await authApi.get(API_ENDPOINTS.AUTH.ME, token);
+          const response = await api.get(API_ENDPOINTS.AUTH.ME);
 
           set({
             user: response.user,

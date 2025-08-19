@@ -34,13 +34,11 @@ interface ApiRequestConfig {
   url: string;
   data?: unknown;
   headers?: Record<string, string>;
-  requireAuth?: boolean;
-  token?: string; // 可以手动传入 token
 }
 
 // 基础 API 请求函数
 async function baseApiRequest(config: ApiRequestConfig): Promise<Response> {
-  const { method, url, data, headers = {}, requireAuth = false, token } = config;
+  const { method, url, data, headers = {} } = config;
 
   // 构建请求头
   const requestHeaders: Record<string, string> = {
@@ -48,14 +46,10 @@ async function baseApiRequest(config: ApiRequestConfig): Promise<Response> {
     ...headers,
   };
 
-  // 添加认证头
-  if (requireAuth || token) {
-    const authToken = token || getAuthToken();
-    if (authToken) {
-      requestHeaders['Authorization'] = `Bearer ${authToken}`;
-    } else if (requireAuth) {
-      throw new ApiError('用户未登录', 401);
-    }
+  // 自动添加认证头（如果 token 存在）
+  const authToken = getAuthToken();
+  if (authToken) {
+    requestHeaders['Authorization'] = `Bearer ${authToken}`;
   }
 
   // 发送请求
@@ -102,56 +96,22 @@ export async function apiRequestRaw(
   });
 }
 
-// 带认证的 API 请求
-export async function apiRequestWithAuth<T = any>(
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
-  url: string,
-  data?: unknown,
-  token?: string
-): Promise<T> {
-  return apiRequest<T>({
-    method,
-    url,
-    data,
-    requireAuth: true,
-    token,
-  });
-}
-
-// 便捷的 HTTP 方法
+// 统一的 API 方法（自动处理认证）
 export const api = {
-  get: <T = any>(url: string, requireAuth = false): Promise<T> =>
-    apiRequest<T>({ method: 'GET', url, requireAuth }),
+  get: <T = any>(url: string): Promise<T> =>
+    apiRequest<T>({ method: 'GET', url }),
 
-  post: <T = any>(url: string, data?: unknown, requireAuth = false): Promise<T> =>
-    apiRequest<T>({ method: 'POST', url, data, requireAuth }),
+  post: <T = any>(url: string, data?: unknown): Promise<T> =>
+    apiRequest<T>({ method: 'POST', url, data }),
 
-  put: <T = any>(url: string, data?: unknown, requireAuth = false): Promise<T> =>
-    apiRequest<T>({ method: 'PUT', url, data, requireAuth }),
+  put: <T = any>(url: string, data?: unknown): Promise<T> =>
+    apiRequest<T>({ method: 'PUT', url, data }),
 
-  delete: <T = any>(url: string, requireAuth = false): Promise<T> =>
-    apiRequest<T>({ method: 'DELETE', url, requireAuth }),
+  delete: <T = any>(url: string): Promise<T> =>
+    apiRequest<T>({ method: 'DELETE', url }),
 
-  patch: <T = any>(url: string, data?: unknown, requireAuth = false): Promise<T> =>
-    apiRequest<T>({ method: 'PATCH', url, data, requireAuth }),
-};
-
-// 带认证的便捷方法
-export const authApi = {
-  get: <T = any>(url: string, token?: string): Promise<T> =>
-    apiRequestWithAuth<T>('GET', url, undefined, token),
-
-  post: <T = any>(url: string, data?: unknown, token?: string): Promise<T> =>
-    apiRequestWithAuth<T>('POST', url, data, token),
-
-  put: <T = any>(url: string, data?: unknown, token?: string): Promise<T> =>
-    apiRequestWithAuth<T>('PUT', url, data, token),
-
-  delete: <T = any>(url: string, token?: string): Promise<T> =>
-    apiRequestWithAuth<T>('DELETE', url, undefined, token),
-
-  patch: <T = any>(url: string, data?: unknown, token?: string): Promise<T> =>
-    apiRequestWithAuth<T>('PATCH', url, data, token),
+  patch: <T = any>(url: string, data?: unknown): Promise<T> =>
+    apiRequest<T>({ method: 'PATCH', url, data }),
 };
 
 // API 端点常量

@@ -491,6 +491,28 @@ export class DatabaseStorage implements IStorage {
       totalProjects: publishedProjects.length,
     };
   }
+
+  // Admin-specific methods
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async getAllProjects(): Promise<Project[]> {
+    return await db.select().from(projects).orderBy(desc(projects.createdAt));
+  }
+
+  async getAllVotes(): Promise<Vote[]> {
+    return await db.select().from(votes).orderBy(desc(votes.createdAt));
+  }
+
+  async getVote(voteId: string): Promise<Vote | undefined> {
+    const [vote] = await db.select().from(votes).where(eq(votes.id, voteId));
+    return vote;
+  }
+
+  async deleteVote(voteId: string): Promise<void> {
+    await db.delete(votes).where(eq(votes.id, voteId));
+  }
 }
 
 export const storage = new DatabaseStorage();

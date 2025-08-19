@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import { createServer, type Server } from 'http';
 import { authRouter as userAuthRouter, projectsRouter, votesRouter } from './users';
-import { authRouter as adminAuthRouter } from './admin';
+import { authRouter as adminAuthRouter, users as adminUsersRouter, projects as adminProjectsRouter, votes as adminVotesRouter } from './admin';
 import categoriesRouter from './categories';
 import scoreDimensionsRouter from './score-dimensions';
 import { authenticateToken } from '../middleware/auth';
@@ -19,9 +19,9 @@ export function registerRoutes(app: Express): Server {
   app.use('/api/score-dimensions', authenticateToken, scoreDimensionsRouter);
 
   // 管理员认证路由 (需要管理员认证)
-  // 这里可以添加管理员专用的路由，例如：
-  // app.use('/api/admin/users', authenticateAdminToken, adminUsersRouter);
-  // app.use('/api/admin/projects', authenticateAdminToken, adminProjectsRouter);
+  app.use('/api/admin/users', authenticateAdminToken, adminUsersRouter);
+  app.use('/api/admin/projects', authenticateAdminToken, adminProjectsRouter);
+  app.use('/api/admin/votes', authenticateAdminToken, adminVotesRouter);
 
   // 创建并返回 HTTP 服务器
   return createServer(app);

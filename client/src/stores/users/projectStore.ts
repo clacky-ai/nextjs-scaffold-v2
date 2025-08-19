@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, authApi, API_ENDPOINTS } from '@/lib/api';
+import { api, API_ENDPOINTS } from '@/lib/api';
 
 export interface Category {
   id: string;
@@ -219,7 +219,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await authApi.post(API_ENDPOINTS.PROJECTS.CREATE, projectData);
+      const response = await api.post(API_ENDPOINTS.PROJECTS.CREATE, projectData);
 
       // 更新项目列表
       const { projects } = get();
@@ -242,7 +242,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await authApi.put(API_ENDPOINTS.PROJECTS.UPDATE(id), projectData);
+      const response = await api.put(API_ENDPOINTS.PROJECTS.UPDATE(id), projectData);
 
       // 更新项目列表和当前项目
       const { projects, currentProject } = get();
@@ -268,7 +268,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      await authApi.delete(API_ENDPOINTS.PROJECTS.DELETE(id));
+      await api.delete(API_ENDPOINTS.PROJECTS.DELETE(id));
 
       // 从项目列表中移除
       const { projects, currentProject } = get();

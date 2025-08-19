@@ -26,6 +26,10 @@ import {
 import {
   LoginPage as AdminLoginPage,
   DashboardPage as AdminDashboardPage,
+  UsersPage as AdminUsersPage,
+  ProjectsPage as AdminProjectsPage,
+  VotesPage as AdminVotesPage,
+  SettingsPage as AdminSettingsPage,
 } from "@/pages/admin";
 
 import NotFound from "@/pages/not-found";
@@ -90,6 +94,10 @@ function renderForAdmin(isAdminAuthenticated: boolean, isAdminLoading: boolean) 
         <>
           <Route path="/admin" component={AdminDashboardPage} />
           <Route path="/admin/dashboard" component={AdminDashboardPage} />
+          <Route path="/admin/dashboard/users" component={AdminUsersPage} />
+          <Route path="/admin/dashboard/projects" component={AdminProjectsPage} />
+          <Route path="/admin/dashboard/votes" component={AdminVotesPage} />
+          <Route path="/admin/dashboard/settings" component={AdminSettingsPage} />
           {/* Add more admin routes here as needed */}
         </>
       ) : (

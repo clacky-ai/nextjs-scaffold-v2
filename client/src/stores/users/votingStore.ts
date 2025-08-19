@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, authApi, API_ENDPOINTS } from '@/lib/api';
+import { api, API_ENDPOINTS } from '@/lib/api';
 
 export interface ScoreDimension {
   id: string;
@@ -156,7 +156,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await authApi.get(API_ENDPOINTS.VOTES.STATS);
+      const response = await api.get(API_ENDPOINTS.VOTES.STATS);
 
       set({
         userStats: response,
@@ -174,7 +174,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await authApi.get(API_ENDPOINTS.VOTES.MY_VOTES);
+      const response = await api.get(API_ENDPOINTS.VOTES.MY_VOTES);
 
       set({
         userVotes: response.votes,
@@ -208,7 +208,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
   
   checkCanVote: async (projectId: string) => {
     try {
-      const response = await authApi.get(API_ENDPOINTS.PROJECTS.CAN_VOTE(projectId));
+      const response = await api.get(API_ENDPOINTS.PROJECTS.CAN_VOTE(projectId));
       return response;
     } catch (error) {
       throw error;
@@ -225,7 +225,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
         score,
       }));
 
-      await authApi.post(API_ENDPOINTS.VOTES.SUBMIT, {
+      await api.post(API_ENDPOINTS.VOTES.SUBMIT, {
         projectId: voteData.projectId,
         scores,
         comment: voteData.comment,

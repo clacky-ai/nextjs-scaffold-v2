@@ -1,181 +1,229 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, LogOut, Users, BarChart3, Settings, Vote } from 'lucide-react';
-import { useAdminAuth, useIsAdminAuthenticated, useAdminUser, useAdminAuthLoading } from '@/stores/admin/authStore';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Users, FolderOpen, Vote, Activity, RefreshCw, BarChart3 } from 'lucide-react';
+import { AdminLayout, AdminPageLayout, StatsCard } from '@/components/admin';
+import { useUserStore, useProjectStore, useVoteStore } from '@/stores/admin';
+import { useIsAdminAuthenticated, useAdminAuthLoading } from '@/stores/admin/authStore';
+
+interface RecentActivity {
+  id: string;
+  type: 'user' | 'project' | 'vote' | 'system';
+  message: string;
+  timestamp: string;
+}
 
 export default function AdminDashboardPage() {
   const [, setLocation] = useLocation();
-  const { logout } = useAdminAuth();
   const isAuthenticated = useIsAdminAuthenticated();
-  const adminUser = useAdminUser();
   const isLoading = useAdminAuthLoading();
+
+  const { stats: userStats, fetchUsers, loading: userLoading } = useUserStore();
+  const { stats: projectStats, fetchProjects, loading: projectLoading } = useProjectStore();
+  const { stats: voteStats, fetchVotes, loading: voteLoading } = useVoteStore();
+
+  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
+
+  // Computed stats from stores
+  const currentUserStats = userStats();
+  const currentProjectStats = projectStats();
+  const currentVoteStats = voteStats();
+
+  const isLoadingStats = userLoading.fetchUsers || projectLoading.fetchProjects || voteLoading.fetchVotes;
 
   useEffect(() => {
     // 如果未认证，跳转到登录页
     if (!isLoading && !isAuthenticated) {
       setLocation('/admin/login');
+      return;
     }
-  }, [isAuthenticated, isLoading, setLocation]);
 
-  const handleLogout = async () => {
+    // 如果已认证，加载数据
+    if (isAuthenticated) {
+      fetchUsers();
+      fetchProjects();
+      fetchVotes();
+      fetchRecentActivities();
+    }
+  }, [isAuthenticated, isLoading, setLocation, fetchUsers, fetchProjects, fetchVotes]);
+
+  const fetchRecentActivities = async () => {
     try {
-      await logout();
-      setLocation('/admin/login');
+      setIsLoadingActivities(true);
+      // Mock recent activities for now
+      const mockActivities: RecentActivity[] = [
+        {
+          id: '1',
+          type: 'system',
+          message: '系统正常运行',
+          timestamp: new Date().toISOString()
+        },
+        {
+          id: '2',
+          type: 'user',
+          message: '新用户注册',
+          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString()
+        },
+        {
+          id: '3',
+          type: 'project',
+          message: '新项目提交',
+          timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString()
+        },
+        {
+          id: '4',
+          type: 'vote',
+          message: '新投票记录',
+          timestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString()
+        }
+      ];
+
+      setRecentActivities(mockActivities);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error('Error fetching recent activities:', error);
+    } finally {
+      setIsLoadingActivities(false);
     }
   };
 
-  // 简化加载逻辑，避免无限加载
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-          <p className="text-gray-600">加载中...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleRefresh = () => {
+    fetchUsers();
+    fetchProjects();
+    fetchVotes();
+    fetchRecentActivities();
+  };
 
   // 如果未认证，显示空白页面（路由会处理重定向）
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-600">正在跳转到登录页...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case 'user': return <Users className="h-4 w-4" />;
+      case 'project': return <FolderOpen className="h-4 w-4" />;
+      case 'vote': return <Vote className="h-4 w-4" />;
+      default: return <Activity className="h-4 w-4" />;
+    }
+  };
+
+  const getActivityColor = (type: string) => {
+    switch (type) {
+      case 'user': return 'bg-blue-100 text-blue-800';
+      case 'project': return 'bg-green-100 text-green-800';
+      case 'vote': return 'bg-purple-100 text-purple-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+    if (diffInMinutes < 1) return '刚刚';
+    if (diffInMinutes < 60) return `${diffInMinutes}分钟前`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}小时前`;
+    return `${Math.floor(diffInMinutes / 1440)}天前`;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                投票系统管理后台
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                欢迎，{adminUser?.name || '管理员'}
-              </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="flex items-center space-x-2"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>退出登录</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">仪表板</h2>
-          <p className="text-gray-600">管理投票系统的各项功能</p>
-        </div>
-
-        {/* Dashboard Cards */}
+    <AdminLayout>
+      <AdminPageLayout
+        title="概览"
+        description="系统概览和统计信息"
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isLoadingStats}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingStats ? 'animate-spin' : ''}`} />
+            刷新数据
+          </Button>
+        }
+      >
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">用户管理</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">--</div>
-              <p className="text-xs text-muted-foreground">
-                管理系统用户
-              </p>
-            </CardContent>
-          </Card>
+          <StatsCard
+            title="用户总数"
+            value={currentUserStats.total}
+            description={`活跃用户: ${currentUserStats.active} | 已封禁: ${currentUserStats.blocked}`}
+            icon={<Users className="h-4 w-4" />}
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">项目管理</CardTitle>
-              <Vote className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">--</div>
-              <p className="text-xs text-muted-foreground">
-                管理投票项目
-              </p>
-            </CardContent>
-          </Card>
+          <StatsCard
+            title="项目总数"
+            value={currentProjectStats.total}
+            description={`活跃项目: ${currentProjectStats.active} | 已封禁: ${currentProjectStats.blocked}`}
+            icon={<FolderOpen className="h-4 w-4" />}
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">投票统计</CardTitle>
-              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">--</div>
-              <p className="text-xs text-muted-foreground">
-                查看投票结果
-              </p>
-            </CardContent>
-          </Card>
+          <StatsCard
+            title="投票总数"
+            value={currentVoteStats.total}
+            description={`今日投票: ${currentVoteStats.todayVotes}`}
+            icon={<Vote className="h-4 w-4" />}
+          />
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">系统设置</CardTitle>
-              <Settings className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">--</div>
-              <p className="text-xs text-muted-foreground">
-                系统配置管理
-              </p>
-            </CardContent>
-          </Card>
+          <StatsCard
+            title="平均投票数"
+            value={currentVoteStats.averageVotesPerProject}
+            description="每个项目的平均投票数"
+            icon={<BarChart3 className="h-4 w-4" />}
+          />
         </div>
 
-        {/* Welcome Message */}
+        {/* Recent Activities */}
         <Card>
           <CardHeader>
-            <CardTitle>欢迎使用管理后台</CardTitle>
+            <CardTitle className="flex items-center">
+              <Activity className="h-5 w-5 mr-2" />
+              最近活动
+            </CardTitle>
             <CardDescription>
-              这是投票系统的管理界面，您可以在这里管理用户、项目和查看统计数据。
+              系统最近的活动记录
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-medium mb-2">快速开始</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    开始管理您的投票系统
-                  </p>
-                  <Button size="sm" disabled>
-                    查看用户列表
-                  </Button>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <h3 className="font-medium mb-2">系统状态</h3>
-                  <p className="text-sm text-gray-600 mb-3">
-                    查看系统运行状态和统计信息
-                  </p>
-                  <Button size="sm" disabled>
-                    查看统计
-                  </Button>
-                </div>
+            {isLoadingActivities ? (
+              <div className="flex items-center justify-center py-8">
+                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
+                加载中...
               </div>
-            </div>
+            ) : recentActivities.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                暂无活动记录
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {recentActivities.map((activity) => (
+                  <div key={activity.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
+                    <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
+                      {getActivityIcon(activity.type)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-900">
+                        {activity.message}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {formatTimestamp(activity.timestamp)}
+                      </p>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {activity.type}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
-      </main>
-    </div>
+      </AdminPageLayout>
+    </AdminLayout>
   );
 }

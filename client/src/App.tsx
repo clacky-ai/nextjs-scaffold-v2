@@ -26,10 +26,6 @@ import {
 import {
   LoginPage as AdminLoginPage,
   DashboardPage as AdminDashboardPage,
-  UsersPage as AdminUsersPage,
-  ProjectsPage as AdminProjectsPage,
-  VotesPage as AdminVotesPage,
-  SettingsPage as AdminSettingsPage,
 } from "@/pages/admin";
 
 import NotFound from "@/pages/not-found";
@@ -93,11 +89,11 @@ function renderForAdmin(isAdminAuthenticated: boolean, isAdminLoading: boolean) 
       {isAdminAuthenticated ? (
         <>
           <Route path="/admin" component={AdminDashboardPage} />
-          <Route path="/admin/users" component={AdminUsersPage} />
-          <Route path="/admin/projects" component={AdminProjectsPage} />
-          <Route path="/admin/votes" component={AdminVotesPage} />
-          <Route path="/admin/settings" component={AdminSettingsPage} />
-          {/* Add more admin routes here as needed */}
+          <Route path="/admin/users" component={AdminDashboardPage} />
+          <Route path="/admin/projects" component={AdminDashboardPage} />
+          <Route path="/admin/votes" component={AdminDashboardPage} />
+          <Route path="/admin/settings" component={AdminDashboardPage} />
+          {/* All admin sub-routes now use the dashboard framework */}
         </>
       ) : (
         <Route component={AdminLoginPage} />

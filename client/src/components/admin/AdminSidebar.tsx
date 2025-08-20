@@ -3,68 +3,26 @@ import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  LayoutDashboard, 
-  Users, 
-  FolderOpen, 
-  Vote, 
-  Settings,
+import {
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 import { useNavigationStore } from '@/stores/admin/navigationStore';
 import { MenuItem } from '@/stores/admin/types';
 
-const menuItems: MenuItem[] = [
-  {
-    id: 'overview',
-    label: '概览',
-    path: '/admin',
-    icon: LayoutDashboard,
-    description: '系统概览和统计信息'
-  },
-  {
-    id: 'users',
-    label: '用户管理',
-    path: '/admin/users',
-    icon: Users,
-    description: '管理系统用户'
-  },
-  {
-    id: 'projects',
-    label: '项目管理',
-    path: '/admin/projects',
-    icon: FolderOpen,
-    description: '管理投票项目'
-  },
-  {
-    id: 'votes',
-    label: '投票管理',
-    path: '/admin/votes',
-    icon: Vote,
-    description: '管理投票记录'
-  },
-  {
-    id: 'settings',
-    label: '设置',
-    path: '/admin/settings',
-    icon: Settings,
-    description: '系统设置'
-  }
-];
-
 interface AdminSidebarProps {
   className?: string;
+  menuItems: MenuItem[];
 }
 
-export function AdminSidebar({ className }: AdminSidebarProps) {
+export function AdminSidebar({ className, menuItems }: AdminSidebarProps) {
   const [location] = useLocation();
-  const { 
-    activeTab, 
-    isCollapsed, 
+  const {
+    activeTab,
+    isCollapsed,
     isMobileOpen,
-    setActiveTab, 
-    setMenuItems, 
+    setActiveTab,
+    setMenuItems,
     setCollapsed,
     setMobileOpen,
     setActiveTabByPath,
@@ -74,7 +32,7 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
   // Initialize menu items
   useEffect(() => {
     setMenuItems(menuItems);
-  }, [setMenuItems]);
+  }, [setMenuItems, menuItems]);
 
   // Update active tab based on current path
   useEffect(() => {

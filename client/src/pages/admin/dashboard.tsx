@@ -1,229 +1,171 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useLocation } from 'wouter';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Users, FolderOpen, Vote, Activity, RefreshCw, BarChart3 } from 'lucide-react';
-import { AdminLayout, AdminPageLayout, StatsCard } from '@/components/admin';
-import { useUserStore, useProjectStore, useVoteStore } from '@/stores/admin';
-import { useIsAdminAuthenticated, useAdminAuthLoading } from '@/stores/admin/authStore';
-
-interface RecentActivity {
-  id: string;
-  type: 'user' | 'project' | 'vote' | 'system';
-  message: string;
-  timestamp: string;
-}
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Menu, LogOut } from 'lucide-react';
+import { AdminSidebar, AdminPageLayout } from '@/components/admin';
+import { OverviewModule, UsersModule, ProjectsModule, VotesModule, SettingsModule } from '@/components/admin/modules';
+import { useIsAdminAuthenticated, useAdminAuthLoading, useAdminAuth, useAdminUser } from '@/stores/admin/authStore';
+import { useNavigationStore } from '@/stores/admin/navigationStore';
+import { adminMenuItems } from '@/config/admin-menu';
 
 export default function AdminDashboardPage() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const isAuthenticated = useIsAdminAuthenticated();
   const isLoading = useAdminAuthLoading();
+  const { logout } = useAdminAuth();
+  const adminUser = useAdminUser();
+  const { isMobileOpen, setMobileOpen } = useNavigationStore();
 
-  const { stats: userStats, fetchUsers, loading: userLoading } = useUserStore();
-  const { stats: projectStats, fetchProjects, loading: projectLoading } = useProjectStore();
-  const { stats: voteStats, fetchVotes, loading: voteLoading } = useVoteStore();
+  // Handle logout
+  const handleLogout = async () => {
+    try {
+      await logout();
+      setLocation('/admin/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
-  const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
-
-  // Computed stats from stores
-  const currentUserStats = userStats();
-  const currentProjectStats = projectStats();
-  const currentVoteStats = voteStats();
-
-  const isLoadingStats = userLoading.fetchUsers || projectLoading.fetchProjects || voteLoading.fetchVotes;
-
+  // Close mobile menu on route change
   useEffect(() => {
-    // 如果未认证，跳转到登录页
+    setMobileOpen(false);
+  }, [setMobileOpen]);
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       setLocation('/admin/login');
-      return;
     }
+  }, [isAuthenticated, isLoading, setLocation]);
 
-    // 如果已认证，加载数据
-    if (isAuthenticated) {
-      fetchUsers();
-      fetchProjects();
-      fetchVotes();
-      fetchRecentActivities();
-    }
-  }, [isAuthenticated, isLoading, setLocation, fetchUsers, fetchProjects, fetchVotes]);
+  // Determine which module to render based on current route
+  const renderCurrentModule = () => {
+    // Remove trailing slash for consistent matching
+    const normalizedLocation = location.replace(/\/$/, '') || '/admin';
 
-  const fetchRecentActivities = async () => {
-    try {
-      setIsLoadingActivities(true);
-      // Mock recent activities for now
-      const mockActivities: RecentActivity[] = [
-        {
-          id: '1',
-          type: 'system',
-          message: '系统正常运行',
-          timestamp: new Date().toISOString()
-        },
-        {
-          id: '2',
-          type: 'user',
-          message: '新用户注册',
-          timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString()
-        },
-        {
-          id: '3',
-          type: 'project',
-          message: '新项目提交',
-          timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString()
-        },
-        {
-          id: '4',
-          type: 'vote',
-          message: '新投票记录',
-          timestamp: new Date(Date.now() - 1000 * 60 * 90).toISOString()
-        }
-      ];
-
-      setRecentActivities(mockActivities);
-    } catch (error) {
-      console.error('Error fetching recent activities:', error);
-    } finally {
-      setIsLoadingActivities(false);
+    switch (normalizedLocation) {
+      case '/admin':
+        return <OverviewModule />;
+      case '/admin/users':
+        return <UsersModule />;
+      case '/admin/projects':
+        return <ProjectsModule />;
+      case '/admin/votes':
+        return <VotesModule />;
+      case '/admin/settings':
+        return <SettingsModule />;
+      default:
+        // Fallback to overview for unknown routes
+        return <OverviewModule />;
     }
   };
 
-  const handleRefresh = () => {
-    fetchUsers();
-    fetchProjects();
-    fetchVotes();
-    fetchRecentActivities();
+  // Get page title and description based on current route
+  const getPageInfo = () => {
+    const normalizedLocation = location.replace(/\/$/, '') || '/admin';
+
+    switch (normalizedLocation) {
+      case '/admin':
+        return { title: '概览', description: '系统概览和统计信息' };
+      case '/admin/users':
+        return { title: '用户管理', description: '管理系统中的所有用户账户' };
+      case '/admin/projects':
+        return { title: '项目管理', description: '管理系统中的所有投票项目' };
+      case '/admin/votes':
+        return { title: '投票管理', description: '管理系统中的所有投票记录' };
+      case '/admin/settings':
+        return { title: '系统设置', description: '管理系统配置和个人设置' };
+      default:
+        return { title: '概览', description: '系统概览和统计信息' };
+    }
   };
+
+
 
   // 如果未认证，显示空白页面（路由会处理重定向）
   if (!isAuthenticated) {
     return null;
   }
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'user': return <Users className="h-4 w-4" />;
-      case 'project': return <FolderOpen className="h-4 w-4" />;
-      case 'vote': return <Vote className="h-4 w-4" />;
-      default: return <Activity className="h-4 w-4" />;
-    }
-  };
-
-  const getActivityColor = (type: string) => {
-    switch (type) {
-      case 'user': return 'bg-blue-100 text-blue-800';
-      case 'project': return 'bg-green-100 text-green-800';
-      case 'vote': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-
-    if (diffInMinutes < 1) return '刚刚';
-    if (diffInMinutes < 60) return `${diffInMinutes}分钟前`;
-    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}小时前`;
-    return `${Math.floor(diffInMinutes / 1440)}天前`;
-  };
-
   return (
-    <AdminLayout>
-      <AdminPageLayout
-        title="概览"
-        description="系统概览和统计信息"
-        actions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isLoadingStats}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingStats ? 'animate-spin' : ''}`} />
-            刷新数据
-          </Button>
-        }
-      >
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatsCard
-            title="用户总数"
-            value={currentUserStats.total}
-            description={`活跃用户: ${currentUserStats.active} | 已封禁: ${currentUserStats.blocked}`}
-            icon={<Users className="h-4 w-4" />}
-          />
+    <div className="h-screen flex bg-gray-50">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:flex">
+        <AdminSidebar menuItems={adminMenuItems} />
+      </div>
 
-          <StatsCard
-            title="项目总数"
-            value={currentProjectStats.total}
-            description={`活跃项目: ${currentProjectStats.active} | 已封禁: ${currentProjectStats.blocked}`}
-            icon={<FolderOpen className="h-4 w-4" />}
-          />
+      {/* Mobile Sidebar */}
+      <Sheet open={isMobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="p-0 w-64">
+          <AdminSidebar menuItems={adminMenuItems} />
+        </SheetContent>
+      </Sheet>
 
-          <StatsCard
-            title="投票总数"
-            value={currentVoteStats.total}
-            description={`今日投票: ${currentVoteStats.todayVotes}`}
-            icon={<Vote className="h-4 w-4" />}
-          />
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Header */}
+        <header className="flex-shrink-0 bg-white border-b border-gray-200 px-4 py-3 lg:px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {/* Mobile Menu Button */}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="lg:hidden mr-2"
+                    onClick={() => setMobileOpen(true)}
+                  >
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+              </Sheet>
 
-          <StatsCard
-            title="平均投票数"
-            value={currentVoteStats.averageVotesPerProject}
-            description="每个项目的平均投票数"
-            icon={<BarChart3 className="h-4 w-4" />}
-          />
-        </div>
-
-        {/* Recent Activities */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="h-5 w-5 mr-2" />
-              最近活动
-            </CardTitle>
-            <CardDescription>
-              系统最近的活动记录
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {isLoadingActivities ? (
-              <div className="flex items-center justify-center py-8">
-                <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                加载中...
+              {/* Page Title */}
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-semibold text-gray-900">
+                  投票系统管理后台
+                </h1>
               </div>
-            ) : recentActivities.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                暂无活动记录
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex items-center space-x-4 p-3 bg-gray-50 rounded-lg">
-                    <div className={`p-2 rounded-full ${getActivityColor(activity.type)}`}>
-                      {getActivityIcon(activity.type)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-gray-900">
-                        {activity.message}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {formatTimestamp(activity.timestamp)}
-                      </p>
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {activity.type}
-                    </Badge>
+            </div>
+
+            {/* User Menu */}
+            <div className="flex items-center space-x-4">
+              <div className="hidden sm:flex items-center space-x-3">
+                <div className="text-right">
+                  <div className="text-sm font-medium text-gray-900">
+                    {adminUser?.name || '管理员'}
                   </div>
-                ))}
+                  <div className="text-xs text-gray-500">
+                    {adminUser?.email}
+                  </div>
+                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </AdminPageLayout>
-    </AdminLayout>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="flex items-center space-x-2"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden sm:inline">退出登录</span>
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 overflow-hidden">
+          <AdminPageLayout
+            title={getPageInfo().title}
+            description={getPageInfo().description}
+          >
+            {renderCurrentModule()}
+          </AdminPageLayout>
+        </main>
+      </div>
+    </div>
   );
 }

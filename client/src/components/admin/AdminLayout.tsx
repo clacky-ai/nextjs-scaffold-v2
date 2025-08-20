@@ -7,16 +7,18 @@ import { Menu, LogOut } from 'lucide-react';
 import { AdminSidebar } from './AdminSidebar';
 import { useNavigationStore } from '@/stores/admin/navigationStore';
 import { useAdminAuth, useAdminUser } from '@/stores/admin/authStore';
+import { MenuItem } from '@/stores/admin/types';
 
 interface AdminLayoutProps {
   children: ReactNode;
+  menuItems: MenuItem[];
 }
 
-export function AdminLayout({ children }: AdminLayoutProps) {
+export function AdminLayout({ children, menuItems }: AdminLayoutProps) {
   const [, setLocation] = useLocation();
   const { logout } = useAdminAuth();
   const adminUser = useAdminUser();
-  const { isCollapsed, isMobileOpen, setMobileOpen } = useNavigationStore();
+  const { isMobileOpen, setMobileOpen } = useNavigationStore();
 
   const handleLogout = async () => {
     try {
@@ -36,13 +38,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <div className="h-screen flex bg-gray-50">
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex">
-        <AdminSidebar />
+        <AdminSidebar menuItems={menuItems} />
       </div>
 
       {/* Mobile Sidebar */}
       <Sheet open={isMobileOpen} onOpenChange={setMobileOpen}>
         <SheetContent side="left" className="p-0 w-64">
-          <AdminSidebar />
+          <AdminSidebar menuItems={menuItems} />
         </SheetContent>
       </Sheet>
 

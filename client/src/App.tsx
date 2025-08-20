@@ -13,12 +13,6 @@ import {
   LoginPage as UserLoginPage,
   SignupPage as UserSignupPage,
   HomePage,
-  ProjectsPage,
-  VotingPage,
-  ResultsPage,
-  MyVotesPage,
-  MyProjectsPage,
-  ProjectFormPage,
 } from "@/pages/users";
 
 // Admin pages
@@ -56,14 +50,6 @@ function renderForUser(isUserAuthenticated: boolean, isUserLoading: boolean) {
       {isUserAuthenticated ? (
         <>
           <Route path={USER_ROUTES.getFullPath('home')} component={HomePage} />
-          <Route path={USER_ROUTES.getFullPath('projects')} component={ProjectsPage} />
-          <Route path={USER_ROUTES.getFullPath('projectNew')} component={ProjectFormPage} />
-          <Route path={USER_ROUTES.getFullPath('projectEdit')} component={ProjectFormPage} />
-          <Route path={USER_ROUTES.getFullPath('projectDetail')} component={ProjectsPage} />
-          <Route path={USER_ROUTES.getFullPath('myProjects')} component={MyProjectsPage} />
-          <Route path={USER_ROUTES.getFullPath('voting')} component={VotingPage} />
-          <Route path={USER_ROUTES.getFullPath('myVotes')} component={MyVotesPage} />
-          <Route path={USER_ROUTES.getFullPath('results')} component={ResultsPage} />
         </>
       ) : (
         <>
@@ -88,29 +74,13 @@ function renderForAdmin(isAdminAuthenticated: boolean, isAdminLoading: boolean) 
       <Route path={ADMIN_ROUTES.getFullPath('login')} component={AdminLoginPage} />
       {isAdminAuthenticated ? (
         <>
-          {/* 根路径重定向路由 */}
-          <Route 
+          {/* 根路径重定向路由, 如果需要的话 */}
+          {/* <Route 
             path={ADMIN_ROUTES.getFullPath('root')} 
             component={createRedirectPage(ADMIN_ROUTES.getFullPath('dashboard'))} 
-          />
+          /> */}
           
-          <Route path={ADMIN_ROUTES.getFullPath('dashboard')} component={AdminDashboardPage} />
           <Route path={ADMIN_ROUTES.getFullPath('users')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('projects')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('votes')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('results')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('settings')} component={AdminDashboardPage} />
-          
-          {/* 详情页面路由 */}
-          <Route path={ADMIN_ROUTES.getFullPath('userDetail')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('userEdit')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('projectDetail')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('projectEdit')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('voteDetail')} component={AdminDashboardPage} />
-          
-          {/* 其他功能页面 */}
-          <Route path={ADMIN_ROUTES.getFullPath('profile')} component={AdminDashboardPage} />
-          <Route path={ADMIN_ROUTES.getFullPath('notifications')} component={AdminDashboardPage} />
         </>
       ) : (
         <Route component={AdminLoginPage} />

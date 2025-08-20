@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { RouteUtils, PageInfo } from '@/utils/router';
-import { ADMIN_ROUTES, USER_ROUTES } from '@/router';
+import { ADMIN_ROUTES } from '@/router';
 
 export interface BreadcrumbUIItem {
   label: string;
@@ -36,7 +36,7 @@ export const useNavigationStore = create<NavigationStore>((set, get) => ({
   // Actions
   updateNavigation: (path: string) => {
     const routeKey = ADMIN_ROUTES.getRouteKeyFromPath(path);
-    const pageInfo = RouteUtils.getPageInfo(path, ADMIN_ROUTES, USER_ROUTES);
+    const pageInfo = RouteUtils.getPageInfo(path, ADMIN_ROUTES);
     
     set({
       currentPath: path,
@@ -60,6 +60,6 @@ export const useNavigationStore = create<NavigationStore>((set, get) => ({
   
   // Computed - 使用 RouteUtils 统一处理
   getPageInfo: (path: string) => {
-    return RouteUtils.getPageInfo(path, ADMIN_ROUTES, USER_ROUTES);
+    return RouteUtils.getPageInfo(path, ADMIN_ROUTES);
   },
 }));

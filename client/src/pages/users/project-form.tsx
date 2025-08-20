@@ -28,7 +28,7 @@ type ProjectFormData = z.infer<typeof projectSchema>;
 export default function ProjectFormPage() {
   const [location, navigate] = useLocation();
   const isEdit = location.includes('/edit');
-  const projectId = isEdit ? location.split('/').pop() : null;
+  const projectId = isEdit ? location.split('/').slice(-2, -1)[0] : null;
 
   const {
     categories,

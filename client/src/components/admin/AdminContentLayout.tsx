@@ -1,0 +1,153 @@
+import { ReactNode } from 'react';
+import { useLocation } from 'wouter';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useSidebar } from '@/components/ui/sidebar';
+import { Bell, Settings, LogOut, User, Menu } from 'lucide-react';
+
+export interface BreadcrumbItem {
+  label: string;
+  path?: string;
+}
+
+export interface AdminContentLayoutProps {
+  children: ReactNode;
+  title?: string;
+  description?: string;
+  breadcrumbs?: BreadcrumbItem[];
+  actions?: ReactNode;
+}
+
+export function AdminContentLayout({
+  children,
+  breadcrumbs = []
+}: AdminContentLayoutProps) {
+  const [, navigate] = useLocation();
+  const { toggleSidebar } = useSidebar();
+
+  const handleLogout = () => {
+    // TODO: 实现登出逻辑
+    navigate('/admin/login');
+  };
+
+  const handleProfile = () => {
+    // TODO: 实现个人资料页面
+    console.log('打开个人资料');
+  };
+
+  const handleSettings = () => {
+    navigate('/admin/settings');
+  };
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0">
+      {/* Header */}
+      <header className="bg-white border-b px-6 h-12 flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          {/* 收折按钮 */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="h-8 w-8"
+          >
+            <Menu className="h-4 w-4" />
+          </Button>
+
+          {/* 面包屑导航 */}
+          {breadcrumbs.length > 0 && (
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink onClick={() => navigate('/admin')}>
+                    管理后台
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                {breadcrumbs.map((item, index) => (
+                  <div key={index} className="flex items-center">
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      {item.path && index < breadcrumbs.length - 1 ? (
+                        <BreadcrumbLink onClick={() => navigate(item.path!)}>
+                          {item.label}
+                        </BreadcrumbLink>
+                      ) : (
+                        <BreadcrumbPage>{item.label}</BreadcrumbPage>
+                      )}
+                    </BreadcrumbItem>
+                  </div>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          )}
+        </div>
+
+        {/* 右侧操作区域 */}
+        <div className="flex items-center space-x-4">
+          {/* 通知按钮 */}
+          {/* <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-4 w-4" />
+            <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full text-xs"></span>
+          </Button> */}
+
+          {/* 用户菜单 */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/avatars/admin.png" alt="管理员" />
+                  <AvatarFallback>管</AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-sm font-medium leading-none">管理员</p>
+                  <p className="text-xs leading-none text-muted-foreground">
+                    admin@example.com
+                  </p>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleProfile}>
+                <User className="mr-2 h-4 w-4" />
+                <span>个人资料</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleSettings}>
+                <Settings className="mr-2 h-4 w-4" />
+                <span>系统设置</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>退出登录</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </header>
+
+      {/* 主要内容区域 */}
+      <main className="flex-1 overflow-auto bg-gray-50 p-6">
+        {children}
+      </main>
+    </div>
+  );
+}

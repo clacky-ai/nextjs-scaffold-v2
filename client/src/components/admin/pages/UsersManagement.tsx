@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -19,80 +19,30 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, MoreHorizontal, UserPlus, Filter, Download } from 'lucide-react';
-
-// 模拟用户数据
-const mockUsers = [
-  {
-    id: 1,
-    name: '张三',
-    email: 'zhangsan@example.com',
-    role: 'user',
-    status: 'active',
-    projectsCount: 2,
-    votesCount: 5,
-    createdAt: '2024-01-15',
-  },
-  {
-    id: 2,
-    name: '李四',
-    email: 'lisi@example.com',
-    role: 'user',
-    status: 'active',
-    projectsCount: 1,
-    votesCount: 3,
-    createdAt: '2024-01-20',
-  },
-  {
-    id: 3,
-    name: '王五',
-    email: 'wangwu@example.com',
-    role: 'admin',
-    status: 'active',
-    projectsCount: 0,
-    votesCount: 0,
-    createdAt: '2024-01-10',
-  },
-  {
-    id: 4,
-    name: '赵六',
-    email: 'zhaoliu@example.com',
-    role: 'user',
-    status: 'inactive',
-    projectsCount: 3,
-    votesCount: 8,
-    createdAt: '2024-01-25',
-  },
-];
+import { Search, MoreHorizontal, UserPlus, Filter, Download, Loader2 } from 'lucide-react';
+import { useUserStore } from '@/stores/admin/userStore';
 
 export function UsersManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [users] = useState(mockUsers);
+  const {
+    users,
+    loading,
+    searchTerm,
+    setSearchTerm,
+    fetchUsers,
+    toggleUserStatus,
+    stats,
+    filteredUsers,
+  } = useUserStore();
 
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-red-100 text-red-800';
-      case 'user':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'inactive':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleToggleUserStatus = async (userId: string, isBlocked: boolean) => {
+    const success = await toggleUserStatus(userId, isBlocked);
+    if (success) {
+      // 可以添加成功提示
+      console.log('用户状态更新成功');
     }
   };
 
@@ -105,9 +55,9 @@ export function UsersManagement() {
             <CardTitle className="text-sm font-medium">总用户数</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
+            <div className="text-2xl font-bold">{stats().total}</div>
             <p className="text-xs text-muted-foreground">
-              +2 较上月
+              +{stats().newThisMonth} 较上月
             </p>
           </CardContent>
         </Card>
@@ -116,24 +66,20 @@ export function UsersManagement() {
             <CardTitle className="text-sm font-medium">活跃用户</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {users.filter(u => u.status === 'active').length}
-            </div>
+            <div className="text-2xl font-bold">{stats().active}</div>
             <p className="text-xs text-muted-foreground">
-              活跃率 {Math.round((users.filter(u => u.status === 'active').length / users.length) * 100)}%
+              活跃率 {stats().total > 0 ? Math.round((stats().active / stats().total) * 100) : 0}%
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">管理员</CardTitle>
+            <CardTitle className="text-sm font-medium">被屏蔽用户</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {users.filter(u => u.role === 'admin').length}
-            </div>
+            <div className="text-2xl font-bold">{stats().blocked}</div>
             <p className="text-xs text-muted-foreground">
-              系统管理员数量
+              需要关注的用户
             </p>
           </CardContent>
         </Card>
@@ -142,9 +88,9 @@ export function UsersManagement() {
             <CardTitle className="text-sm font-medium">本月新增</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{stats().newThisMonth}</div>
             <p className="text-xs text-muted-foreground">
-              +20% 较上月
+              新注册用户
             </p>
           </CardContent>
         </Card>
@@ -201,48 +147,63 @@ export function UsersManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{user.name}</div>
-                      <div className="text-sm text-muted-foreground">{user.email}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getRoleColor(user.role)}>
-                      {user.role === 'admin' ? '管理员' : '用户'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(user.status)}>
-                      {user.status === 'active' ? '活跃' : '非活跃'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{user.projectsCount}</TableCell>
-                  <TableCell>{user.votesCount}</TableCell>
-                  <TableCell>{user.createdAt}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>操作</DropdownMenuLabel>
-                        <DropdownMenuItem>查看详情</DropdownMenuItem>
-                        <DropdownMenuItem>编辑用户</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>重置密码</DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
-                          删除用户
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+              {loading.fetchUsers ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                    <p className="text-sm text-muted-foreground mt-2">加载用户数据中...</p>
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : filteredUsers().length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="text-center py-8">
+                    <p className="text-sm text-muted-foreground">暂无用户数据</p>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredUsers().map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">{user.name}</div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">用户</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={user.isBlocked ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}>
+                        {user.isBlocked ? '已屏蔽' : '正常'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>操作</DropdownMenuLabel>
+                          <DropdownMenuItem>查看详情</DropdownMenuItem>
+                          <DropdownMenuItem>编辑用户</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleToggleUserStatus(user.id, user.isBlocked)}
+                            className={user.isBlocked ? 'text-green-600' : 'text-red-600'}
+                          >
+                            {user.isBlocked ? '解除屏蔽' : '屏蔽用户'}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

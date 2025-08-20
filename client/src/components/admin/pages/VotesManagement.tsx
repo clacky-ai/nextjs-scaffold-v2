@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -20,125 +20,49 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, MoreHorizontal, Filter, Download, Eye, Trash2, AlertTriangle } from 'lucide-react';
-
-// 模拟投票数据
-const mockVotes = [
-  {
-    id: 1,
-    voter: '张三',
-    voterEmail: 'zhangsan@example.com',
-    project: 'AI智能助手',
-    projectId: 1,
-    scores: {
-      innovation: 4.5,
-      technical: 4.0,
-      practical: 4.2,
-      presentation: 3.8,
-      impact: 4.1,
-    },
-    totalScore: 4.12,
-    comment: '项目创新性很强，技术实现也比较完善，但演示效果还有提升空间。',
-    createdAt: '2024-01-20 14:30',
-    status: 'valid',
-  },
-  {
-    id: 2,
-    voter: '李四',
-    voterEmail: 'lisi@example.com',
-    project: '区块链投票系统',
-    projectId: 2,
-    scores: {
-      innovation: 3.8,
-      technical: 4.2,
-      practical: 3.5,
-      presentation: 4.0,
-      impact: 3.9,
-    },
-    totalScore: 3.88,
-    comment: '技术方案很好，但实用性还需要考虑。',
-    createdAt: '2024-01-21 09:15',
-    status: 'valid',
-  },
-  {
-    id: 3,
-    voter: '王五',
-    voterEmail: 'wangwu@example.com',
-    project: 'AI智能助手',
-    projectId: 1,
-    scores: {
-      innovation: 5.0,
-      technical: 5.0,
-      practical: 5.0,
-      presentation: 5.0,
-      impact: 5.0,
-    },
-    totalScore: 5.0,
-    comment: '完美的项目！',
-    createdAt: '2024-01-21 16:45',
-    status: 'suspicious',
-  },
-];
-
-// 投票统计数据
-const voteStats = {
-  total: 156,
-  today: 23,
-  valid: 142,
-  suspicious: 14,
-  avgScore: 3.85,
-  participationRate: 78.5,
-};
+import { Search, MoreHorizontal, Filter, Download, Eye, Trash2, Loader2 } from 'lucide-react';
+import { useAdminVoteStore } from '@/stores/admin/voteStore';
 
 export function VotesManagement() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [votes] = useState(mockVotes);
+  const {
+    votes,
+    loading,
+    searchTerm,
+    statusFilter,
+    setSearchTerm,
+    setStatusFilter,
+    fetchVotes,
+    deleteVote,
+    markVoteAsValid,
+    stats,
+    filteredVotes,
+  } = useAdminVoteStore();
+
   const [activeTab, setActiveTab] = useState('all');
 
-  const filteredVotes = votes.filter(vote => {
-    const matchesSearch = vote.voter.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         vote.project.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         vote.voterEmail.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    if (activeTab === 'all') return matchesSearch;
-    if (activeTab === 'valid') return matchesSearch && vote.status === 'valid';
-    if (activeTab === 'suspicious') return matchesSearch && vote.status === 'suspicious';
-    
-    return matchesSearch;
-  });
+  useEffect(() => {
+    fetchVotes();
+  }, [fetchVotes]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'valid':
-        return 'bg-green-100 text-green-800';
-      case 'suspicious':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleDeleteVote = async (voteId: string) => {
+    if (confirm('确定要删除这个投票吗？')) {
+      const success = await deleteVote(voteId);
+      if (success) {
+        console.log('投票删除成功');
+      }
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'valid':
-        return '有效';
-      case 'suspicious':
-        return '可疑';
-      default:
-        return '未知';
+  const handleMarkAsValid = async (voteId: string) => {
+    const success = await markVoteAsValid(voteId);
+    if (success) {
+      console.log('投票标记为有效');
     }
   };
 
-  const getDimensionName = (key: string) => {
-    const names: Record<string, string> = {
-      innovation: '创新性',
-      technical: '技术性',
-      practical: '实用性',
-      presentation: '演示效果',
-      impact: '影响力',
-    };
-    return names[key] || key;
-  };
+
+
+
 
   return (
     <div className="space-y-6">
@@ -149,9 +73,9 @@ export function VotesManagement() {
             <CardTitle className="text-sm font-medium">总投票数</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{voteStats.total}</div>
+            <div className="text-2xl font-bold">{stats().total}</div>
             <p className="text-xs text-muted-foreground">
-              今日 +{voteStats.today}
+              今日 +{stats().today}
             </p>
           </CardContent>
         </Card>
@@ -160,9 +84,9 @@ export function VotesManagement() {
             <CardTitle className="text-sm font-medium">有效投票</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{voteStats.valid}</div>
+            <div className="text-2xl font-bold">{stats().valid}</div>
             <p className="text-xs text-muted-foreground">
-              有效率 {Math.round((voteStats.valid / voteStats.total) * 100)}%
+              有效率 {stats().total > 0 ? Math.round((stats().valid / stats().total) * 100) : 0}%
             </p>
           </CardContent>
         </Card>
@@ -171,7 +95,7 @@ export function VotesManagement() {
             <CardTitle className="text-sm font-medium">可疑投票</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{voteStats.suspicious}</div>
+            <div className="text-2xl font-bold text-red-600">{stats().suspicious}</div>
             <p className="text-xs text-muted-foreground">
               需要审核
             </p>
@@ -182,7 +106,7 @@ export function VotesManagement() {
             <CardTitle className="text-sm font-medium">平均评分</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{voteStats.avgScore}</div>
+            <div className="text-2xl font-bold">{stats().avgScore}</div>
             <p className="text-xs text-muted-foreground">
               满分 5.0
             </p>
@@ -229,7 +153,7 @@ export function VotesManagement() {
               <TabsTrigger value="all">全部投票</TabsTrigger>
               <TabsTrigger value="valid">有效投票</TabsTrigger>
               <TabsTrigger value="suspicious" className="text-red-600">
-                可疑投票 ({votes.filter(v => v.status === 'suspicious').length})
+                可疑投票 (0)
               </TabsTrigger>
             </TabsList>
             
@@ -246,62 +170,70 @@ export function VotesManagement() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredVotes.map((vote) => (
-                    <TableRow key={vote.id}>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium">{vote.voter}</div>
-                          <div className="text-sm text-muted-foreground">{vote.voterEmail}</div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="font-medium">{vote.project}</div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <span className="font-medium">{vote.totalScore.toFixed(2)}</span>
-                          <span className="text-muted-foreground ml-1">/5.0</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge className={getStatusColor(vote.status)}>
-                          {vote.status === 'suspicious' && (
-                            <AlertTriangle className="w-3 h-3 mr-1" />
-                          )}
-                          {getStatusText(vote.status)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{vote.createdAt}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>操作</DropdownMenuLabel>
-                            <DropdownMenuItem>
-                              <Eye className="mr-2 h-4 w-4" />
-                              查看详情
-                            </DropdownMenuItem>
-                            {vote.status === 'suspicious' && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-green-600">
-                                  标记为有效
-                                </DropdownMenuItem>
-                                <DropdownMenuItem className="text-red-600">
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  删除投票
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                  {loading.fetchVotes ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                        <p className="text-sm text-muted-foreground mt-2">加载投票数据中...</p>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : filteredVotes().length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8">
+                        <p className="text-sm text-muted-foreground">暂无投票数据</p>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredVotes().map((vote) => (
+                      <TableRow key={vote.id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{vote.userName}</div>
+                            <div className="text-sm text-muted-foreground">投票用户</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="font-medium">{vote.projectTitle}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center">
+                            <span className="font-medium">-</span>
+                            <span className="text-muted-foreground ml-1">/5.0</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-800">
+                            有效
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{new Date(vote.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>操作</DropdownMenuLabel>
+                              <DropdownMenuItem>
+                                <Eye className="mr-2 h-4 w-4" />
+                                查看详情
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteVote(vote.id)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                删除投票
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TabsContent>

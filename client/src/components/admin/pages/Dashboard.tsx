@@ -1,29 +1,21 @@
+import { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Users, 
-  FolderOpen, 
-  Vote, 
+import {
+  Users,
+  FolderOpen,
+  Vote,
   UserCheck,
   TrendingUp,
   Activity,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
+import { useStatisticsStore } from '@/stores/admin/statisticsStore';
 
-// 模拟数据
-const stats = {
-  totalUsers: 1234,
-  totalProjects: 56,
-  totalVotes: 2468,
-  participationRate: 87,
-  activeUsers: 892,
-  pendingProjects: 8,
-  avgScore: 4.2,
-  completionRate: 73,
-};
-
+// 模拟最近活动数据
 const recentActivities = [
   {
     id: 1,
@@ -68,6 +60,32 @@ const recentActivities = [
 ];
 
 export function Dashboard() {
+  const {
+    dashboardStats,
+    loading,
+    fetchDashboardStats,
+  } = useStatisticsStore();
+
+  useEffect(() => {
+    fetchDashboardStats();
+  }, [fetchDashboardStats]);
+
+  if (loading.fetchDashboardStats) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="ml-2 text-muted-foreground">加载数据中...</p>
+      </div>
+    );
+  }
+
+  if (!dashboardStats) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">暂无数据</p>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       {/* 统计卡片 */}
@@ -78,9 +96,9 @@ export function Dashboard() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{dashboardStats.totalUsers.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+12%</span> 较上月
+              系统用户总数
             </p>
           </CardContent>
         </Card>
@@ -91,9 +109,9 @@ export function Dashboard() {
             <FolderOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalProjects}</div>
+            <div className="text-2xl font-bold">{dashboardStats.totalProjects}</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-blue-600">{stats.pendingProjects}</span> 待审核
+              <span className="text-blue-600">{dashboardStats.pendingProjects}</span> 待审核
             </p>
           </CardContent>
         </Card>
@@ -104,9 +122,9 @@ export function Dashboard() {
             <Vote className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalVotes.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{dashboardStats.totalVotes.toLocaleString()}</div>
             <p className="text-xs text-muted-foreground">
-              平均每项目 {Math.round(stats.totalVotes / stats.totalProjects)} 票
+              平均每项目 {dashboardStats.totalProjects > 0 ? Math.round(dashboardStats.totalVotes / dashboardStats.totalProjects) : 0} 票
             </p>
           </CardContent>
         </Card>
@@ -117,9 +135,9 @@ export function Dashboard() {
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.participationRate}%</div>
+            <div className="text-2xl font-bold">{dashboardStats.participationRate}%</div>
             <p className="text-xs text-muted-foreground">
-              {stats.activeUsers} 活跃用户
+              {dashboardStats.activeUsers} 活跃用户
             </p>
           </CardContent>
         </Card>
@@ -142,35 +160,35 @@ export function Dashboard() {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">投票完成率</span>
-                <span className="text-sm text-muted-foreground">{stats.completionRate}%</span>
+                <span className="text-sm text-muted-foreground">{dashboardStats.completionRate}%</span>
               </div>
-              <Progress value={stats.completionRate} className="w-full" />
+              <Progress value={dashboardStats.completionRate} className="w-full" />
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">平均评分</span>
-                <span className="text-sm text-muted-foreground">{stats.avgScore}/5.0</span>
+                <span className="text-sm text-muted-foreground">{dashboardStats.avgScore}/5.0</span>
               </div>
-              <Progress value={stats.avgScore * 20} className="w-full" />
+              <Progress value={dashboardStats.avgScore * 20} className="w-full" />
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm font-medium">用户活跃度</span>
-                <span className="text-sm text-muted-foreground">{Math.round((stats.activeUsers / stats.totalUsers) * 100)}%</span>
+                <span className="text-sm text-muted-foreground">{Math.round((dashboardStats.activeUsers / dashboardStats.totalUsers) * 100)}%</span>
               </div>
-              <Progress value={(stats.activeUsers / stats.totalUsers) * 100} className="w-full" />
+              <Progress value={(dashboardStats.activeUsers / dashboardStats.totalUsers) * 100} className="w-full" />
             </div>
 
             <div className="pt-4 border-t">
               <div className="grid grid-cols-2 gap-4 text-center">
                 <div>
-                  <div className="text-2xl font-bold text-green-600">{stats.activeUsers}</div>
+                  <div className="text-2xl font-bold text-green-600">{dashboardStats.activeUsers}</div>
                   <div className="text-xs text-muted-foreground">活跃用户</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-orange-600">{stats.pendingProjects}</div>
+                  <div className="text-2xl font-bold text-orange-600">{dashboardStats.pendingProjects}</div>
                   <div className="text-xs text-muted-foreground">待审核项目</div>
                 </div>
               </div>

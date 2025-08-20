@@ -183,6 +183,15 @@ export const API_ENDPOINTS = {
   SCORE_DIMENSIONS: {
     LIST: '/api/score-dimensions',
   },
+
+  // 管理员相关
+  ADMIN: {
+    USERS: '/api/admin/users',
+    PROJECTS: '/api/admin/projects',
+    VOTES: '/api/admin/votes',
+    STATS: '/api/admin/stats',
+    SETTINGS: '/api/admin/settings',
+  },
 } as const;
 
 // 类型定义

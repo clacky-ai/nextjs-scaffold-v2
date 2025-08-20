@@ -48,6 +48,17 @@ export interface SystemSettings {
   maxVotesPerUser: number
 }
 
+export interface LoadingState {
+  [key: string]: boolean
+}
+
+export interface UserStats {
+  total: number
+  active: number
+  blocked: number
+  newThisMonth: number
+}
+
 export interface UserStats {
   total: number
   active: number

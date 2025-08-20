@@ -79,7 +79,7 @@ export const ADMIN_ROUTES = new RouteConfig('/admin', {
     title: '通知中心',
     description: '查看系统通知'
   }
-});
+}, 'dashboard'); // 最后一个参数用于设置默认路由页面
 
 // 管理端路由键类型
 export type AdminRouteKey = keyof typeof ADMIN_ROUTES.routes;

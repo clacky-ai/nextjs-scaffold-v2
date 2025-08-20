@@ -1,5 +1,6 @@
 import { useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
+import { ADMIN_ROUTES } from '@/router/admin-routes';
 import {
   Sidebar,
   SidebarContent,
@@ -39,9 +40,10 @@ export function AdminSidebar({ items, onItemClick }: AdminSidebarProps) {
     // 精确匹配当前路径
     if (location === item.path) return true;
     
-    // 如果是 /admin 首页，只有在完全匹配时才激活
-    if (item.path === '/admin') {
-      return location === '/admin';
+    // 如果是默认路由（首页），只有在完全匹配时才激活
+    const defaultPath = ADMIN_ROUTES.getDefaultPath();
+    if (item.path === defaultPath) {
+      return location === defaultPath;
     }
     
     // 其他路径使用前缀匹配

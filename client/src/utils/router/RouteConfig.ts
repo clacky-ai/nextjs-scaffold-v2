@@ -20,11 +20,14 @@ export interface PageInfo {
 // 路由配置类
 export class RouteConfig {
   public readonly routes: Record<string, BaseRoute>;
+  public readonly defaultRouteKey: string | null;
 
   constructor(
     public readonly basePrefix: string = '',
-    routeDefinitions: Record<string, RouteDefinition> = {}
+    routeDefinitions: Record<string, RouteDefinition> = {},
+    defaultRouteKey: string
   ) {
+    this.defaultRouteKey = defaultRouteKey;
     // 自动计算 fullPath
     this.routes = Object.entries(routeDefinitions).reduce((acc, [key, definition]) => {
       acc[key] = {
@@ -89,11 +92,24 @@ export class RouteConfig {
 
   // 根据路径获取对应的路由键
   getRouteKeyFromPath(currentPath: string): string | null {
-    for (const [key, route] of Object.entries(this.routes)) {
+    for (const [key] of Object.entries(this.routes)) {
       if (this.isMatch(currentPath, key)) {
         return key;
       }
     }
     return null;
+  }
+
+  // 获取默认路由的完整路径
+  getDefaultPath(): string {
+    if (!this.defaultRouteKey) {
+      throw new Error('No default route key configured');
+    }
+    return this.getFullPath(this.defaultRouteKey);
+  }
+
+  // 获取默认路由键
+  getDefaultRouteKey(): string | null {
+    return this.defaultRouteKey;
   }
 }

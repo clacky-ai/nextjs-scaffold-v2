@@ -15,9 +15,9 @@ interface NavigationStore {
   getPageInfo: (path: string) => PageInfo;
 }
 
-export const useNavigationStore = create<NavigationStore>((set, get) => ({
+export const useNavigationStore = create<NavigationStore>((set) => ({
   // Initial state
-  currentPath: '/admin',
+  currentPath: ADMIN_ROUTES.getDefaultPath(),
   breadcrumbs: [],
   
   // Actions

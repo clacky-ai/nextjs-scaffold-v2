@@ -63,9 +63,9 @@ export function AdminContentLayout({
   };
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      {/* Header */}
-      <header className="bg-white border-b px-6 h-12 flex items-center justify-between">
+    <div className="flex-1 flex flex-col h-screen">
+      {/* Header - 固定高度 */}
+      <header className="bg-white border-b px-6 h-12 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center space-x-4">
           {/* 收折按钮 */}
           <Button
@@ -149,9 +149,11 @@ export function AdminContentLayout({
         </div>
       </header>
 
-      {/* 主要内容区域 */}
-      <main className="flex-1 overflow-auto bg-gray-50 p-6">
-        {children}
+      {/* 主要内容区域 - 可滚动 */}
+      <main className="flex-1 overflow-auto bg-gray-50">
+        <div className="p-6">
+          {children}
+        </div>
       </main>
     </div>
   );

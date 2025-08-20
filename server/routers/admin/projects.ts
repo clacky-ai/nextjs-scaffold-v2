@@ -18,7 +18,7 @@ router.get('/', authenticateAdminToken, async (req: AuthenticatedAdminRequest, r
           const author = await storage.getUser(project.submitterId);
 
           // 获取投票数
-          const votes = await storage.getVotesForProject(project.id);
+          const votes = await storage.getProjectVotes(project.id);
 
           return {
             id: project.id || '',
@@ -110,7 +110,7 @@ router.get('/:projectId', authenticateAdminToken, async (req: AuthenticatedAdmin
     const author = await storage.getUser(project.submitterId);
 
     // 获取投票数
-    const votes = await storage.getVotesForProject(project.id);
+    const votes = await storage.getProjectVotes(project.id);
 
     const formattedProject = {
       id: project.id,

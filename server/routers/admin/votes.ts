@@ -120,19 +120,20 @@ router.get('/stats', authenticateAdminToken, async (req: AuthenticatedAdminReque
 router.get('/project/:projectId', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
   try {
     const { projectId } = req.params;
-    const votes = await storage.getVotesForProject(projectId);
+    const votes = await storage.getProjectVotes(projectId);
     
     // 转换数据格式
     const formattedVotes = await Promise.all(
-      votes.map(async (vote) => {
-        const user = await storage.getUser(vote.userId);
+      votes.map(async (voteWithScores) => {
+        const vote = voteWithScores.vote;
+        const user = await storage.getUser(vote.voterId);
         const project = await storage.getProject(vote.projectId);
-        
+
         return {
           id: vote.id,
-          userId: vote.userId,
+          userId: vote.voterId,
           projectId: vote.projectId,
-          reason: vote.reason || '',
+          reason: vote.comment || '',
           userName: user?.realName || user?.email || '未知用户',
           projectTitle: project?.title || '未知项目',
           createdAt: vote.createdAt.toISOString(),

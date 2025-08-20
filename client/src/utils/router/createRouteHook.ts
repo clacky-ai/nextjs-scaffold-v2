@@ -74,6 +74,11 @@ export function createRouteHook<T extends RouteConfig>(
       getPageInfo: (): PageInfo => {
         return RouteUtils.getPageInfo(location, routeConfig, otherRouteConfig);
       },
+
+      // 获取当前路由键
+      getCurrentRouteKey: (): string | null => {
+        return routeConfig.getRouteKeyFromPath(location);
+      },
       
       // 路由配置
       routes: routeConfig

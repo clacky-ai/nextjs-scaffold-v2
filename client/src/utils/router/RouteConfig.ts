@@ -86,4 +86,14 @@ export class RouteConfig {
   getAllRoutes(): Record<string, BaseRoute> {
     return { ...this.routes };
   }
+
+  // 根据路径获取对应的路由键
+  getRouteKeyFromPath(currentPath: string): string | null {
+    for (const [key, route] of Object.entries(this.routes)) {
+      if (this.isMatch(currentPath, key)) {
+        return key;
+      }
+    }
+    return null;
+  }
 }

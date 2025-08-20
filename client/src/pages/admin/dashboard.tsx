@@ -7,23 +7,23 @@ import { ProjectsManagement } from '@/components/admin/pages/ProjectsManagement'
 import { VotesManagement } from '@/components/admin/pages/VotesManagement';
 import { ResultsStatistics } from '@/components/admin/pages/ResultsStatistics';
 import { SystemSettings } from '@/components/admin/pages/SystemSettings';
-import { ADMIN_SIDEBAR_ITEMS } from '@/router';
 import { useAdminRoutes } from '@/hooks/useAdminRoutes';
+import { ADMIN_SIDEBAR_ITEMS } from '@/router/admin-sidebar';
 
-// 根据路径渲染对应的内容组件
-function renderContent(path: string) {
-  switch (path) {
-    case '/admin':
+// 根据路由键渲染对应的内容组件
+function renderContent(routeKey: string | null) {
+  switch (routeKey) {
+    case 'dashboard':
       return <Dashboard />;
-    case '/admin/users':
+    case 'users':
       return <UsersManagement />;
-    case '/admin/projects':
+    case 'projects':
       return <ProjectsManagement />;
-    case '/admin/votes':
+    case 'votes':
       return <VotesManagement />;
-    case '/admin/results':
+    case 'results':
       return <ResultsStatistics />;
-    case '/admin/settings':
+    case 'settings':
       return <SystemSettings />;
     default:
       return <Dashboard />;
@@ -33,13 +33,14 @@ function renderContent(path: string) {
 export default function AdminDashboard() {
   const routes = useAdminRoutes();
   const pageInfo = routes.getPageInfo();
+  const currentRouteKey = routes.getCurrentRouteKey();
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AdminSidebar items={ADMIN_SIDEBAR_ITEMS} />
         <AdminContentLayout breadcrumbs={pageInfo.breadcrumbs}>
-          {renderContent(routes.location)}
+          {renderContent(currentRouteKey)}
         </AdminContentLayout>
       </div>
     </SidebarProvider>

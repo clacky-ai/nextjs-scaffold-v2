@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { useLocation } from 'wouter';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Bell, Settings, LogOut, User, Menu } from 'lucide-react';
+import { useAdminRoutes } from '@/hooks/useAdminRoutes';
 
 export interface BreadcrumbItem {
   label: string;
@@ -38,12 +38,12 @@ export function AdminContentLayout({
   children,
   breadcrumbs = []
 }: AdminContentLayoutProps) {
-  const [, navigate] = useLocation();
+  const routes = useAdminRoutes();
   const { toggleSidebar } = useSidebar();
 
   const handleLogout = () => {
     // TODO: 实现登出逻辑
-    navigate('/admin/login');
+    routes.navigate('login', {}, { replace: true });
   };
 
   const handleProfile = () => {
@@ -52,7 +52,11 @@ export function AdminContentLayout({
   };
 
   const handleSettings = () => {
-    navigate('/admin/settings');
+    routes.navigate('settings');
+  };
+
+  const handleGoToDashboard = () => {
+    routes.navigate('dashboard');
   };
 
   return (
@@ -75,7 +79,7 @@ export function AdminContentLayout({
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink onClick={() => navigate('/admin')}>
+                  <BreadcrumbLink onClick={handleGoToDashboard}>
                     管理后台
                   </BreadcrumbLink>
                 </BreadcrumbItem>
@@ -84,7 +88,10 @@ export function AdminContentLayout({
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       {item.path && index < breadcrumbs.length - 1 ? (
-                        <BreadcrumbLink onClick={() => navigate(item.path!)}>
+                        <BreadcrumbLink onClick={() => {
+                          // TODO: 这里需要根据path找到对应的routeKey并导航
+                          console.log('Navigate to:', item.path);
+                        }}>
                           {item.label}
                         </BreadcrumbLink>
                       ) : (

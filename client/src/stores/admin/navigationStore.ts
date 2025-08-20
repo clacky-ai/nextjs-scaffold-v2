@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { RouteUtils, PageInfo } from '@/utils/router';
+import { ADMIN_ROUTES, USER_ROUTES } from '@/router';
 
 interface NavigationStore {
   // State
@@ -10,11 +12,7 @@ interface NavigationStore {
   setBreadcrumbs: (breadcrumbs: Array<{ label: string; path?: string }>) => void;
   
   // Computed
-  getPageInfo: (path: string) => {
-    title: string;
-    description: string;
-    breadcrumbs: Array<{ label: string; path?: string }>;
-  };
+  getPageInfo: (path: string) => PageInfo;
 }
 
 export const useNavigationStore = create<NavigationStore>((set, get) => ({
@@ -26,51 +24,8 @@ export const useNavigationStore = create<NavigationStore>((set, get) => ({
   setCurrentPath: (currentPath) => set({ currentPath }),
   setBreadcrumbs: (breadcrumbs) => set({ breadcrumbs }),
   
-  // Computed
+  // Computed - 使用 RouteUtils 统一处理
   getPageInfo: (path: string) => {
-    switch (path) {
-      case '/admin':
-        return {
-          title: '仪表盘',
-          description: '系统概览和关键指标',
-          breadcrumbs: [{ label: '仪表盘' }],
-        };
-      case '/admin/users':
-        return {
-          title: '用户管理',
-          description: '管理系统用户和权限',
-          breadcrumbs: [{ label: '用户管理' }],
-        };
-      case '/admin/projects':
-        return {
-          title: '项目管理',
-          description: '管理参赛项目和审核',
-          breadcrumbs: [{ label: '项目管理' }],
-        };
-      case '/admin/votes':
-        return {
-          title: '投票管理',
-          description: '管理投票流程和规则',
-          breadcrumbs: [{ label: '投票管理' }],
-        };
-      case '/admin/results':
-        return {
-          title: '结果统计',
-          description: '查看投票结果和数据分析',
-          breadcrumbs: [{ label: '结果统计' }],
-        };
-      case '/admin/settings':
-        return {
-          title: '系统设置',
-          description: '配置系统参数和选项',
-          breadcrumbs: [{ label: '系统设置' }],
-        };
-      default:
-        return {
-          title: '管理后台',
-          description: '',
-          breadcrumbs: [],
-        };
-    }
+    return RouteUtils.getPageInfo(path, ADMIN_ROUTES, USER_ROUTES);
   },
 }));

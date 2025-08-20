@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { AdminAuthProvider } from "@/components/providers/AdminAuthProvider";
 import { useIsAuthenticated, useAuthLoading } from "@/stores/users/authStore";
 import { useIsAdminAuthenticated, useAdminAuthLoading } from "@/stores/admin/authStore";
+import { ADMIN_ROUTES, USER_ROUTES } from "@/router";
 
 // User pages
 import {
@@ -49,25 +50,25 @@ function renderForUser(isUserAuthenticated: boolean, isUserLoading: boolean) {
   return (
     <Switch>
       {/* Public routes */}
-      <Route path="/login" component={UserLoginPage} />
-      <Route path="/signup" component={UserSignupPage} />
+      <Route path={USER_ROUTES.getFullPath('login')} component={UserLoginPage} />
+      <Route path={USER_ROUTES.getFullPath('signup')} component={UserSignupPage} />
 
       {isUserAuthenticated ? (
         <>
-          <Route path="/" component={HomePage} />
-          <Route path="/projects" component={ProjectsPage} />
-          <Route path="/projects/new" component={ProjectFormPage} />
-          <Route path="/projects/:id/edit" component={ProjectFormPage} />
-          <Route path="/projects/:id" component={ProjectsPage} />
-          <Route path="/my-projects" component={MyProjectsPage} />
-          <Route path="/voting" component={VotingPage} />
-          <Route path="/my-votes" component={MyVotesPage} />
-          <Route path="/results" component={ResultsPage} />
+          <Route path={USER_ROUTES.getFullPath('home')} component={HomePage} />
+          <Route path={USER_ROUTES.getFullPath('projects')} component={ProjectsPage} />
+          <Route path={USER_ROUTES.getFullPath('projectNew')} component={ProjectFormPage} />
+          <Route path={USER_ROUTES.getFullPath('projectEdit')} component={ProjectFormPage} />
+          <Route path={USER_ROUTES.getFullPath('projectDetail')} component={ProjectsPage} />
+          <Route path={USER_ROUTES.getFullPath('myProjects')} component={MyProjectsPage} />
+          <Route path={USER_ROUTES.getFullPath('voting')} component={VotingPage} />
+          <Route path={USER_ROUTES.getFullPath('myVotes')} component={MyVotesPage} />
+          <Route path={USER_ROUTES.getFullPath('results')} component={ResultsPage} />
         </>
       ) : (
         <>
           <Route path="/" component={UserLoginPage} />
-          <Route path="/auth" component={AuthPage} />
+          <Route path={USER_ROUTES.getFullPath('auth')} component={AuthPage} />
           <Route component={UserLoginPage} />
         </>
       )}
@@ -84,15 +85,26 @@ function renderForAdmin(isAdminAuthenticated: boolean, isAdminLoading: boolean) 
 
   return (
     <Switch>
-      <Route path="/admin/login" component={AdminLoginPage} />
+      <Route path={ADMIN_ROUTES.getFullPath('login')} component={AdminLoginPage} />
       {isAdminAuthenticated ? (
         <>
-          <Route path="/admin" component={AdminDashboardPage} />
-          <Route path="/admin/users" component={AdminDashboardPage} />
-          <Route path="/admin/projects" component={AdminDashboardPage} />
-          <Route path="/admin/votes" component={AdminDashboardPage} />
-          <Route path="/admin/settings" component={AdminDashboardPage} />
-          {/* All admin sub-routes now use the dashboard framework */}
+          <Route path={ADMIN_ROUTES.getFullPath('dashboard')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('users')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('projects')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('votes')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('results')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('settings')} component={AdminDashboardPage} />
+          
+          {/* 详情页面路由 */}
+          <Route path={ADMIN_ROUTES.getFullPath('userDetail')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('userEdit')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('projectDetail')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('projectEdit')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('voteDetail')} component={AdminDashboardPage} />
+          
+          {/* 其他功能页面 */}
+          <Route path={ADMIN_ROUTES.getFullPath('profile')} component={AdminDashboardPage} />
+          <Route path={ADMIN_ROUTES.getFullPath('notifications')} component={AdminDashboardPage} />
         </>
       ) : (
         <Route component={AdminLoginPage} />

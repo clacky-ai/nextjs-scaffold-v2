@@ -4,9 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { LogOut, User, Building, Phone, Mail, FolderOpen, Vote, BarChart3, Plus } from 'lucide-react';
 import { Link } from 'wouter';
+import { useUserRoutes } from '@/hooks/useUserRoutes';
 
 export default function HomePage() {
   const { user, logout } = useAuth();
+  const routes = useUserRoutes();
 
   if (!user) {
     return null;
@@ -129,11 +131,11 @@ export default function HomePage() {
                   <CardDescription>提交和管理您的项目</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button className="w-full" asChild>
-                    <Link href="/projects/new">提交新项目</Link>
+                  <Button className="w-full" onClick={() => routes.navigate('projectNew')}>
+                    提交新项目
                   </Button>
-                  <Button className="w-full" variant="outline" asChild>
-                    <Link href="/my-projects">我的项目</Link>
+                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('myProjects')}>
+                    我的项目
                   </Button>
                 </CardContent>
               </Card>
@@ -147,8 +149,8 @@ export default function HomePage() {
                   <CardDescription>查看所有参赛项目</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full" variant="outline" asChild>
-                    <Link href="/projects">查看项目列表</Link>
+                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('projects')}>
+                    查看项目列表
                   </Button>
                 </CardContent>
               </Card>
@@ -162,11 +164,11 @@ export default function HomePage() {
                   <CardDescription>为优秀项目投票</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button className="w-full" variant="outline" asChild>
-                    <Link href="/voting">开始投票</Link>
+                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('voting')}>
+                    开始投票
                   </Button>
-                  <Button className="w-full" variant="outline" asChild>
-                    <Link href="/my-votes">我的投票</Link>
+                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('myVotes')}>
+                    我的投票
                   </Button>
                 </CardContent>
               </Card>
@@ -180,8 +182,8 @@ export default function HomePage() {
                   <CardDescription>查看实时统计结果</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full" variant="outline" asChild>
-                    <Link href="/results">查看结果</Link>
+                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('results')}>
+                    查看结果
                   </Button>
                 </CardContent>
               </Card>

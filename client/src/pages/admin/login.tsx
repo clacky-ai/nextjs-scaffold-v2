@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useLocation } from 'wouter';
+import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 import { useAdminAuth } from '@/stores/admin/authStore';
+import { useAdminRoutes } from '@/hooks/useAdminRoutes';
 
 // 管理员登录表单验证
 const adminLoginSchema = z.object({
@@ -20,7 +21,7 @@ const adminLoginSchema = z.object({
 type AdminLoginFormData = z.infer<typeof adminLoginSchema>;
 
 export default function AdminLoginPage() {
-  const [, setLocation] = useLocation();
+  const routes = useAdminRoutes();
   const { login, isLoading, error, clearError } = useAdminAuth();
 
   // 登录表单
@@ -37,7 +38,7 @@ export default function AdminLoginPage() {
       clearError();
       await login(data.username, data.password);
       // 登录成功后跳转到管理员仪表板
-      setLocation('/admin/dashboard');
+      routes.navigate('dashboard');
     } catch (error: any) {
       // 错误已经在 store 中设置了，这里不需要额外处理
     }

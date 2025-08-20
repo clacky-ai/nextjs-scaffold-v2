@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/api';
 import { Vote, VoteStats, LoadingState } from './types';
 
 interface VoteStore {
@@ -46,15 +47,7 @@ export const useVoteStore = create<VoteStore>((set, get) => ({
     
     try {
       setLoading('fetchVotes', true);
-      const response = await fetch('/api/admin/votes', {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch votes');
-      }
-      
-      const data = await response.json();
+      const data = await api.get('/api/admin/votes');
       setVotes(data.votes || []);
     } catch (error) {
       console.error('Error fetching votes:', error);
@@ -69,19 +62,12 @@ export const useVoteStore = create<VoteStore>((set, get) => ({
     
     try {
       setLoading('deleteVote', true);
-      const response = await fetch(`/api/admin/votes/${voteId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete vote');
-      }
-      
+      await api.delete(`/api/admin/votes/${voteId}`);
+
       // Update local state
       const updatedVotes = votes.filter(vote => vote.id !== voteId);
       setVotes(updatedVotes);
-      
+
       return true;
     } catch (error) {
       console.error('Error deleting vote:', error);

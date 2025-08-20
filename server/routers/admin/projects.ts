@@ -9,30 +9,49 @@ const router = Router();
 router.get('/', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
   try {
     const projects = await storage.getAllProjects();
-    
+
     // 转换数据格式以匹配前端期望的格式
     const formattedProjects = await Promise.all(
       projects.map(async (project) => {
-        // 获取作者信息
-        const author = await storage.getUser(project.authorId);
-        
-        // 获取投票数
-        const votes = await storage.getVotesForProject(project.id);
-        
-        return {
-          id: project.id,
-          title: project.title,
-          description: project.description,
-          imageUrl: project.imageUrl,
-          videoUrl: project.videoUrl,
-          demoUrl: project.demoUrl,
-          githubUrl: project.githubUrl,
-          authorId: project.authorId,
-          authorName: author?.realName || author?.email || '未知用户',
-          isBlocked: false, // TODO: 添加项目封禁状态字段到数据库
-          voteCount: votes.length,
-          createdAt: project.createdAt.toISOString(),
-        };
+        try {
+          // 获取作者信息
+          const author = await storage.getUser(project.submitterId);
+
+          // 获取投票数
+          const votes = await storage.getVotesForProject(project.id);
+
+          return {
+            id: project.id || '',
+            title: project.title || '',
+            description: project.description || '',
+            imageUrl: null, // 数据库中没有此字段
+            videoUrl: null, // 数据库中没有此字段
+            demoUrl: project.demoUrl || null,
+            githubUrl: project.repositoryUrl || null,
+            authorId: project.submitterId || '',
+            authorName: author?.realName || author?.email || '未知用户',
+            isBlocked: !project.isActive,
+            voteCount: votes ? votes.length : 0,
+            createdAt: project.createdAt ? project.createdAt.toISOString() : new Date().toISOString(),
+          };
+        } catch (error) {
+          console.error('Error processing project:', project.id, error);
+          // 返回基本信息，避免整个请求失败
+          return {
+            id: project.id || '',
+            title: project.title || '未知项目',
+            description: project.description || '',
+            imageUrl: null,
+            videoUrl: null,
+            demoUrl: project.demoUrl || null,
+            githubUrl: project.repositoryUrl || null,
+            authorId: project.submitterId || '',
+            authorName: '未知用户',
+            isBlocked: !project.isActive,
+            voteCount: 0,
+            createdAt: project.createdAt ? project.createdAt.toISOString() : new Date().toISOString(),
+          };
+        }
       })
     );
 
@@ -88,8 +107,8 @@ router.get('/:projectId', authenticateAdminToken, async (req: AuthenticatedAdmin
     }
 
     // 获取作者信息
-    const author = await storage.getUser(project.authorId);
-    
+    const author = await storage.getUser(project.submitterId);
+
     // 获取投票数
     const votes = await storage.getVotesForProject(project.id);
 
@@ -97,13 +116,13 @@ router.get('/:projectId', authenticateAdminToken, async (req: AuthenticatedAdmin
       id: project.id,
       title: project.title,
       description: project.description,
-      imageUrl: project.imageUrl,
-      videoUrl: project.videoUrl,
-      demoUrl: project.demoUrl,
-      githubUrl: project.githubUrl,
-      authorId: project.authorId,
+      imageUrl: null, // 数据库中没有此字段
+      videoUrl: null, // 数据库中没有此字段
+      demoUrl: project.demoUrl || null,
+      githubUrl: project.repositoryUrl || null,
+      authorId: project.submitterId,
       authorName: author?.realName || author?.email || '未知用户',
-      isBlocked: false, // TODO: 添加项目封禁状态字段到数据库
+      isBlocked: !project.isActive, // 使用 isActive 字段
       voteCount: votes.length,
       createdAt: project.createdAt.toISOString(),
     };

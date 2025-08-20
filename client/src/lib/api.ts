@@ -3,17 +3,40 @@
  * 支持认证、错误处理、类型安全等功能
  */
 
-// 获取认证 token 的函数
-const getAuthToken = (): string | null => {
+// 获取用户认证 token 的函数
+const getUserAuthToken = (): string | null => {
   try {
     const authStorage = localStorage.getItem('auth-storage');
     if (!authStorage) return null;
-    
+
     const authData = JSON.parse(authStorage);
     return authData?.state?.token || null;
   } catch {
     return null;
   }
+};
+
+// 获取管理员认证 token 的函数
+const getAdminAuthToken = (): string | null => {
+  try {
+    const adminAuthStorage = localStorage.getItem('admin-auth-storage');
+    if (!adminAuthStorage) return null;
+
+    const adminAuthData = JSON.parse(adminAuthStorage);
+    return adminAuthData?.state?.token || null;
+  } catch {
+    return null;
+  }
+};
+
+// 根据 URL 自动选择合适的 token
+const getAuthToken = (url: string): string | null => {
+  // 如果是管理员 API，使用管理员 token
+  if (url.includes('/api/admin/')) {
+    return getAdminAuthToken();
+  }
+  // 否则使用用户 token
+  return getUserAuthToken();
 };
 
 // API 错误类
@@ -47,7 +70,7 @@ async function baseApiRequest(config: ApiRequestConfig): Promise<Response> {
   };
 
   // 自动添加认证头（如果 token 存在）
-  const authToken = getAuthToken();
+  const authToken = getAuthToken(url);
   if (authToken) {
     requestHeaders['Authorization'] = `Bearer ${authToken}`;
   }

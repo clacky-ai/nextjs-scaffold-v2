@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/api';
 import { User, UserStats, LoadingState } from './types';
 
 interface UserStore {
@@ -46,15 +47,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
     
     try {
       setLoading('fetchUsers', true);
-      const response = await fetch('/api/admin/users', {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-      
-      const data = await response.json();
+      const data = await api.get('/api/admin/users');
       setUsers(data.users || []);
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -69,25 +62,14 @@ export const useUserStore = create<UserStore>((set, get) => ({
     
     try {
       setLoading('toggleUserStatus', true);
-      const response = await fetch(`/api/admin/users/${userId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ isBlocked }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update user status');
-      }
-      
+      await api.patch(`/api/admin/users/${userId}/status`, { isBlocked });
+
       // Update local state
-      const updatedUsers = users.map(user => 
+      const updatedUsers = users.map(user =>
         user.id === userId ? { ...user, isBlocked } : user
       );
       setUsers(updatedUsers);
-      
+
       return true;
     } catch (error) {
       console.error('Error updating user status:', error);

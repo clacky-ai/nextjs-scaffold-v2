@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { api } from '@/lib/api';
 import { Project, ProjectStats, LoadingState } from './types';
 
 interface ProjectStore {
@@ -46,15 +47,7 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     
     try {
       setLoading('fetchProjects', true);
-      const response = await fetch('/api/admin/projects', {
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch projects');
-      }
-      
-      const data = await response.json();
+      const data = await api.get('/api/admin/projects');
       setProjects(data.projects || []);
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -69,25 +62,14 @@ export const useProjectStore = create<ProjectStore>((set, get) => ({
     
     try {
       setLoading('toggleProjectStatus', true);
-      const response = await fetch(`/api/admin/projects/${projectId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ isBlocked }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update project status');
-      }
-      
+      await api.patch(`/api/admin/projects/${projectId}/status`, { isBlocked });
+
       // Update local state
-      const updatedProjects = projects.map(project => 
+      const updatedProjects = projects.map(project =>
         project.id === projectId ? { ...project, isBlocked } : project
       );
       setProjects(updatedProjects);
-      
+
       return true;
     } catch (error) {
       console.error('Error updating project status:', error);

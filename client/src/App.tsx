@@ -93,11 +93,10 @@ function renderForAdmin(isAdminAuthenticated: boolean, isAdminLoading: boolean) 
       {isAdminAuthenticated ? (
         <>
           <Route path="/admin" component={AdminDashboardPage} />
-          <Route path="/admin/dashboard" component={AdminDashboardPage} />
-          <Route path="/admin/dashboard/users" component={AdminUsersPage} />
-          <Route path="/admin/dashboard/projects" component={AdminProjectsPage} />
-          <Route path="/admin/dashboard/votes" component={AdminVotesPage} />
-          <Route path="/admin/dashboard/settings" component={AdminSettingsPage} />
+          <Route path="/admin/users" component={AdminUsersPage} />
+          <Route path="/admin/projects" component={AdminProjectsPage} />
+          <Route path="/admin/votes" component={AdminVotesPage} />
+          <Route path="/admin/settings" component={AdminSettingsPage} />
           {/* Add more admin routes here as needed */}
         </>
       ) : (

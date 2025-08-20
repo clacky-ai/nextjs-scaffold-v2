@@ -1,8 +1,11 @@
+import { BreadcrumbConfig } from './BreadcrumbBuilder';
+
 // 路由定义接口（用于配置）
 export interface RouteDefinition {
   path: string;
   title: string;
   description?: string;
+  breadcrumb?: BreadcrumbConfig;
 }
 
 // 路由基础接口（计算后的完整路由信息）
@@ -20,6 +23,7 @@ export interface PageInfo {
 // 路由配置类
 export class RouteConfig {
   public readonly routes: Record<string, BaseRoute>;
+  public readonly sortedRouteKeys: string[];
   public readonly defaultRouteKey: string | null;
 
   constructor(
@@ -28,6 +32,7 @@ export class RouteConfig {
     defaultRouteKey: string
   ) {
     this.defaultRouteKey = defaultRouteKey;
+    
     // 自动计算 fullPath
     this.routes = Object.entries(routeDefinitions).reduce((acc, [key, definition]) => {
       acc[key] = {
@@ -36,6 +41,9 @@ export class RouteConfig {
       };
       return acc;
     }, {} as Record<string, BaseRoute>);
+
+    // 一次性按特异性排序路由键
+    this.sortedRouteKeys = this.sortRoutesBySpecificity();
   }
 
   // 计算完整路径
@@ -82,6 +90,16 @@ export class RouteConfig {
       return currentPath === route.fullPath;
     }
     
+    // 如果路由包含参数（:id 形式），需要使用正则匹配
+    if (route.fullPath.includes(':')) {
+      // 将路由模式转换为正则表达式
+      // 例如：/admin/users/:id -> /admin/users/[^/]+
+      const pattern = route.fullPath.replace(/:[^\/]+/g, '[^\/]+');
+      const regex = new RegExp(`^${pattern}$`);
+      return regex.test(currentPath);
+    }
+    
+    // 对于普通路径，使用前缀匹配
     return currentPath.startsWith(route.fullPath);
   }
 
@@ -92,12 +110,42 @@ export class RouteConfig {
 
   // 根据路径获取对应的路由键
   getRouteKeyFromPath(currentPath: string): string | null {
-    for (const [key] of Object.entries(this.routes)) {
+    // 使用预排序的路由键进行匹配
+    for (const key of this.sortedRouteKeys) {
       if (this.isMatch(currentPath, key)) {
         return key;
       }
     }
     return null;
+  }
+
+  // 按特异性排序路由键
+  private sortRoutesBySpecificity(): string[] {
+    return Object.entries(this.routes)
+      .sort(([, a], [, b]) => {
+        const scoreA = this.getRouteSpecificity(a.fullPath);
+        const scoreB = this.getRouteSpecificity(b.fullPath);
+        return scoreB - scoreA; // 分数高的优先
+      })
+      .map(([key]) => key);
+  }
+
+  // 计算路由的特异性分数
+  private getRouteSpecificity(routePath: string): number {
+    const segments = routePath.split('/').filter(s => s.length > 0);
+    let score = 0;
+    
+    for (const segment of segments) {
+      if (segment.startsWith(':')) {
+        // 参数段，分数较低
+        score += 1;
+      } else {
+        // 静态段，分数较高
+        score += 2;
+      }
+    }
+    
+    return score;
   }
 
   // 获取默认路由的完整路径
@@ -111,5 +159,15 @@ export class RouteConfig {
   // 获取默认路由键
   getDefaultRouteKey(): string | null {
     return this.defaultRouteKey;
+  }
+
+  // 根据精确路径找到对应的路由键（用于面包屑导航）
+  getRouteKeyByExactPath(exactPath: string): string | null {
+    for (const [key, route] of Object.entries(this.routes)) {
+      if (route.fullPath === exactPath) {
+        return key;
+      }
+    }
+    return null;
   }
 }

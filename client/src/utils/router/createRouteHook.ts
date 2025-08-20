@@ -18,8 +18,14 @@ export function createRouteHook<T extends RouteConfig>(
   return function useRoutes() {
     const [location, navigate] = useLocation();
     
+    // 计算当前路由键，这样会在 location 变化时重新计算
+    const currentRouteKey = routeConfig.getRouteKeyFromPath(location);
+    const pageInfo = RouteUtils.getPageInfo(location, routeConfig);
+    
     return {
       location,
+      currentRouteKey,
+      pageInfo,
       
       // 通用导航方法
       navigate: (
@@ -69,15 +75,15 @@ export function createRouteHook<T extends RouteConfig>(
       isCurrentRoute: (routeKey: keyof T['routes']) => {
         return RouteUtils.isCurrentRoute(location, String(routeKey), routeConfig);
       },
-      
-      // 获取当前页面信息
-      getPageInfo: (): PageInfo => {
-        return RouteUtils.getPageInfo(location, routeConfig, otherRouteConfig);
-      },
 
-      // 获取当前路由键
+      // 获取当前路由键（向后兼容）
       getCurrentRouteKey: (): string | null => {
-        return routeConfig.getRouteKeyFromPath(location);
+        return currentRouteKey;
+      },
+      
+      // 获取当前页面信息（向后兼容）
+      getPageInfo: (): PageInfo => {
+        return pageInfo;
       },
       
       // 路由配置

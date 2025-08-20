@@ -2,6 +2,12 @@ import { RouteConfig } from '@/utils/router';
 
 // 管理端路由配置
 export const ADMIN_ROUTES = new RouteConfig('/admin', {
+  // 根路径重定向（在 wouter 层面处理）
+  root: {
+    path: '/',
+    title: '管理后台',
+  },
+
   // 认证相关
   login: {
     path: '/login',
@@ -11,7 +17,7 @@ export const ADMIN_ROUTES = new RouteConfig('/admin', {
 
   // 主要功能页面（显示在侧边栏）
   dashboard: {
-    path: '',  // 空字符串表示根路径，将生成 /admin
+    path: '/dashboard',  // 空字符串表示根路径，将生成 /admin
     title: '仪表盘',
     description: '系统概览和关键指标'
   },
@@ -45,12 +51,22 @@ export const ADMIN_ROUTES = new RouteConfig('/admin', {
   userDetail: {
     path: '/users/:id',
     title: '用户详情',
-    description: '查看用户详细信息'
+    description: '查看用户详细信息',
+    // breadcrumb: {
+    //   parent: 'users',  // 指定父路由为用户管理
+    // }
   },
   userEdit: {
     path: '/users/:id/edit',
     title: '编辑用户',
-    description: '编辑用户信息'
+    description: '编辑用户信息',
+    // breadcrumb: {
+    //   build: (params) => [
+    //     { label: '用户管理', path: '/admin/users' },
+    //     { label: `用户详情 - ${params.id}`, path: `/admin/users/${params.id}` },
+    //     { label: '编辑用户' }
+    //   ]
+    // }
   },
   projectDetail: {
     path: '/projects/:id',

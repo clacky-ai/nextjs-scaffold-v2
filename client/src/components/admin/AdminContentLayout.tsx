@@ -20,26 +20,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Bell, Settings, LogOut, User, Menu } from 'lucide-react';
 import { useAdminRoutes } from '@/hooks/useAdminRoutes';
-
-export interface BreadcrumbItem {
-  label: string;
-  path?: string;
-}
+import { useNavigationStore } from '@/stores/admin/navigationStore';
 
 export interface AdminContentLayoutProps {
   children: ReactNode;
   title?: string;
   description?: string;
-  breadcrumbs?: BreadcrumbItem[];
   actions?: ReactNode;
 }
 
 export function AdminContentLayout({
-  children,
-  breadcrumbs = []
+  children
 }: AdminContentLayoutProps) {
   const routes = useAdminRoutes();
   const { toggleSidebar } = useSidebar();
+  const { breadcrumbs } = useNavigationStore();
 
   const handleLogout = () => {
     // TODO: 实现登出逻辑
@@ -57,6 +52,14 @@ export function AdminContentLayout({
 
   const handleGoToDashboard = () => {
     routes.navigate('dashboard');
+  };
+
+  const handleBreadcrumbClick = (path: string) => {
+    // 根据精确路径找到对应的路由键并导航
+    const routeKey = routes.routes.getRouteKeyByExactPath(path);
+    if (routeKey) {
+      routes.navigate(routeKey as any);
+    }
   };
 
   return (
@@ -78,27 +81,22 @@ export function AdminContentLayout({
           {breadcrumbs.length > 0 && (
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem>
-                  <BreadcrumbLink onClick={handleGoToDashboard}>
-                    管理后台
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
                 {breadcrumbs.map((item, index) => (
-                  <div key={index} className="flex items-center">
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
+                  <>
+                    {index > 0 && <BreadcrumbSeparator />}
+                    <BreadcrumbItem key={index}>
                       {item.path && index < breadcrumbs.length - 1 ? (
-                        <BreadcrumbLink onClick={() => {
-                          // TODO: 这里需要根据path找到对应的routeKey并导航
-                          console.log('Navigate to:', item.path);
-                        }}>
+                        <BreadcrumbLink 
+                          onClick={() => handleBreadcrumbClick(item.path!)}
+                          className="cursor-pointer"
+                        >
                           {item.label}
                         </BreadcrumbLink>
                       ) : (
                         <BreadcrumbPage>{item.label}</BreadcrumbPage>
                       )}
                     </BreadcrumbItem>
-                  </div>
+                  </>
                 ))}
               </BreadcrumbList>
             </Breadcrumb>

@@ -1,5 +1,4 @@
 import { Switch, Route, useLocation } from "wouter";
-import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/components/providers/AuthProvider";
@@ -30,6 +29,7 @@ import {
 
 import NotFound from "@/pages/not-found";
 import { Loader2 } from "lucide-react";
+import { createRedirectPage } from "./components/router/Redirect";
 
 // Loading component
 const LoadingScreen = () => (
@@ -88,6 +88,12 @@ function renderForAdmin(isAdminAuthenticated: boolean, isAdminLoading: boolean) 
       <Route path={ADMIN_ROUTES.getFullPath('login')} component={AdminLoginPage} />
       {isAdminAuthenticated ? (
         <>
+          {/* 根路径重定向路由 */}
+          <Route 
+            path={ADMIN_ROUTES.getFullPath('root')} 
+            component={createRedirectPage(ADMIN_ROUTES.getFullPath('dashboard'))} 
+          />
+          
           <Route path={ADMIN_ROUTES.getFullPath('dashboard')} component={AdminDashboardPage} />
           <Route path={ADMIN_ROUTES.getFullPath('users')} component={AdminDashboardPage} />
           <Route path={ADMIN_ROUTES.getFullPath('projects')} component={AdminDashboardPage} />

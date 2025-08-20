@@ -21,10 +21,11 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, MoreHorizontal, UserPlus, Filter, Download, Loader2 } from 'lucide-react';
 import { useUserStore } from '@/stores/admin/userStore';
+import { useAdminRoutes } from '@/hooks/useAdminRoutes';
 
 export function UsersManagement() {
+  const routes = useAdminRoutes();
   const {
-    users,
     loading,
     searchTerm,
     setSearchTerm,
@@ -44,6 +45,10 @@ export function UsersManagement() {
       // 可以添加成功提示
       console.log('用户状态更新成功');
     }
+  };
+
+  const handleViewUserDetail = (userId: string) => {
+    routes.navigate('userDetail', { id: userId });
   };
 
   return (
@@ -189,7 +194,9 @@ export function UsersManagement() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>操作</DropdownMenuLabel>
-                          <DropdownMenuItem>查看详情</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleViewUserDetail(user.id)}>
+                            查看详情
+                          </DropdownMenuItem>
                           <DropdownMenuItem>编辑用户</DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

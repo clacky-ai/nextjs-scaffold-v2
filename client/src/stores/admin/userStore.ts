@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { api } from '@/lib/api';
-import { User, UserStats, LoadingState } from './types';
+import { User, LoadingState } from './types';
 
 interface UserStore {
   // State
@@ -16,11 +16,6 @@ interface UserStore {
   // API Actions
   fetchUsers: () => Promise<void>;
   toggleUserStatus: (userId: string, isBlocked: boolean) => Promise<boolean>;
-  
-  // Computed
-  stats: () => UserStats;
-  filteredUsers: () => User[];
-  refreshData: () => Promise<void>;
 }
 
 export const useUserStore = create<UserStore>((set, get) => ({
@@ -78,34 +73,4 @@ export const useUserStore = create<UserStore>((set, get) => ({
       setLoading('toggleUserStatus', false);
     }
   },
-  
-  // Computed properties
-  stats: () => {
-    const { users } = get();
-    const total = users.length;
-    const blocked = users.filter(user => user.isBlocked).length;
-    const active = total - blocked;
-    
-    return { total, active, blocked };
-  },
-  
-  filteredUsers: () => {
-    const { users, searchTerm } = get();
-    
-    if (!searchTerm) {
-      return users;
-    }
-    
-    const term = searchTerm.toLowerCase();
-    return users.filter(user => 
-      user.name.toLowerCase().includes(term) ||
-      user.email.toLowerCase().includes(term) ||
-      (user.team && user.team.toLowerCase().includes(term))
-    );
-  },
-  
-  refreshData: async () => {
-    const { fetchUsers } = get();
-    await fetchUsers();
-  }
 }));

@@ -38,7 +38,7 @@ export function AdminSidebar({ items, onItemClick }: AdminSidebarProps) {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <span className="text-primary-foreground font-bold text-sm">V</span>
           </div>
-          <h2 className="text-lg font-semibold">投票系统</h2>
+          <h2 className="text-lg font-semibold">管理系统</h2>
         </div>
       </SidebarHeader>
 

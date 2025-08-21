@@ -16,13 +16,13 @@ import UserSignupPage from "@/pages/users/SignupPage";
 // 管理端页面
 import AdminLoginPage from "@/pages/admin/login";
 import AdminEntryPage from "@/pages/admin/entryPage";
-import { Dashboard } from "@/components/admin/pages/Dashboard";
-import { UsersManagement } from "@/components/admin/pages/UsersManagement";
-import { UserDetail } from "@/components/admin/pages/UserDetail";
-import { ProjectsManagement } from "@/components/admin/pages/ProjectsManagement";
-import { VotesManagement } from "@/components/admin/pages/VotesManagement";
-import { ResultsStatistics } from "@/components/admin/pages/ResultsStatistics";
-import { SystemSettings } from "@/components/admin/pages/SystemSettings";
+import { Dashboard } from "@/pages/admin/Dashboard";
+import { UsersManagement } from "@/pages/admin/UsersManagement";
+import { UserDetail } from "@/pages/admin/UserDetail";
+import { ProjectsManagement } from "@/pages/admin/ProjectsManagement";
+import { VotesManagement } from "@/pages/admin/VotesManagement";
+import { ResultsStatistics } from "@/pages/admin/ResultsStatistics";
+import { SystemSettings } from "@/pages/admin/SystemSettings";
 
 // 公共组件
 import NotFound from "@/pages/not-found";

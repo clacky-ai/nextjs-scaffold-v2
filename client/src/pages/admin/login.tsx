@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'wouter';
+import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 import { useAdminAuth } from '@/stores/admin/authStore';
-import { useAdminRoutes } from '@/hooks/useAdminRoutes';
+import { useRoutes } from '@/hooks/useRoutes';
 
 // 管理员登录表单验证
 const adminLoginSchema = z.object({
@@ -21,7 +20,7 @@ const adminLoginSchema = z.object({
 type AdminLoginFormData = z.infer<typeof adminLoginSchema>;
 
 export default function AdminLoginPage() {
-  const routes = useAdminRoutes();
+  const routes = useRoutes();
   const { login, isLoading, error, clearError } = useAdminAuth();
 
   // 登录表单
@@ -38,7 +37,7 @@ export default function AdminLoginPage() {
       clearError();
       await login(data.username, data.password);
       // 登录成功后跳转到管理员仪表板
-      routes.navigate('dashboard');
+      routes.navigate('admin-dashboard');
     } catch (error: any) {
       // 错误已经在 store 中设置了，这里不需要额外处理
     }
@@ -98,7 +97,7 @@ export default function AdminLoginPage() {
           </form>
           
           <div className="mt-4 text-center text-sm">
-            <Link href="/login" className="text-gray-600 hover:underline">
+            <Link to="/login" className="text-gray-600 hover:underline">
               用户登录
             </Link>
           </div>

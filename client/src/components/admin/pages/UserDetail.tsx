@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ArrowLeft, Mail, Calendar, MapPin, Phone, User as UserIcon, Shield, Clock, Activity } from 'lucide-react';
-import { useAdminRoutes } from '@/hooks/useAdminRoutes';
+import { useRoutes } from '@/hooks/useRoutes';
 import { useUserStore } from '@/stores/admin/userStore';
 
-interface UserDetailProps {
-  userId: string;
-}
-
-export function UserDetail({ userId }: UserDetailProps) {
-  const routes = useAdminRoutes();
+export function UserDetail() {
+  const { id: userId } = useParams<{ id: string }>();
+  const routes = useRoutes();
   const { users, fetchUsers, loading } = useUserStore();
   const [user, setUser] = useState<any>(null);
 
@@ -29,7 +27,7 @@ export function UserDetail({ userId }: UserDetailProps) {
   }, [userId, users]);
 
   const handleBack = () => {
-    routes.navigate('users');
+    routes.navigate('admin-users');
   };
 
   if (loading.fetchUsers) {

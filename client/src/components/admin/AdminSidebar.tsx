@@ -1,6 +1,7 @@
-import { useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
-import { ADMIN_ROUTES } from '@/router/admin-routes';
+import { useLocation } from 'react-router';
+import { useRoutes } from '@/hooks/useRoutes';
+import { AdminSidebarItem } from '@/router/types';
 import {
   Sidebar,
   SidebarContent,
@@ -13,15 +14,6 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel
 } from '@/components/ui/sidebar';
-import { LucideIcon } from 'lucide-react';
-
-export interface AdminSidebarItem {
-  id: string;
-  label: string;
-  icon: LucideIcon;
-  path: string;
-  badge?: string | number;
-}
 
 export interface AdminSidebarProps {
   items: AdminSidebarItem[];
@@ -29,25 +21,17 @@ export interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ items, onItemClick }: AdminSidebarProps) {
-  const [location, navigate] = useLocation();
+  const location = useLocation();
+  const routes = useRoutes();
 
   const handleItemClick = (item: AdminSidebarItem) => {
-    navigate(item.path);
+    routes.navigate(item.routeKey);
     onItemClick?.(item);
   };
 
   const isItemActive = (item: AdminSidebarItem) => {
-    // 精确匹配当前路径
-    if (location === item.path) return true;
-    
-    // 如果是默认路由（首页），只有在完全匹配时才激活
-    const defaultPath = ADMIN_ROUTES.getDefaultPath();
-    if (item.path === defaultPath) {
-      return location === defaultPath;
-    }
-    
-    // 其他路径使用前缀匹配
-    return location.startsWith(item.path);
+    // 使用路由系统检查是否为当前路由
+    return routes.isCurrentRoute(item.routeKey);
   };
 
   return (
@@ -63,7 +47,7 @@ export function AdminSidebar({ items, onItemClick }: AdminSidebarProps) {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>管理功能</SidebarGroupLabel>
+          <SidebarGroupLabel>默认分组</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
@@ -97,7 +81,7 @@ export function AdminSidebar({ items, onItemClick }: AdminSidebarProps) {
 
       <SidebarFooter className="border-t p-4">
         <div className="text-xs text-muted-foreground text-center">
-          © 2024 投票系统
+          © 2025 Made by ClackyAI
         </div>
       </SidebarFooter>
     </Sidebar>

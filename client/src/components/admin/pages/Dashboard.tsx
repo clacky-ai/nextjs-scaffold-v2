@@ -13,7 +13,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
-import { useStatisticsStore } from '@/stores/admin/statisticsStore';
+// import { useStatisticsStore } from '@/stores/admin/statisticsStore';
 
 // 模拟最近活动数据
 const recentActivities = [
@@ -60,32 +60,35 @@ const recentActivities = [
 ];
 
 export function Dashboard() {
-  const {
-    dashboardStats,
-    loading,
-    fetchDashboardStats,
-  } = useStatisticsStore();
+  // const {
+  //   dashboardStats,
+  //   loading,
+  //   fetchDashboardStats,
+  // } = useStatisticsStore();
 
-  useEffect(() => {
-    fetchDashboardStats();
-  }, [fetchDashboardStats]);
+  // useEffect(() => {
+  //   fetchDashboardStats();
+  // }, [fetchDashboardStats]);
 
-  if (loading.fetchDashboardStats) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="ml-2 text-muted-foreground">加载数据中...</p>
-      </div>
-    );
-  }
+  // if (loading.fetchDashboardStats) {
+  //   return (
+  //     <div className="flex items-center justify-center h-64">
+  //       <Loader2 className="h-8 w-8 animate-spin" />
+  //       <p className="ml-2 text-muted-foreground">加载数据中...</p>
+  //     </div>
+  //   );
+  // }
 
-  if (!dashboardStats) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">暂无数据</p>
-      </div>
-    );
-  }
+  // if (!dashboardStats) {
+  //   return (
+  //     <div className="flex items-center justify-center h-64">
+  //       <p className="text-muted-foreground">暂无数据</p>
+  //     </div>
+  //   );
+  // }
+
+  const dashboardStats = {totalUsers:0, totalProjects:0, totalVotes:0, participationRate:0, activeUsers:0, pendingProjects:0, avgScore:0, completionRate:0};
+
   return (
     <div className="space-y-6">
       {/* 统计卡片 */}

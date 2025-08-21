@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link } from 'wouter';
+import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,8 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/stores/users/authStore';
-import { useUserRoutes } from '@/hooks/useUserRoutes';
-import { ADMIN_ROUTES } from '@/router';
+import { useRoutes } from '@/hooks/useRoutes';
 
 // 登录表单验证
 const loginSchema = z.object({
@@ -21,7 +20,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function UserLoginPage() {
-  const routes = useUserRoutes();
+  const routes = useRoutes();
   const { login, isLoading, error, clearError } = useAuth();
 
   // 登录表单
@@ -37,6 +36,7 @@ export default function UserLoginPage() {
     try {
       clearError();
       await login(data.email, data.password);
+      routes.navigate('home');
     } catch (error: any) {
       // 错误已经在 store 中设置了，这里不需要额外处理
     }
@@ -97,13 +97,13 @@ export default function UserLoginPage() {
           
           <div className="mt-4 text-center text-sm">
             还没有账号？{' '}
-            <Link href={routes.getPath('signup')} className="text-blue-600 hover:underline">
+            <Link to={routes.getPath('user-signup')} className="text-blue-600 hover:underline">
               立即注册
             </Link>
           </div>
           
           <div className="mt-2 text-center text-sm">
-            <Link href={ADMIN_ROUTES.getFullPath('login')} className="text-gray-600 hover:underline">
+            <Link to={routes.getPath('admin-login')} className="text-gray-600 hover:underline">
               管理员登录
             </Link>
           </div>

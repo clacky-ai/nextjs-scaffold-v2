@@ -21,10 +21,10 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, MoreHorizontal, UserPlus, Filter, Download, Loader2 } from 'lucide-react';
 import { useUserStore } from '@/stores/admin/userStore';
-import { useAdminRoutes } from '@/hooks/useAdminRoutes';
+import { useRoutes } from '@/hooks/useRoutes';
 
 export function UsersManagement() {
-  const routes = useAdminRoutes();
+  const routes = useRoutes();
   const {
     loading,
     searchTerm,
@@ -48,7 +48,7 @@ export function UsersManagement() {
   };
 
   const handleViewUserDetail = (userId: string) => {
-    routes.navigate('userDetail', { id: userId });
+    routes.navigate('admin-user-detail', { path: { id: userId } });
   };
 
   return (

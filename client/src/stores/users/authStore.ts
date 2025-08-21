@@ -47,7 +47,7 @@ interface AuthState {
 
 
 
-export const useAuthStore = create<AuthState>()(
+export const useUserAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       // Initial state
@@ -181,7 +181,7 @@ export const useAuthStore = create<AuthState>()(
 
 // 便捷的 hooks
 export const useAuth = () => {
-  const store = useAuthStore();
+  const store = useUserAuthStore();
   return {
     user: store.user,
     token: store.token,
@@ -196,7 +196,9 @@ export const useAuth = () => {
   };
 };
 
-export const useUser = () => useAuthStore((state) => state.user);
-export const useIsAuthenticated = () => useAuthStore((state) => state.isAuthenticated);
-export const useAuthLoading = () => useAuthStore((state) => state.isLoading);
-export const useAuthError = () => useAuthStore((state) => state.error);
+export const useUser = () => useUserAuthStore((state) => state.user);
+export const useIsAuthenticated = () => useUserAuthStore((state) => state.isAuthenticated);
+export const useAuthLoading = () => useUserAuthStore((state) => state.isLoading);
+export const useAuthError = () => useUserAuthStore((state) => state.error);
+
+export default useUserAuthStore;

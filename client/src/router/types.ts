@@ -5,7 +5,7 @@ export interface AdminSidebarItem {
   id: string;
   label: string;
   icon: LucideIcon;
-  path: string;
+  routeKey: string; // 使用路由键而不是硬编码路径
   badge?: string | number;
   permissions?: string[];
 }

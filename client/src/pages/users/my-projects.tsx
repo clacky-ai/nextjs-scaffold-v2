@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Loader2, Plus, Edit, Trash2, ExternalLink, Github, FileText, Eye } from 'lucide-react';
-import { Link } from 'wouter';
+import { Link } from 'react-router';
 
 export default function MyProjectsPage() {
   const { user } = useAuth();
@@ -92,7 +92,7 @@ export default function MyProjectsPage() {
               <p className="text-gray-600 mt-1">管理您提交的项目</p>
             </div>
             <Button asChild>
-              <Link href="/projects/new">
+              <Link to="/projects/new">
                 <Plus className="h-4 w-4 mr-2" />
                 提交新项目
               </Link>
@@ -168,7 +168,7 @@ export default function MyProjectsPage() {
                 点击上方按钮提交您的第一个项目
               </p>
               <Button className="mt-4" asChild>
-                <Link href="/projects/new">
+                <Link to="/projects/new">
                   <Plus className="h-4 w-4 mr-2" />
                   提交新项目
                 </Link>
@@ -256,14 +256,14 @@ export default function MyProjectsPage() {
                     
                     <div className="flex space-x-2">
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/projects/${project.id}`}>
+                        <Link to={`/projects/${project.id}`}>
                           <Eye className="h-3 w-3 mr-1" />
                           查看
                         </Link>
                       </Button>
                       
                       <Button variant="outline" size="sm" asChild>
-                        <Link href={`/projects/${project.id}/edit`}>
+                        <Link to={`/projects/${project.id}/edit`}>
                           <Edit className="h-3 w-3 mr-1" />
                           编辑
                         </Link>

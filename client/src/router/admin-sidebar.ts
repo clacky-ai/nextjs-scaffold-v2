@@ -1,43 +1,42 @@
 import { AdminSidebarItem } from './types';
-import { ADMIN_ROUTES } from './admin-routes';
 import { LayoutDashboard, Users, FolderOpen, Vote, Settings, BarChart3 } from 'lucide-react';
 
-// 侧边栏菜单项配置（决定哪些路由显示在侧边栏中）
+// 侧边栏菜单项配置（使用路由键，路径由路由系统动态解析）
 export const ADMIN_SIDEBAR_ITEMS: AdminSidebarItem[] = [
   {
-    id: 'dashboard',
+    id: 'admin-dashboard',
     label: '仪表盘',
     icon: LayoutDashboard,
-    path: ADMIN_ROUTES.getFullPath('dashboard'),
+    routeKey: 'admin-dashboard',
   },
   {
-    id: 'users',
+    id: 'admin-users',
     label: '用户管理',
     icon: Users,
-    path: ADMIN_ROUTES.getFullPath('users'),
+    routeKey: 'admin-users',
   },
   {
-    id: 'projects',
+    id: 'admin-projects',
     label: '项目管理',
     icon: FolderOpen,
-    path: ADMIN_ROUTES.getFullPath('projects'),
+    routeKey: 'admin-projects',
   },
   {
-    id: 'votes',
+    id: 'admin-votes',
     label: '投票管理',
     icon: Vote,
-    path: ADMIN_ROUTES.getFullPath('votes'),
+    routeKey: 'admin-votes',
   },
   {
-    id: 'results',
+    id: 'admin-results',
     label: '结果统计',
     icon: BarChart3,
-    path: ADMIN_ROUTES.getFullPath('results'),
+    routeKey: 'admin-results',
   },
   {
-    id: 'settings',
+    id: 'admin-settings',
     label: '系统设置',
     icon: Settings,
-    path: ADMIN_ROUTES.getFullPath('settings'),
+    routeKey: 'admin-settings',
   },
 ];

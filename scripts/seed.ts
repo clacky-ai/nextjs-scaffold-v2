@@ -6,7 +6,7 @@ import { db } from '../server/db/index'
 import { eq } from 'drizzle-orm'
 import {
   users,
-  admin_users,
+  adminUsers,
   type InsertUser,
 } from '../server/db/schema'
 
@@ -23,7 +23,7 @@ async function seedDatabase() {
 
     let admin;
     try {
-      [admin] = await db.insert(admin_users).values({
+      [admin] = await db.insert(adminUsers).values({
         id: nanoid(),
         username: 'admin',
         password: hashedPassword,
@@ -34,7 +34,7 @@ async function seedDatabase() {
     } catch (error: any) {
       if (error.cause?.code === '23505') {
         // 管理员已存在，获取现有管理员
-        const existingAdmin = await db.select().from(admin_users).where(eq(admin_users.username, 'admin')).limit(1)
+        const existingAdmin = await db.select().from(adminUsers).where(eq(adminUsers.username, 'admin')).limit(1)
         if (existingAdmin.length > 0) {
           admin = existingAdmin[0]
           console.log('ℹ️ 管理员账号已存在:', admin.username)

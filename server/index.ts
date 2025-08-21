@@ -2,7 +2,7 @@ import { config } from 'dotenv'
 import { resolve } from 'path'
 import express, { type Request, Response, NextFunction } from "express";
 import cookieParser from 'cookie-parser';
-import { registerRoutes } from "./routes";
+import { registerRoutes } from './routers';
 import { setupVite, serveStatic, log } from "./vite";
 
 // 加载环境变量

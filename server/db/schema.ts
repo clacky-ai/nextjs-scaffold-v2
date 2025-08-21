@@ -30,7 +30,7 @@ export const users = pgTable("users", {
 }));
 
 // 管理员表
-export const admin_users = pgTable('admin_users', {
+export const adminUsers = pgTable('admin_users', {
   id: varchar("id", { length: 255 }).primaryKey(),
   username: varchar('username', { length: 100 }).notNull().unique(),
   password: text('password').notNull(),
@@ -44,5 +44,5 @@ export const admin_users = pgTable('admin_users', {
 // Type exports
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-export type AdminUser = typeof admin_users.$inferSelect;
-export type InsertAdminUser = typeof admin_users.$inferInsert;
+export type AdminUser = typeof adminUsers.$inferSelect;
+export type InsertAdminUser = typeof adminUsers.$inferInsert;

@@ -1,4 +1,4 @@
-import { RouteConfig } from "@/config/routes";
+import { RouteConfig } from "@/utils/router/routes";
 
 /**
  * 从路由配置中提取路由映射

@@ -1,9 +1,8 @@
 import { redirect } from "react-router";
-import { requireAdminAuth, requireUserAuth, RouteConfig } from "@/config/routes";
+import { requireAdminAuth, requireUserAuth, RouteConfig } from "@/utils/router/routes";
 
-// 导入页面组件
 // 用户端页面
-import HomePage from "@/pages/users/HomePage";
+import HomePage from "@/pages/users/home";
 import ProjectsPage from '@/pages/users/projects';
 import VotingPage from '@/pages/users/voting';
 import ResultsPage from '@/pages/users/results';
@@ -11,7 +10,7 @@ import MyVotesPage from '@/pages/users/my-votes';
 import MyProjectsPage from '@/pages/users/my-projects';
 // import ProjectFormPage from '@/pages/users/project-form';
 import UserLoginPage from "@/pages/users/login";
-import UserSignupPage from "@/pages/users/SignupPage";
+import UserSignupPage from "@/pages/users/signup";
 
 // 管理端页面
 import AdminLoginPage from "@/pages/admin/login";

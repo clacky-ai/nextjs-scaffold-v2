@@ -1,7 +1,7 @@
 // React Router v7 路由工具函数
 import React from 'react';
 import { createBrowserRouter, RouteObject } from 'react-router';
-import type { RouteConfig } from '@/config/routes';
+import type { RouteConfig } from '@/utils/router/routes';
 
 // 将配置转换为 React Router v7 的路由对象
 export function convertConfigToRoutes(routes: RouteConfig[]): RouteObject[] {

@@ -1,4 +1,4 @@
-import { PageInfo, RouteConfig } from "./RouteConfig";
+import { PageInfo, RouteConfig } from "./RouteConfig_old";
 import { BreadcrumbBuilder } from "./BreadcrumbBuilder";
 
 const defaultFallback = {

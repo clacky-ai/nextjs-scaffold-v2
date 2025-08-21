@@ -1,4 +1,4 @@
-import { RouteConfig } from './RouteConfig';
+import { RouteConfig } from './RouteConfig_old';
 
 export interface BreadcrumbItem {
   label: string;

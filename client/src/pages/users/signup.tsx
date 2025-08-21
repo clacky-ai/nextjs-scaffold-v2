@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useLocation } from 'wouter';
+import { Link, useNavigate } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,7 +29,7 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function UserSignupPage() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { register: registerUser, isLoading, error, clearError } = useAuth();
 
   // 注册表单
@@ -53,7 +53,7 @@ export default function UserSignupPage() {
       const { confirmPassword, ...registerData } = data;
       await registerUser(registerData);
       // 注册成功后跳转到登录页
-      setLocation('/login');
+      navigate('/login');
     } catch (error: any) {
       // 错误已经在 store 中设置了，这里不需要额外处理
     }
@@ -184,7 +184,7 @@ export default function UserSignupPage() {
           
           <div className="mt-4 text-center text-sm">
             已有账号？{' '}
-            <Link href="/login" className="text-blue-600 hover:underline">
+            <Link to="/login" className="text-blue-600 hover:underline">
               立即登录
             </Link>
           </div>

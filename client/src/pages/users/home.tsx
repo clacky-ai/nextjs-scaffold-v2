@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { LogOut, User, Building, Phone, Mail, FolderOpen, Vote, BarChart3, Plus } from 'lucide-react';
-import { useUserRoutes } from '@/hooks/useUserRoutes';
+import { useNavigate } from 'react-router';
 
 export default function HomePage() {
   const { user, logout } = useAuth();
-  const routes = useUserRoutes();
+  const navigate = useNavigate();
 
   if (!user) {
     return null;
@@ -130,10 +130,10 @@ export default function HomePage() {
                   <CardDescription>提交和管理您的项目</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button className="w-full" onClick={() => routes.navigate('projectNew')}>
+                  <Button className="w-full" onClick={() => navigate('/projects/new')}>
                     提交新项目
                   </Button>
-                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('myProjects')}>
+                  <Button className="w-full" variant="outline" onClick={() => navigate('/my-projects')}>
                     我的项目
                   </Button>
                 </CardContent>
@@ -148,7 +148,7 @@ export default function HomePage() {
                   <CardDescription>查看所有参赛项目</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('projects')}>
+                  <Button className="w-full" variant="outline" onClick={() => navigate('/projects')}>
                     查看项目列表
                   </Button>
                 </CardContent>
@@ -163,10 +163,10 @@ export default function HomePage() {
                   <CardDescription>为优秀项目投票</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('voting')}>
+                  <Button className="w-full" variant="outline" onClick={() => navigate('/voting')}>
                     开始投票
                   </Button>
-                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('myVotes')}>
+                  <Button className="w-full" variant="outline" onClick={() => navigate('/my-votes')}>
                     我的投票
                   </Button>
                 </CardContent>
@@ -181,7 +181,7 @@ export default function HomePage() {
                   <CardDescription>查看实时统计结果</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button className="w-full" variant="outline" onClick={() => routes.navigate('results')}>
+                  <Button className="w-full" variant="outline" onClick={() => navigate('/results')}>
                     查看结果
                   </Button>
                 </CardContent>

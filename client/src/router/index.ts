@@ -4,29 +4,17 @@ import { LayoutDashboard, Users, FolderOpen, Vote, BarChart3, Settings } from 'l
 
 // 用户端页面
 import HomePage from "@/pages/users/home";
-import ProjectsPage from '@/pages/users/projects';
-import VotingPage from '@/pages/users/voting';
-import ResultsPage from '@/pages/users/results';
-import MyVotesPage from '@/pages/users/my-votes';
-import MyProjectsPage from '@/pages/users/my-projects';
-// import ProjectFormPage from '@/pages/users/project-form';
 import UserLoginPage from "@/pages/users/login";
 import UserSignupPage from "@/pages/users/signup";
 
 // 管理端页面
 import AdminLoginPage from "@/pages/admin/login";
 import AdminEntryPage from "@/pages/admin/entryPage";
-import { Dashboard } from "@/pages/admin/Dashboard";
 import { UsersManagement } from "@/pages/admin/UsersManagement";
 import { UserDetail } from "@/pages/admin/UserDetail";
-import { ProjectsManagement } from "@/pages/admin/ProjectsManagement";
-import { VotesManagement } from "@/pages/admin/VotesManagement";
-import { ResultsStatistics } from "@/pages/admin/ResultsStatistics";
-import { SystemSettings } from "@/pages/admin/SystemSettings";
 
 // 公共组件
 import NotFound from "@/pages/not-found";
-
 
 
 // 统一路由配置
@@ -45,71 +33,14 @@ export const routeConfig: RouteConfig[] = [
     meta: { title: "用户注册" },
   },
 
-  // 用户认证后的路由
   {
     id: "home",
     path: "/",
     element: HomePage,
-    loader: requireUserAuth,
-    meta: { title: "首页", requiresAuth: true },
+    // loader: requireUserAuth, // 根据用户需求判断是否需要登录后才能访问 Home
+    meta: { title: "首页" },
   },
-  {
-    id: 'projects',
-    path: '/projects',
-    element: ProjectsPage,
-    loader: requireUserAuth,
-    meta: { title: '项目列表', requiresAuth: true }
-  },
-//   {
-//     id: 'project-new',
-//     path: '/projects/new',
-//     element: ProjectFormPage,
-//     loader: requireUserAuth,
-//     meta: { title: '新建项目', requiresAuth: true }
-//   },
-//   {
-//     id: 'project-edit',
-//     path: '/projects/:id/edit',
-//     element: ProjectFormPage,
-//     loader: requireUserAuth,
-//     meta: { title: '编辑项目', requiresAuth: true }
-//   },
-  {
-    id: 'project-detail',
-    path: '/projects/:id',
-    element: ProjectsPage,
-    loader: requireUserAuth,
-    meta: { title: '项目详情', requiresAuth: true }
-  },
-  {
-    id: 'my-projects',
-    path: '/my-projects',
-    element: MyProjectsPage,
-    loader: requireUserAuth,
-    meta: { title: '我的项目', requiresAuth: true }
-  },
-  {
-    id: 'voting',
-    path: '/voting',
-    element: VotingPage,
-    loader: requireUserAuth,
-    meta: { title: '投票页面', requiresAuth: true }
-  },
-  {
-    id: 'my-votes',
-    path: '/my-votes',
-    element: MyVotesPage,
-    loader: requireUserAuth,
-    meta: { title: '我的投票', requiresAuth: true }
-  },
-  {
-    id: 'results',
-    path: '/results',
-    element: ResultsPage,
-    loader: requireUserAuth,
-    meta: { title: '投票结果', requiresAuth: true }
-  },
-
+  
   // 管理员登录页面
   {
     id: "admin-login",
@@ -134,18 +65,6 @@ export const routeConfig: RouteConfig[] = [
 
       // 管理员功能页面
       {
-        id: "admin-dashboard",
-        path: "dashboard",
-        element: Dashboard,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 0,
-          title: "仪表盘",
-          icon: LayoutDashboard,
-          breadcrumbTitle: "仪表盘",
-        },
-      },
-      {
         id: "admin-users",
         path: "users",
         element: UsersManagement,
@@ -157,55 +76,6 @@ export const routeConfig: RouteConfig[] = [
           breadcrumbTitle: "用户管理",
         },
       },
-      {
-        id: 'admin-projects',
-        path: 'projects',
-        element: ProjectsManagement,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 2,
-          title: '项目管理',
-          icon: FolderOpen,
-          breadcrumbTitle: '项目管理'
-        }
-      },
-      {
-        id: 'admin-votes',
-        path: 'votes',
-        element: VotesManagement,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 3,
-          title: '投票管理',
-          icon: Vote,
-          breadcrumbTitle: '投票管理'
-        }
-      },
-      {
-        id: 'admin-results',
-        path: 'results',
-        element: ResultsStatistics,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 4,
-          title: '结果统计',
-          icon: BarChart3,
-          breadcrumbTitle: '结果统计'
-        }
-      },
-      {
-        id: 'admin-settings',
-        path: 'settings',
-        element: SystemSettings,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 5,
-          title: '系统设置',
-          icon: Settings,
-          breadcrumbTitle: '系统设置'
-        }
-      },
-
       // 详情页面（不显示在侧边栏）
       {
         id: 'admin-user-detail',

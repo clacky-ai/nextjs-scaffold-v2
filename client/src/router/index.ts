@@ -60,7 +60,7 @@ export const routeConfig: RouteConfig[] = [
       {
         id: "admin-index",
         index: true,
-        loader: () => redirect("/admin/dashboard"),
+        loader: () => redirect("/admin/users"), // please modify this default page for real business
       },
 
       // 管理员功能页面

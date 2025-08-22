@@ -1,9 +1,11 @@
 import { redirect } from "react-router";
 import { requireAdminAuth, requireUserAuth, RouteConfig } from "@/utils/router/routes";
-import { LayoutDashboard, Users, FolderOpen, Vote, BarChart3, Settings } from 'lucide-react';
+import { Users } from 'lucide-react';
+
+// 整个产品的入口页面
+import LandingPage from "@/pages/LandingPage";
 
 // 用户端页面
-import HomePage from "@/pages/users/home";
 import UserLoginPage from "@/pages/users/login";
 import UserSignupPage from "@/pages/users/signup";
 
@@ -19,6 +21,15 @@ import NotFound from "@/pages/not-found";
 
 // 统一路由配置
 export const routeConfig: RouteConfig[] = [
+  // 整个产品的入口页面，请根据需求重构这个页面
+  {
+    id: "landing",
+    path: "/",
+    element: LandingPage,
+    // loader: requireUserAuth, // 根据用户需求判断是否需要登录后才能访问
+    meta: { title: "首页" },
+  },
+
   // 用户端路由
   {
     id: "user-login",
@@ -33,13 +44,14 @@ export const routeConfig: RouteConfig[] = [
     meta: { title: "用户注册" },
   },
 
-  {
-    id: "home",
-    path: "/",
-    element: HomePage,
-    // loader: requireUserAuth, // 根据用户需求判断是否需要登录后才能访问 Home
-    meta: { title: "首页" },
-  },
+  // 用户登录后的首页，请根据需求重构 path
+  // {
+  //   id: "user-home",
+  //   path: "/home",
+  //   element: UserHomePage,
+  //   loader: requireUserAuth, 
+  //   meta: { title: "用户首页" },
+  // },
   
   // 管理员登录页面
   {

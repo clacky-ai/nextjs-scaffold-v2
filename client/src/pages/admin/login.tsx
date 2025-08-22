@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
       clearError();
       await login(data.username, data.password);
       // 登录成功后跳转到管理员仪表板
-      routes.navigate('admin-dashboard');
+      routes.navigate('admin');
     } catch (error: any) {
       // 错误已经在 store 中设置了，这里不需要额外处理
     }

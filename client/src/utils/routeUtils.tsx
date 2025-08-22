@@ -43,7 +43,7 @@ export function getSidebarMenus(routes: RouteConfig[], basePath = ''): AdminSide
           path: fullPath.replace('//', '/'),
           title: route.meta.title || '',
           icon: route.meta.icon,
-          order: route.meta.sidebarOrder || 999
+          order: route.meta.sidebarOrder ?? 999
         });
       }
       

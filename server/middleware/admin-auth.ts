@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { storage } from '../storage';
 
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET || "admin-secret-key-change-in-production";
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "admin-secret-key-change-in-production";
 
 // Admin User type
 type AdminUser = {

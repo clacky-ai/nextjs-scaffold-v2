@@ -1,25 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { Response, NextFunction } from 'express';
 import { storage } from '../storage';
+import { type AuthRequest } from './route-auth';
 
 const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "admin-secret-key-change-in-production";
 
-// Admin User type
-type AdminUser = {
-  id: string;
-  username: string;
-  password: string;
-  name: string;
-  email: string;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
-export interface AuthenticatedAdminRequest extends Request {
-  adminUser?: AdminUser;
-}
-
-export const authenticateAdminToken = async (req: AuthenticatedAdminRequest, res: Response, next: NextFunction) => {
+export const verifyAdminToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     // 首先尝试从cookie中获取token
     let token = req.cookies?.admin_token;
@@ -43,7 +29,7 @@ export const authenticateAdminToken = async (req: AuthenticatedAdminRequest, res
       return res.status(401).json({ message: '管理员用户不存在' });
     }
 
-    req.adminUser = adminUser;
+    req.user = adminUser;
     next();
   } catch (error) {
     if (error instanceof jwt.JsonWebTokenError) {
@@ -53,12 +39,4 @@ export const authenticateAdminToken = async (req: AuthenticatedAdminRequest, res
     console.error('管理员认证中间件错误:', error);
     res.status(500).json({ message: '服务器内部错误' });
   }
-};
-
-// 中间件：确保只有管理员路由才能访问
-export const requireAdminPath = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.path.startsWith('/admin')) {
-    return res.status(403).json({ message: '访问被拒绝：需要管理员权限' });
-  }
-  next();
 };

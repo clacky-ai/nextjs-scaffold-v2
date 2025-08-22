@@ -1,14 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { Response, NextFunction } from 'express';
 import { storage } from '../storage';
+import { AuthRequest } from './route-auth';
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
-export interface AuthenticatedRequest extends Request {
-  user?: any;
-}
-
-export const authenticateToken = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+export const verifyUserToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     // 首先尝试从cookie中获取token
     let token = req.cookies?.user_token;

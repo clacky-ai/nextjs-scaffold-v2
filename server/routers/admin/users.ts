@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { storage } from '../../storage';
-import { authenticateAdminToken, type AuthenticatedAdminRequest } from '../../middleware/admin-auth';
+import { AuthRequest } from 'server/middleware/route-auth';
 
 const router = Router();
 
 // 获取所有用户列表
-router.get('/', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/', async (req: AuthRequest, res) => {
   try {
     const users = await storage.getAllUsers();
     
@@ -35,7 +35,7 @@ router.get('/', authenticateAdminToken, async (req: AuthenticatedAdminRequest, r
 });
 
 // 更新用户状态（封禁/解封）
-router.patch('/:userId/status', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.patch('/:userId/status', async (req: AuthRequest, res) => {
   try {
     const { userId } = req.params;
     const { isBlocked } = z.object({
@@ -60,7 +60,7 @@ router.patch('/:userId/status', authenticateAdminToken, async (req: Authenticate
 });
 
 // 获取用户详情
-router.get('/:userId', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/:userId', async (req: AuthRequest, res) => {
   try {
     const { userId } = req.params;
     const user = await storage.getUser(userId);

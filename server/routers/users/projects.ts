@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { storage } from '../../storage';
-import { authenticateToken, type AuthenticatedRequest } from '../../middleware/auth';
+import { AuthRequest } from 'server/middleware/route-auth';
 
 const router = Router();
 
@@ -60,7 +60,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // 创建项目
-router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.post('/', async (req: AuthRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: '用户未认证' });
@@ -100,7 +100,7 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
 });
 
 // 更新项目
-router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.put('/:id', async (req: AuthRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: '用户未认证' });
@@ -147,7 +147,7 @@ router.put('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
 });
 
 // 删除项目
-router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', async (req: AuthRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: '用户未认证' });
@@ -176,7 +176,7 @@ router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) 
 });
 
 // 检查是否可以为项目投票
-router.get('/:id/can-vote', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.get('/:id/can-vote', async (req: AuthRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: '用户未认证' });

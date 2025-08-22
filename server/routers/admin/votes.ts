@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { storage } from '../../storage';
-import { authenticateAdminToken, type AuthenticatedAdminRequest } from '../../middleware/admin-auth';
+import { AuthRequest } from 'server/middleware/route-auth';
 
 const router = Router();
 
 // 获取所有投票记录
-router.get('/', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/', async (req: AuthRequest, res) => {
   try {
     const votes = await storage.getAllVotes();
     
@@ -44,7 +44,7 @@ router.get('/', authenticateAdminToken, async (req: AuthenticatedAdminRequest, r
 });
 
 // 删除投票记录
-router.delete('/:voteId', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.delete('/:voteId', async (req: AuthRequest, res) => {
   try {
     const { voteId } = req.params;
     
@@ -74,7 +74,7 @@ router.delete('/:voteId', authenticateAdminToken, async (req: AuthenticatedAdmin
 });
 
 // 获取投票统计信息
-router.get('/stats', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/stats', async (req: AuthRequest, res) => {
   try {
     const votes = await storage.getAllVotes();
     
@@ -117,7 +117,7 @@ router.get('/stats', authenticateAdminToken, async (req: AuthenticatedAdminReque
 });
 
 // 获取特定项目的投票记录
-router.get('/project/:projectId', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/project/:projectId', async (req: AuthRequest, res) => {
   try {
     const { projectId } = req.params;
     const votes = await storage.getProjectVotes(projectId);
@@ -155,7 +155,7 @@ router.get('/project/:projectId', authenticateAdminToken, async (req: Authentica
 });
 
 // 获取特定用户的投票记录
-router.get('/user/:userId', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/user/:userId', async (req: AuthRequest, res) => {
   try {
     const { userId } = req.params;
     const votes = await storage.getVotesForUser(userId);

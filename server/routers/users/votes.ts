@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
 import { storage } from '../../storage';
-import { authenticateToken, type AuthenticatedRequest } from '../../middleware/auth';
+import { AuthRequest } from 'server/middleware/route-auth';
 
 const router = Router();
 
@@ -17,7 +17,7 @@ const voteSchema = z.object({
 });
 
 // 提交投票
-router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.post('/', async (req: AuthRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: '用户未认证' });
@@ -59,7 +59,7 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
 });
 
 // 获取用户投票统计
-router.get('/stats', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.get('/stats', async (req: AuthRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: '用户未认证' });
@@ -74,7 +74,7 @@ router.get('/stats', authenticateToken, async (req: AuthenticatedRequest, res) =
 });
 
 // 获取用户投票历史
-router.get('/my-votes', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.get('/my-votes', async (req: AuthRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: '用户未认证' });

@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 import { storage } from '../../storage';
-import { authenticateToken, type AuthenticatedRequest } from '../../middleware/auth';
+import { AuthRequest } from 'server/middleware/route-auth';
 
 const router = Router();
 
@@ -144,7 +144,7 @@ router.post('/login', async (req, res) => {
 });
 
 // 获取当前用户信息
-router.get('/me', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.get('/me', async (req: AuthRequest, res) => {
   try {
     if (!req.user) {
       return res.status(401).json({ message: '用户未认证' });
@@ -160,7 +160,7 @@ router.get('/me', authenticateToken, async (req: AuthenticatedRequest, res) => {
 });
 
 // 用户登出
-router.post('/logout', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.post('/logout', async (req: AuthRequest, res) => {
   // 清除用户cookie
   res.clearCookie('user_token', { path: '/' });
   res.json({ message: '登出成功' });

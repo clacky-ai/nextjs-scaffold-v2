@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { storage } from '../../storage';
-import { authenticateAdminToken, type AuthenticatedAdminRequest } from '../../middleware/admin-auth';
+import { AuthRequest } from 'server/middleware/route-auth';
 
 const router = Router();
 
 // 获取所有项目列表
-router.get('/', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/', async (req: AuthRequest, res) => {
   try {
     const projects = await storage.getAllProjects();
 
@@ -69,7 +69,7 @@ router.get('/', authenticateAdminToken, async (req: AuthenticatedAdminRequest, r
 });
 
 // 更新项目状态（显示/隐藏）
-router.patch('/:projectId/status', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.patch('/:projectId/status', async (req: AuthRequest, res) => {
   try {
     const { projectId } = req.params;
     const { isBlocked } = z.object({
@@ -94,7 +94,7 @@ router.patch('/:projectId/status', authenticateAdminToken, async (req: Authentic
 });
 
 // 获取项目详情
-router.get('/:projectId', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/:projectId', async (req: AuthRequest, res) => {
   try {
     const { projectId } = req.params;
     const project = await storage.getProject(projectId);
@@ -141,7 +141,7 @@ router.get('/:projectId', authenticateAdminToken, async (req: AuthenticatedAdmin
 });
 
 // 删除项目
-router.delete('/:projectId', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.delete('/:projectId', async (req: AuthRequest, res) => {
   try {
     const { projectId } = req.params;
     

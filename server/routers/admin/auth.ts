@@ -4,12 +4,12 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 import { storage } from '../../storage';
-import { authenticateAdminToken, type AuthenticatedAdminRequest } from '../../middleware/admin-auth';
+import { AuthRequest } from 'server/middleware/route-auth';
 
 const router = Router();
 
 // JWT密钥 - 使用不同的密钥以区分用户和管理员token
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || process.env.JWT_SECRET || "admin-secret-key-change-in-production";
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "admin-secret-key-change-in-production";
 
 // 管理员登录请求schema
 const adminLoginSchema = z.object({
@@ -129,14 +129,14 @@ router.post('/register', async (req, res) => {
 });
 
 // 获取当前管理员信息
-router.get('/me', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.get('/me', async (req: AuthRequest, res) => {
   try {
-    if (!req.adminUser) {
+    if (!req.user) {
       return res.status(401).json({ message: '管理员未认证' });
     }
 
     // 返回管理员信息（不包含密码）
-    const { password, ...adminUserWithoutPassword } = req.adminUser;
+    const { password, ...adminUserWithoutPassword } = req.user;
     res.json({ adminUser: adminUserWithoutPassword });
   } catch (error) {
     console.error('获取管理员信息错误:', error);
@@ -145,7 +145,7 @@ router.get('/me', authenticateAdminToken, async (req: AuthenticatedAdminRequest,
 });
 
 // 管理员登出
-router.post('/logout', authenticateAdminToken, async (req: AuthenticatedAdminRequest, res) => {
+router.post('/logout', async (req: AuthRequest, res) => {
   // 清除cookie
   res.clearCookie('admin_token', { path: '/admin' });
   res.json({ message: '登出成功' });

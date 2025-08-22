@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import { useRoutes } from '@/hooks/useRoutes';
-import { AdminSidebarItem } from '@/router/types';
+import { AdminSidebarItem } from '@/types/admin';
 import {
   Sidebar,
   SidebarContent,

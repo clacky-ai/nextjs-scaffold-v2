@@ -2,7 +2,7 @@
 import React from 'react';
 import { createBrowserRouter, RouteObject } from 'react-router';
 import type { RouteConfig } from '@/utils/router/routes';
-import type { AdminSidebarItem } from '@/router/types';
+import type { AdminSidebarItem } from '@/types/admin';
 
 // 将配置转换为 React Router v7 的路由对象
 export function convertConfigToRoutes(routes: RouteConfig[]): RouteObject[] {

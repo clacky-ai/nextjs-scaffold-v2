@@ -78,3 +78,40 @@ export const db = new Proxy({} as ReturnType<typeof drizzle>, {
     return dbInstance[prop as keyof typeof dbInstance];
   }
 });
+
+// 检查数据库连接
+export async function checkDatabaseConnection(): Promise<{ connected: boolean; error?: string }> {
+  let client: any = null;
+  try {
+    const dbConfig = getDbConfig();
+    // 创建一个临时客户端用于测试，不使用全局缓存
+    client = postgres({
+      ...dbConfig,
+      max: 1, // 只使用一个连接进行测试
+      idle_timeout: 5, // 5秒超时
+      connect_timeout: 5, // 5秒连接超时
+    });
+
+    // 执行一个简单的查询来测试连接
+    await client`SELECT 1`;
+    return { connected: true };
+  } catch (error: any) {
+    const errorMessage = error.code === 'ECONNREFUSED'
+      ? `数据库连接被拒绝。请确保PostgreSQL服务正在运行并监听端口 ${process.env.DB_PORT || 5432}`
+      : `数据库连接失败: ${error.message}`;
+
+    return {
+      connected: false,
+      error: errorMessage
+    };
+  } finally {
+    // 确保关闭测试连接
+    if (client) {
+      try {
+        await client.end();
+      } catch (e) {
+        // 忽略关闭连接时的错误
+      }
+    }
+  }
+}

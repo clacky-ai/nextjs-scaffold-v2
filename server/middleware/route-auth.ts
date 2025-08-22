@@ -6,13 +6,6 @@ export interface AuthRequest extends Request {
   user?: any;
 }
 
-// 通用公开路径 - 完全不需要认证
-const PUBLIC_COMMON_PATHS = [
-  '/api',
-  '/api/health',
-  '/api/categories',
-];
-
 // 用户相关公开路径 - 在用户路径下但不需要认证
 const PUBLIC_USER_PATHS = [
   '/api/auth/login',
@@ -30,32 +23,33 @@ const PUBLIC_ADMIN_PATHS = [
  * 根据路径自动判断是否需要认证以及需要什么类型的认证
  */
 export const routeAuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
-  const path = req.path;
+  const normalizedPath = normalizePath(req.path);
 
-  // 通用公开路径不需要认证
-  if (isCommonPublicPath(path)) {
+  // 1. 首先检查是否是公开路径
+  if (isPublicPath(normalizedPath)) {
     return next();
   }
 
-  // 检查是否需要管理员认证
-  if (requiresAdminAuth(path)) {
+  // 2. 检查是否需要管理员认证
+  if (requiresAdminAuth(normalizedPath)) {
     return verifyAdminToken(req as AuthRequest, res, next);
   }
 
-  // 检查是否需要用户认证
-  if (requiresUserAuth(path)) {
+  // 3. 检查是否需要用户认证
+  if (requiresUserAuth(normalizedPath)) {
     return verifyUserToken(req as AuthRequest, res, next);
   }
 
-  // 默认情况下不需要认证（公开路径）
+  // 4. 默认情况下不需要认证（公开路径）
   next();
 };
 
 /**
- * 检查路径是否在通用公开路径中
+ * 检查路径是否是公开路径（任何类型的公开路径）
+ * 注意：传入的路径应该已经被标准化
  */
-function isCommonPublicPath(path: string): boolean {
-  return PUBLIC_COMMON_PATHS.includes(path);
+function isPublicPath(path: string): boolean {
+  return isUserPublicPath(path) || isAdminPublicPath(path);
 }
 
 /**
@@ -74,13 +68,9 @@ function isAdminPublicPath(path: string): boolean {
 
 /**
  * 检查是否需要用户认证
+ * 注意：公开路径的检查已经在主函数中完成，这里只需要判断路径规则
  */
 function requiresUserAuth(path: string): boolean {
-  // 用户公开路径不需要认证
-  if (isUserPublicPath(path)) {
-    return false;
-  }
-
   // 所有以 /api/ 开头但不是管理员路径的都需要用户认证
   if (path.startsWith('/api/') && !path.startsWith('/api/admin/')) {
     return true;
@@ -91,13 +81,9 @@ function requiresUserAuth(path: string): boolean {
 
 /**
  * 检查是否需要管理员认证
+ * 注意：公开路径的检查已经在主函数中完成，这里只需要判断路径规则
  */
 function requiresAdminAuth(path: string): boolean {
-  // 管理员公开路径不需要认证
-  if (isAdminPublicPath(path)) {
-    return false;
-  }
-
   // 所有以 /api/admin/ 开头的路径都需要管理员认证
   if (path.startsWith('/api/admin/')) {
     return true;
@@ -107,12 +93,8 @@ function requiresAdminAuth(path: string): boolean {
 }
 
 /**
- * 获取所有公开路径列表
+ * 标准化路径：移除尾部斜杠（但保留根路径 /）
  */
-export function getAllPublicPaths() {
-  return {
-    common: [...PUBLIC_COMMON_PATHS],
-    user: [...PUBLIC_USER_PATHS],
-    admin: [...PUBLIC_ADMIN_PATHS],
-  };
+function normalizePath(path: string): string {
+  return path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
 }

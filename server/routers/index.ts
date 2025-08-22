@@ -16,16 +16,15 @@ import apiRouter from './api';
 
 
 export function registerRoutes(app: Express): Server {
-  // 应用全局路由认证中间件
-  app.use(routeAuthMiddleware);
-
-  // 通用 API
+  // 先注册公开 API（不需要认证）
   app.use('/api', apiRouter);
-  app.use('/api/health', apiRouter);
+  app.use('/api/categories', categoriesRouter);
+
+  // 然后应用全局路由认证中间件
+  app.use(routeAuthMiddleware);
   
   // user 相关 API
   app.use('/api/auth', userAuthRouter);
-  app.use('/api/categories', categoriesRouter);
   app.use('/api/projects', userProjectsRouter);
   app.use('/api/votes', userVotesRouter);
   app.use('/api/score-dimensions', scoreDimensionsRouter);

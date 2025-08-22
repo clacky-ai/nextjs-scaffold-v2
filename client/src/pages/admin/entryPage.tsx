@@ -2,7 +2,7 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { AdminSidebar } from '@/components/admin/AdminSidebar';
 import { AdminContentLayout } from '@/components/admin/AdminContentLayout';
 import { getSidebarMenus } from '@/utils/routeUtils';
-import { routeConfig } from '@/router/new-routes';
+import { routeConfig } from '@/router';
 import { AdminSidebarItem } from '@/router/types';
 import { Outlet } from 'react-router';
 

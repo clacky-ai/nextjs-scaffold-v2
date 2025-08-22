@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router';
 import { generatePath, matchPath } from 'react-router';
-import { routeConfig } from '@/router/new-routes';
+import { routeConfig } from '@/router';
 import { extractRouteMap, generateRouteKeys } from '@/utils/router/routeMapper';
 
 // 延迟加载路由配置以避免循环依赖

@@ -2,6 +2,7 @@
 import React from 'react';
 import { createBrowserRouter, RouteObject } from 'react-router';
 import type { RouteConfig } from '@/utils/router/routes';
+import type { AdminSidebarItem } from '@/router/types';
 
 // 将配置转换为 React Router v7 的路由对象
 export function convertConfigToRoutes(routes: RouteConfig[]): RouteObject[] {
@@ -30,20 +31,8 @@ export function createAppRouter(routes: RouteConfig[]) {
 }
 
 // 获取侧边栏菜单
-export function getSidebarMenus(routes: RouteConfig[], basePath = ''): Array<{
-  id: string;
-  path: string;
-  title: string;
-  icon?: string;
-  order: number;
-}> {
-  const menus: Array<{
-    id: string;
-    path: string;
-    title: string;
-    icon?: string;
-    order: number;
-  }> = [];
+export function getSidebarMenus(routes: RouteConfig[], basePath = ''): AdminSidebarItem[] {
+  const menus: AdminSidebarItem[] = [];
   
   function extractMenus(routeList: RouteConfig[], currentPath = '') {
     routeList.forEach(route => {

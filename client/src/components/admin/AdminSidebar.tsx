@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { useLocation } from 'react-router';
 import { useRoutes } from '@/hooks/useRoutes';
 import { AdminSidebarItem } from '@/router/types';
 import {
@@ -21,17 +20,15 @@ export interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ items, onItemClick }: AdminSidebarProps) {
-  const location = useLocation();
   const routes = useRoutes();
 
   const handleItemClick = (item: AdminSidebarItem) => {
-    routes.navigate(item.routeKey);
+    routes.navigate(item.id);
     onItemClick?.(item);
   };
 
   const isItemActive = (item: AdminSidebarItem) => {
-    // 使用路由系统检查是否为当前路由
-    return routes.isCurrentRoute(item.routeKey);
+    return routes.isCurrentRoute(item.id);
   };
 
   return (
@@ -63,8 +60,8 @@ export function AdminSidebar({ items, onItemClick }: AdminSidebarProps) {
                         isActive && "bg-accent text-accent-foreground"
                       )}
                     >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.label}</span>
+                      {Icon && <Icon className="h-4 w-4" />}
+                      <span>{item.title}</span>
                       {item.badge && (
                         <span className="ml-auto bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
                           {item.badge}

@@ -1,13 +1,13 @@
 import { LucideIcon } from 'lucide-react';
 
-// Admin 侧边栏项接口
+// Admin 侧边栏项接口 (重构后符合新的路由配置系统)
 export interface AdminSidebarItem {
   id: string;
-  label: string;
-  icon: LucideIcon;
-  routeKey: string; // 使用路由键而不是硬编码路径
+  path: string;
+  title: string;
+  icon?: LucideIcon; // 直接使用 LucideIcon 组件
+  order: number;
   badge?: string | number;
-  permissions?: string[];
 }
 
 // 导航菜单项接口

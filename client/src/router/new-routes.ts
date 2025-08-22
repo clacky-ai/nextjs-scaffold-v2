@@ -1,5 +1,6 @@
 import { redirect } from "react-router";
 import { requireAdminAuth, requireUserAuth, RouteConfig } from "@/utils/router/routes";
+import { LayoutDashboard, Users, FolderOpen, Vote, BarChart3, Settings } from 'lucide-react';
 
 // 用户端页面
 import HomePage from "@/pages/users/home";
@@ -137,8 +138,10 @@ export const routeConfig: RouteConfig[] = [
         path: "dashboard",
         element: Dashboard,
         meta: {
+          showInSidebar: true,
+          sidebarOrder: 0,
           title: "仪表盘",
-          icon: "LayoutDashboard",
+          icon: LayoutDashboard,
           breadcrumbTitle: "仪表盘",
         },
       },
@@ -147,8 +150,10 @@ export const routeConfig: RouteConfig[] = [
         path: "users",
         element: UsersManagement,
         meta: {
+          showInSidebar: true,
+          sidebarOrder: 1,
           title: "用户管理",
-          icon: "Users",
+          icon: Users,
           breadcrumbTitle: "用户管理",
         },
       },
@@ -157,8 +162,10 @@ export const routeConfig: RouteConfig[] = [
         path: 'projects',
         element: ProjectsManagement,
         meta: {
+          showInSidebar: true,
+          sidebarOrder: 2,
           title: '项目管理',
-          icon: 'FolderOpen',
+          icon: FolderOpen,
           breadcrumbTitle: '项目管理'
         }
       },
@@ -167,8 +174,10 @@ export const routeConfig: RouteConfig[] = [
         path: 'votes',
         element: VotesManagement,
         meta: {
+          showInSidebar: true,
+          sidebarOrder: 3,
           title: '投票管理',
-          icon: 'Vote',
+          icon: Vote,
           breadcrumbTitle: '投票管理'
         }
       },
@@ -177,8 +186,10 @@ export const routeConfig: RouteConfig[] = [
         path: 'results',
         element: ResultsStatistics,
         meta: {
+          showInSidebar: true,
+          sidebarOrder: 4,
           title: '结果统计',
-          icon: 'BarChart3',
+          icon: BarChart3,
           breadcrumbTitle: '结果统计'
         }
       },
@@ -187,8 +198,10 @@ export const routeConfig: RouteConfig[] = [
         path: 'settings',
         element: SystemSettings,
         meta: {
+          showInSidebar: true,
+          sidebarOrder: 5,
           title: '系统设置',
-          icon: 'Settings',
+          icon: Settings,
           breadcrumbTitle: '系统设置'
         }
       },

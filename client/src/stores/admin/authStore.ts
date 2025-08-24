@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { API_ENDPOINTS } from '@/lib/api';
+import { api } from '@/lib/api';
 
 interface AdminUser {
   id: string;
@@ -42,26 +42,16 @@ const useAdminAuthStore = create<AdminAuthStore>()(
       // Actions
       login: async (username: string, password: string) => {
         set({ isLoading: true, error: null });
-        
+
         try {
-          const response = await fetch(API_ENDPOINTS.ADMIN_AUTH.LOGIN, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include', // 包含cookies
-            body: JSON.stringify({ username, password }),
+          const response = await api.post('/api/admin/auth/login', {
+            username,
+            password,
           });
 
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.message || '登录失败');
-          }
-
           set({
-            adminUser: data.adminUser,
-            token: data.token,
+            adminUser: response.adminUser,
+            token: response.token,
             isAuthenticated: true,
             isLoading: false,
             error: null,
@@ -80,15 +70,9 @@ const useAdminAuthStore = create<AdminAuthStore>()(
 
       logout: async () => {
         set({ isLoading: true });
-        
+
         try {
-          await fetch(API_ENDPOINTS.ADMIN_AUTH.LOGOUT, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-              'Authorization': `Bearer ${get().token}`,
-            },
-          });
+          await api.post('/api/admin/auth/logout');
         } catch (error) {
           console.error('Logout error:', error);
         } finally {
@@ -126,20 +110,10 @@ const useAdminAuthStore = create<AdminAuthStore>()(
         set({ isLoading: true });
 
         try {
-          const response = await fetch(API_ENDPOINTS.ADMIN_AUTH.ME, {
-            credentials: 'include',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
+          const response = await api.get('/api/admin/auth/me');
 
-          if (!response.ok) {
-            throw new Error('Authentication failed');
-          }
-
-          const data = await response.json();
           set({
-            adminUser: data.adminUser,
+            adminUser: response.adminUser,
             isAuthenticated: true,
             isLoading: false,
           });

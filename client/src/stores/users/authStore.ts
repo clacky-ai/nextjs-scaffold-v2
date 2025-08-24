@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { api, API_ENDPOINTS } from '@/lib/api';
+import { api } from '@/lib/api';
 
 export interface User {
   id: string;
@@ -32,7 +32,7 @@ interface AuthState {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  
+
   // Actions
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
@@ -56,7 +56,7 @@ export const useUserAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
       isAuthenticated: false,
-      
+
       // Actions
       setUser: (user) => set({ user }),
       setToken: (token) => set({ token }),
@@ -68,7 +68,7 @@ export const useUserAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true, error: null });
 
-          const response = await api.post(API_ENDPOINTS.AUTH.LOGIN, {
+          const response = await api.post('/api/auth/login', {
             email,
             password,
           });
@@ -96,7 +96,7 @@ export const useUserAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true, error: null });
 
-          const response = await api.post(API_ENDPOINTS.AUTH.REGISTER, userData);
+          const response = await api.post('/api/auth/register', userData);
 
           set({
             user: response.user,
@@ -122,7 +122,7 @@ export const useUserAuthStore = create<AuthState>()(
 
         // 异步调用登出API，但不等待结果
         if (token) {
-          api.post(API_ENDPOINTS.AUTH.LOGOUT).catch(console.error);
+          api.post('/api/auth/logout').catch(console.error);
         }
 
         // 立即清除本地状态
@@ -146,7 +146,7 @@ export const useUserAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true, error: null });
 
-          const response = await api.get(API_ENDPOINTS.AUTH.ME);
+          const response = await api.get('/api/auth/me');
 
           set({
             user: response.user,

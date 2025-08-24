@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { api, API_ENDPOINTS } from '@/lib/api';
+import { api } from '@/lib/api';
 
 export interface ScoreDimension {
   id: string;
@@ -138,7 +138,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await api.get(API_ENDPOINTS.SCORE_DIMENSIONS.LIST);
+      const response = await api.get('/api/score-dimensions');
 
       set({
         dimensions: response.dimensions,
@@ -156,7 +156,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await api.get(API_ENDPOINTS.VOTES.STATS);
+      const response = await api.get('/api/votes/stats');
 
       set({
         userStats: response,
@@ -174,7 +174,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await api.get(API_ENDPOINTS.VOTES.MY_VOTES);
+      const response = await api.get('/api/votes/my-votes');
 
       set({
         userVotes: response.votes,
@@ -192,7 +192,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
 
-      const response = await api.get(API_ENDPOINTS.VOTES.RESULTS);
+      const response = await api.get('/api/votes/results');
 
       set({
         votingResults: response,
@@ -208,7 +208,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
   
   checkCanVote: async (projectId: string) => {
     try {
-      const response = await api.get(API_ENDPOINTS.PROJECTS.CAN_VOTE(projectId));
+      const response = await api.get(`/api/projects/${projectId}/can-vote`);
       return response;
     } catch (error) {
       throw error;
@@ -225,7 +225,7 @@ export const useVotingStore = create<VotingState>((set, get) => ({
         score,
       }));
 
-      await api.post(API_ENDPOINTS.VOTES.SUBMIT, {
+      await api.post('/api/votes', {
         projectId: voteData.projectId,
         scores,
         comment: voteData.comment,

@@ -1,4 +1,4 @@
-import postgres from 'postgres';
+import { PrismaClient } from '@prisma/client';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { config } from 'dotenv';
@@ -11,69 +11,95 @@ config({ path: resolve(process.cwd(), '.env') });
 const execAsync = promisify(exec);
 
 // 数据库配置
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  ssl: process.env.DB_SSL === 'true',
-};
+function getDatabaseUrl() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL 环境变量未设置');
+  }
+  return process.env.DATABASE_URL;
+}
 
-const dbName = process.env.DB_NAME || 'default';
+function getPostgresUrl() {
+  const databaseUrl = getDatabaseUrl();
+  // 将数据库名替换为 postgres 来连接到默认数据库
+  return databaseUrl.replace(/\/[^\/]+(\?|$)/, '/postgres$1');
+}
+
+function getDatabaseName() {
+  const databaseUrl = getDatabaseUrl();
+  // 从 DATABASE_URL 中提取数据库名
+  const match = databaseUrl.match(/\/([^\/\?]+)(\?|$)/);
+  return match ? match[1] : 'default';
+}
+
+const dbName = getDatabaseName();
 
 // 创建数据库
 async function createDatabase() {
   console.log('🔧 步骤1: 创建数据库...');
-  console.log(dbConfig);
-  
-  
-  const sql = postgres({
-    ...dbConfig,
-    database: 'postgres',
+
+  // 连接到 postgres 数据库来创建目标数据库
+  const postgresUrl = getPostgresUrl();
+
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: postgresUrl,
+      },
+    },
   });
 
   try {
-    const result = await sql`
+    // 检查数据库是否存在
+    const result = await prisma.$queryRaw`
       SELECT 1 FROM pg_database WHERE datname = ${dbName}
-    `;
+    ` as any[];
 
     if (result.length === 0) {
-      await sql.unsafe(`CREATE DATABASE ${dbName}`);
+      // 数据库不存在，创建它
+      await prisma.$executeRawUnsafe(`CREATE DATABASE "${dbName}"`);
       console.log(`✅ 数据库 ${dbName} 创建成功`);
     } else {
       console.log(`ℹ️ 数据库 ${dbName} 已存在`);
     }
-  } catch (error) {
-    console.error('❌ 创建数据库失败:', error);
-    throw error;
+  } catch (error: any) {
+    // 如果连接失败，可能是因为 PostgreSQL 服务未启动
+    if (error.code === 'ECONNREFUSED') {
+      console.error('❌ 无法连接到 PostgreSQL 服务器');
+      console.error('请确保 PostgreSQL 服务正在运行');
+      console.error(`DATABASE_URL: ${getDatabaseUrl()}`);
+      throw error;
+    } else {
+      console.error('❌ 创建数据库失败:', error.message);
+      throw error;
+    }
   } finally {
-    await sql.end();
+    await prisma.$disconnect();
   }
 }
 
 // 运行数据库迁移
 async function runMigrations() {
   console.log('🔧 步骤2: 初始化数据表...');
-  
+
   try {
-    // 生成迁移文件
-    console.log('生成迁移文件...');
-    const generateResult = await execAsync('npx drizzle-kit generate', {
+    // 生成 Prisma Client
+    console.log('生成 Prisma Client...');
+    const generateResult = await execAsync('npx prisma generate', {
       cwd: process.cwd()
     });
     if (generateResult.stdout) {
       console.log(generateResult.stdout);
     }
-    
-    // 执行迁移
-    console.log('执行数据库迁移...');
-    const migrateResult = await execAsync('npx drizzle-kit migrate', {
+
+    // 推送数据库 schema
+    console.log('推送数据库 schema...');
+    const pushResult = await execAsync('npx prisma db push', {
       cwd: process.cwd()
     });
-    if (migrateResult.stdout) {
-      console.log(migrateResult.stdout);
+    if (pushResult.stdout) {
+      console.log(pushResult.stdout);
     }
-    
+
     console.log('✅ 数据表初始化成功');
   } catch (error) {
     console.error('❌ 数据表初始化失败:', error);
@@ -113,7 +139,7 @@ async function runSeed() {
 async function initializeDatabase() {
   console.log('🚀 开始数据库完整初始化...');
   console.log(`目标数据库: ${dbName}`);
-  console.log(`数据库地址: ${dbConfig.host}:${dbConfig.port}`);
+  console.log(`DATABASE_URL: ${getDatabaseUrl()}`);
   console.log('================================');
   
   try {
@@ -177,20 +203,20 @@ if (args.includes('--help') || args.includes('-h')) {
 // 处理强制模式和运行初始化
 async function main() {
   if (args.includes('--force') || args.includes('-f')) {
-    console.log('⚠️ 强制模式：将删除现有数据库重新创建');
-    
-    const sql = postgres({
-      ...dbConfig,
-      database: 'postgres',
-    });
-    
+    console.log('⚠️ 强制模式：将重置数据库表');
+
     try {
-      await sql.unsafe(`DROP DATABASE IF EXISTS ${dbName}`);
-      console.log(`🗑️ 已删除现有数据库: ${dbName}`);
-    } catch (error) {
-      console.log('数据库不存在或删除失败，继续执行...');
-    } finally {
-      await sql.end();
+      // 使用 Prisma 重置数据库表
+      console.log('重置数据库表...');
+      const resetResult = await execAsync('npx prisma db push --force-reset --accept-data-loss', {
+        cwd: process.cwd()
+      });
+      if (resetResult.stdout) {
+        console.log(resetResult.stdout);
+      }
+      console.log('🗑️ 数据库表已重置');
+    } catch (error: any) {
+      console.log('数据库重置失败，继续执行...', error.message);
     }
   }
 

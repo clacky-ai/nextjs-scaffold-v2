@@ -3,25 +3,7 @@
 This file provides guidance to Clacky when working with code in this repository.
 
 ## Project Overview
-This is a full-stack React + Express application with dual authentication systems: one for regular users and one for administrators. The project uses TypeScript, Tailwind CSS, shadcn/ui components, and PostgreSQL with Drizzle ORM.
-
-## Development Commands
-
-### Setup & Database
-```bash
-npm install                 # Install dependencies
-npm run db:push            # Push database schema changes
-npm run db:init            # Initialize database
-npm run db:seed            # Seed database with test data
-```
-
-### Development
-```bash
-npm run dev                # Start development server (uses nodemon)
-npm run build              # Build both client and server
-npm run start              # Start production server
-npm run check              # TypeScript type checking
-```
+This is a full-stack React + Express application with dual authentication systems: one for regular users and one for administrators. The project uses TypeScript, Tailwind CSS, shadcn/ui components, and PostgreSQL with Prisma ORM.
 
 ## Architecture
 
@@ -43,7 +25,7 @@ npm run check              # TypeScript type checking
 ### Backend Structure (`server/`)
 - **Router Registration**: All routes registered in `server/routers/index.ts`
 - **Authentication Middleware**: Applied globally via `routeAuthMiddleware`
-- **Database**: Drizzle ORM with schema in `server/db/schema.ts`
+- **Database**: Prisma ORM with schema in `prisma/schema.prisma`
 - **API Routes**:
   - Public APIs: `/api/` (no auth required)
   - User APIs: `/api/auth` (user authentication required)
@@ -76,6 +58,7 @@ const computed = useMemo(() => /* logic */, [users])
 1. **Route Registration**: All API routes must be registered in `server/routers/index.ts`
 2. **Authentication**: Use the global `routeAuthMiddleware`, never add auth middleware in individual route files
 3. **API Patterns**: Follow existing patterns with `/api/` for public, `/api/auth` for user, `/api/admin/` for admin routes
+4. **Zod Schema**: use `z.coerce.date()` instead of `z.string.datetime()` when validating date fields
 
 ### Path Aliases
 - `@/*` → `./client/src/*`
@@ -83,14 +66,15 @@ const computed = useMemo(() => /* logic */, [users])
 
 ### Tech Stack Details
 - **Frontend**: React 18, TypeScript, Tailwind CSS, shadcn/ui, React Router, Zustand, React Hook Form
-- **Backend**: Express, TypeScript, Drizzle ORM, PostgreSQL, JWT authentication, bcrypt
+- **Backend**: Express, TypeScript, Prisma ORM, PostgreSQL, JWT authentication, bcrypt
 - **Build Tools**: Vite (frontend), esbuild (backend), nodemon (development)
-- **Database Tools**: Drizzle Kit for migrations and schema management
+- **Database Tools**: Prisma CLI for migrations, schema management, and database introspection
 
 ### Key Files to Reference
 - `server/routers/index.ts`: Route registration and auth middleware setup
 - `client/src/lib/api.ts`: HTTP client with automatic authentication
-- `server/db/schema.ts`: Database schema definitions
+- `prisma/schema.prisma`: Database schema definitions (Prisma)
+- `server/db/index.ts`: Database connection and Prisma Client setup
 
 ### Default Accounts
 - Admin: admin@test.com / admin123456  

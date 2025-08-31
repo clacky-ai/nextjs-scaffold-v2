@@ -1,14 +1,10 @@
-import {
-  users,
-  adminUsers,
-  type User,
-  type InsertUser,
-  type AdminUser,
-  type InsertAdminUser,
-} from './db/schema';
 import { db } from './db/index';
-import { eq, desc, and, like, count, sql, avg, sum } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import type { User, AdminUser, Prisma } from '@prisma/client';
+
+// Type aliases for insert operations
+type InsertUser = Prisma.UserCreateInput;
+type InsertAdminUser = Prisma.AdminUserCreateInput;
 
 
 export interface IStorage {
@@ -29,73 +25,98 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    const user = await db.user.findUnique({
+      where: { id }
+    });
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     try {
-      const [user] = await db.select().from(users).where(eq(users.email, email));
-      return user;
+      const user = await db.user.findUnique({
+        where: { email }
+      });
+      return user || undefined;
     } catch(err) {
       console.log(err);
+      return undefined;
     }
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(userData).returning();
+    const user = await db.user.create({
+      data: userData
+    });
     return user;
   }
 
   async updateUser(id: string, userData: Partial<InsertUser>): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({ ...userData, updatedAt: new Date() })
-      .where(eq(users.id, id))
-      .returning();
+    const user = await db.user.update({
+      where: { id },
+      data: {
+        ...userData,
+        updatedAt: new Date()
+      }
+    });
     return user;
   }
 
   // Admin User operations
   async getAdminUser(id: string): Promise<AdminUser | undefined> {
-    const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
-    return adminUser;
+    const adminUser = await db.adminUser.findUnique({
+      where: { id }
+    });
+    return adminUser || undefined;
   }
 
   async getAdminUserByUsername(username: string): Promise<AdminUser | undefined> {
     try {
-      const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
-      return adminUser;
+      const adminUser = await db.adminUser.findUnique({
+        where: { username }
+      });
+      return adminUser || undefined;
     } catch (err) {
       console.log(err);
+      return undefined;
     }
   }
 
   async getAdminUserByEmail(email: string): Promise<AdminUser | undefined> {
     try {
-      const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.email, email));
-      return adminUser;
+      const adminUser = await db.adminUser.findUnique({
+        where: { email }
+      });
+      return adminUser || undefined;
     } catch (err) {
       console.log(err);
+      return undefined;
     }
   }
 
   async createAdminUser(userData: InsertAdminUser): Promise<AdminUser> {
-    const [adminUser] = await db.insert(adminUsers).values(userData).returning();
+    const adminUser = await db.adminUser.create({
+      data: userData
+    });
     return adminUser;
   }
 
   async updateAdminUser(id: string, userData: Partial<InsertAdminUser>): Promise<AdminUser> {
-    const [adminUser] = await db
-      .update(adminUsers)
-      .set({ ...userData, updatedAt: new Date() })
-      .where(eq(adminUsers.id, id))
-      .returning();
+    const adminUser = await db.adminUser.update({
+      where: { id },
+      data: {
+        ...userData,
+        updatedAt: new Date()
+      }
+    });
     return adminUser;
   }
 
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users).orderBy(desc(users.createdAt));
+    return await db.user.findMany({
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
   }
 }
 

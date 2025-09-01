@@ -3,7 +3,7 @@ import { Response, NextFunction } from 'express';
 import { storage } from '../storage';
 import { AuthRequest } from './route-auth';
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 export const verifyUserToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {

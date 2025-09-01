@@ -9,19 +9,19 @@ import { AuthRequest } from 'server/middleware/route-auth';
 const router = Router();
 
 // JWT密钥
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // 登录请求schema
 const loginSchema = z.object({
-  email: z.string().email("请输入有效的邮箱地址"),
-  password: z.string().min(1, "密码不能为空"),
+  email: z.string().email('请输入有效的邮箱地址'),
+  password: z.string().min(1, '密码不能为空'),
 });
 
 // 注册请求schema
 const registerSchema = z.object({
-  email: z.string().email("请输入有效的邮箱地址"),
-  password: z.string().min(6, "密码至少需要6个字符"),
-  realName: z.string().min(1, "请输入真实姓名"),
+  email: z.string().email('请输入有效的邮箱地址'),
+  password: z.string().min(6, '密码至少需要6个字符'),
+  realName: z.string().min(1, '请输入真实姓名'),
   phone: z.string().optional(),
   organization: z.string().optional(),
   department: z.string().optional(),

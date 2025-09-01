@@ -56,8 +56,8 @@ export function AdminSidebar({ items, onItemClick }: AdminSidebarProps) {
                     <SidebarMenuButton
                       onClick={() => handleItemClick(item)}
                       className={cn(
-                        "w-full justify-start",
-                        isActive && "bg-accent text-accent-foreground"
+                        'w-full justify-start',
+                        isActive && 'bg-accent text-accent-foreground'
                       )}
                     >
                       {Icon && <Icon className="h-4 w-4" />}

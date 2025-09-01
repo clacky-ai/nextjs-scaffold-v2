@@ -1,31 +1,31 @@
-import { redirect } from "react-router";
-import { requireAdminAuth, requireUserAuth, RouteConfig } from "@/utils/router/routes";
+import { redirect } from 'react-router';
+import { requireAdminAuth, requireUserAuth, RouteConfig } from '@/utils/router/routes';
 import { LayoutDashboard, Users, FolderOpen, Vote, BarChart3, Settings } from 'lucide-react';
 
 // 用户端页面
-import HomePage from "@/pages/users/home";
+import HomePage from '@/pages/users/home';
 import ProjectsPage from '@/pages/users/projects';
 import VotingPage from '@/pages/users/voting';
 import ResultsPage from '@/pages/users/results';
 import MyVotesPage from '@/pages/users/my-votes';
 import MyProjectsPage from '@/pages/users/my-projects';
 // import ProjectFormPage from '@/pages/users/project-form';
-import UserLoginPage from "@/pages/users/login";
-import UserSignupPage from "@/pages/users/signup";
+import UserLoginPage from '@/pages/users/login';
+import UserSignupPage from '@/pages/users/signup';
 
 // 管理端页面
-import AdminLoginPage from "@/pages/admin/login";
-import AdminEntryPage from "@/pages/admin/entryPage";
-import { Dashboard } from "@/pages/admin/Dashboard";
-import { UsersManagement } from "@/pages/admin/UsersManagement";
-import { UserDetail } from "@/pages/admin/UserDetail";
-import { ProjectsManagement } from "@/pages/admin/ProjectsManagement";
-import { VotesManagement } from "@/pages/admin/VotesManagement";
-import { ResultsStatistics } from "@/pages/admin/ResultsStatistics";
-import { SystemSettings } from "@/pages/admin/SystemSettings";
+import AdminLoginPage from '@/pages/admin/login';
+import AdminEntryPage from '@/pages/admin/entryPage';
+import { Dashboard } from '@/pages/admin/Dashboard';
+import { UsersManagement } from '@/pages/admin/UsersManagement';
+import { UserDetail } from '@/pages/admin/UserDetail';
+import { ProjectsManagement } from '@/pages/admin/ProjectsManagement';
+import { VotesManagement } from '@/pages/admin/VotesManagement';
+import { ResultsStatistics } from '@/pages/admin/ResultsStatistics';
+import { SystemSettings } from '@/pages/admin/SystemSettings';
 
 // 公共组件
-import NotFound from "@/pages/not-found";
+import NotFound from '@/pages/not-found';
 
 
 
@@ -33,25 +33,25 @@ import NotFound from "@/pages/not-found";
 export const routeConfig: RouteConfig[] = [
   // 用户端路由
   {
-    id: "user-login",
-    path: "/login",
+    id: 'user-login',
+    path: '/login',
     element: UserLoginPage,
-    meta: { title: "用户登录" },
+    meta: { title: '用户登录' },
   },
   {
-    id: "user-signup",
-    path: "/signup",
+    id: 'user-signup',
+    path: '/signup',
     element: UserSignupPage,
-    meta: { title: "用户注册" },
+    meta: { title: '用户注册' },
   },
 
   // 用户认证后的路由
   {
-    id: "home",
-    path: "/",
+    id: 'home',
+    path: '/',
     element: HomePage,
     loader: requireUserAuth,
-    meta: { title: "首页", requiresAuth: true },
+    meta: { title: '首页', requiresAuth: true },
   },
   {
     id: 'projects',
@@ -60,20 +60,20 @@ export const routeConfig: RouteConfig[] = [
     loader: requireUserAuth,
     meta: { title: '项目列表', requiresAuth: true }
   },
-//   {
-//     id: 'project-new',
-//     path: '/projects/new',
-//     element: ProjectFormPage,
-//     loader: requireUserAuth,
-//     meta: { title: '新建项目', requiresAuth: true }
-//   },
-//   {
-//     id: 'project-edit',
-//     path: '/projects/:id/edit',
-//     element: ProjectFormPage,
-//     loader: requireUserAuth,
-//     meta: { title: '编辑项目', requiresAuth: true }
-//   },
+  //   {
+  //     id: 'project-new',
+  //     path: '/projects/new',
+  //     element: ProjectFormPage,
+  //     loader: requireUserAuth,
+  //     meta: { title: '新建项目', requiresAuth: true }
+  //   },
+  //   {
+  //     id: 'project-edit',
+  //     path: '/projects/:id/edit',
+  //     element: ProjectFormPage,
+  //     loader: requireUserAuth,
+  //     meta: { title: '编辑项目', requiresAuth: true }
+  //   },
   {
     id: 'project-detail',
     path: '/projects/:id',
@@ -112,49 +112,49 @@ export const routeConfig: RouteConfig[] = [
 
   // 管理员登录页面
   {
-    id: "admin-login",
-    path: "/admin/login",
+    id: 'admin-login',
+    path: '/admin/login',
     element: AdminLoginPage,
-    meta: { title: "管理员登录" },
+    meta: { title: '管理员登录' },
   },
 
   // 管理员受保护的路由
   {
-    id: "admin",
-    path: "/admin",
+    id: 'admin',
+    path: '/admin',
     element: AdminEntryPage,
     loader: requireAdminAuth,
-    meta: { title: "管理后台", requiresAuth: true },
+    meta: { title: '管理后台', requiresAuth: true },
     children: [
       {
-        id: "admin-index",
+        id: 'admin-index',
         index: true,
-        loader: () => redirect("/admin/dashboard"),
+        loader: () => redirect('/admin/dashboard'),
       },
 
       // 管理员功能页面
       {
-        id: "admin-dashboard",
-        path: "dashboard",
+        id: 'admin-dashboard',
+        path: 'dashboard',
         element: Dashboard,
         meta: {
           showInSidebar: true,
           sidebarOrder: 0,
-          title: "仪表盘",
+          title: '仪表盘',
           icon: LayoutDashboard,
-          breadcrumbTitle: "仪表盘",
+          breadcrumbTitle: '仪表盘',
         },
       },
       {
-        id: "admin-users",
-        path: "users",
+        id: 'admin-users',
+        path: 'users',
         element: UsersManagement,
         meta: {
           showInSidebar: true,
           sidebarOrder: 1,
-          title: "用户管理",
+          title: '用户管理',
           icon: Users,
-          breadcrumbTitle: "用户管理",
+          breadcrumbTitle: '用户管理',
         },
       },
       {
@@ -221,9 +221,9 @@ export const routeConfig: RouteConfig[] = [
 
   // 404 页面
   {
-    id: "not-found",
-    path: "*",
+    id: 'not-found',
+    path: '*',
     element: NotFound,
-    meta: { title: "页面未找到" },
+    meta: { title: '页面未找到' },
   },
 ];

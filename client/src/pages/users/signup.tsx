@@ -22,8 +22,8 @@ const registerSchema = z.object({
   department: z.string().optional(),
   position: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "密码确认不匹配",
-  path: ["confirmPassword"],
+  message: '密码确认不匹配',
+  path: ['confirmPassword'],
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;

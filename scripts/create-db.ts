@@ -1,13 +1,13 @@
-import postgres from 'postgres'
-import { config } from 'dotenv'
-import { resolve } from 'path'
+import postgres from 'postgres';
+import { config } from 'dotenv';
+import { resolve } from 'path';
 
 // 加载环境变量
-config({ path: resolve(process.cwd(), '.env.local') })
-config({ path: resolve(process.cwd(), '.env') })
+config({ path: resolve(process.cwd(), '.env.local') });
+config({ path: resolve(process.cwd(), '.env') });
 
 async function createDatabase() {
-  const dbName = process.env.DB_NAME || 'default'
+  const dbName = process.env.DB_NAME || 'default';
   
   // 连接到默认的postgres数据库
   const sql = postgres({
@@ -17,27 +17,27 @@ async function createDatabase() {
     password: process.env.DB_PASSWORD || '',
     database: 'postgres',
     ssl: process.env.DB_SSL === 'true',
-  })
+  });
 
   try {
     // 检查数据库是否已存在
     const result = await sql`
       SELECT 1 FROM pg_database WHERE datname = ${dbName}
-    `
+    `;
 
     if (result.length === 0) {
       // 创建数据库
-      await sql.unsafe(`CREATE DATABASE ${dbName}`)
-      console.log(`✅ 数据库 ${dbName} 创建成功`)
+      await sql.unsafe(`CREATE DATABASE ${dbName}`);
+      console.log(`✅ 数据库 ${dbName} 创建成功`);
     } else {
-      console.log(`ℹ️ 数据库 ${dbName} 已存在`)
+      console.log(`ℹ️ 数据库 ${dbName} 已存在`);
     }
   } catch (error) {
-    console.error('❌ 创建数据库失败:', error)
-    process.exit(1)
+    console.error('❌ 创建数据库失败:', error);
+    process.exit(1);
   } finally {
-    await sql.end()
+    await sql.end();
   }
 }
 
-createDatabase()
+createDatabase();

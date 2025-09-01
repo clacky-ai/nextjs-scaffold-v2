@@ -3,7 +3,7 @@ import { Response, NextFunction } from 'express';
 import { storage } from '../storage';
 import { type AuthRequest } from './route-auth';
 
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "admin-secret-key-change-in-production";
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'admin-secret-key-change-in-production';
 
 export const verifyAdminToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {

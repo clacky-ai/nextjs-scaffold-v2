@@ -9,20 +9,20 @@ import { AuthRequest } from 'server/middleware/route-auth';
 const router = Router();
 
 // JWT密钥 - 使用不同的密钥以区分用户和管理员token
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || "admin-secret-key-change-in-production";
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'admin-secret-key-change-in-production';
 
 // 管理员登录请求schema
 const adminLoginSchema = z.object({
-  username: z.string().min(1, "用户名不能为空"),
-  password: z.string().min(1, "密码不能为空"),
+  username: z.string().min(1, '用户名不能为空'),
+  password: z.string().min(1, '密码不能为空'),
 });
 
 // 管理员注册请求schema (用于创建管理员账户)
 const adminRegisterSchema = z.object({
-  username: z.string().min(3, "用户名至少需要3个字符"),
-  password: z.string().min(6, "密码至少需要6个字符"),
-  name: z.string().min(1, "请输入姓名"),
-  email: z.string().email("请输入有效的邮箱地址"),
+  username: z.string().min(3, '用户名至少需要3个字符'),
+  password: z.string().min(6, '密码至少需要6个字符'),
+  name: z.string().min(1, '请输入姓名'),
+  email: z.string().email('请输入有效的邮箱地址'),
 });
 
 // 管理员登录

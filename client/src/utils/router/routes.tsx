@@ -1,8 +1,8 @@
-import React from "react";
-import { redirect } from "react-router";
-import { LucideIcon } from "lucide-react";
-import useUserAuthStore from "@/stores/users/authStore";
-import useAdminAuthStore from "@/stores/admin/authStore";
+import React from 'react';
+import { redirect } from 'react-router';
+import { LucideIcon } from 'lucide-react';
+import useUserAuthStore from '@/stores/users/authStore';
+import useAdminAuthStore from '@/stores/admin/authStore';
 
 // 路由配置接口
 export interface RouteConfig {
@@ -27,7 +27,7 @@ export interface RouteConfig {
 export async function requireUserAuth() {
   const state = useUserAuthStore.getState();
   if (!state.isAuthenticated) {
-    throw redirect("/login");
+    throw redirect('/login');
   }
   return null;
 }
@@ -35,7 +35,7 @@ export async function requireUserAuth() {
 export async function requireAdminAuth() {
   const state = useAdminAuthStore.getState();
   if (!state.isAuthenticated) {
-    throw redirect("/admin/login");
+    throw redirect('/admin/login');
   }
   return null;
 }

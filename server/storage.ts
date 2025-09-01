@@ -19,10 +19,10 @@ import {
   type Score,
   type InsertScore,
   type ScoreDimension,
-} from "./db/schema";
-import { db } from "./db/index";
-import { eq, desc, and, like, count, sql, avg, sum } from "drizzle-orm";
-import { nanoid } from "nanoid";
+} from './db/schema';
+import { db } from './db/index';
+import { eq, desc, and, like, count, sql, avg, sum } from 'drizzle-orm';
+import { nanoid } from 'nanoid';
 
 interface ProjectsQuery {
   page?: number;
@@ -128,8 +128,7 @@ export class DatabaseStorage implements IStorage {
     try {
       const [user] = await db.select().from(users).where(eq(users.email, email));
       return user;
-    }
-    catch(err) {
+    } catch(err) {
       console.log(err);
     }
   }

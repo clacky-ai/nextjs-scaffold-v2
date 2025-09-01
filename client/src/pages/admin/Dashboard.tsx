@@ -87,7 +87,7 @@ export function Dashboard() {
   //   );
   // }
 
-  const dashboardStats = {totalUsers:0, totalProjects:0, totalVotes:0, participationRate:0, activeUsers:0, pendingProjects:0, avgScore:0, completionRate:0};
+  const dashboardStats = { totalUsers:0, totalProjects:0, totalVotes:0, participationRate:0, activeUsers:0, pendingProjects:0, avgScore:0, completionRate:0 };
 
   return (
     <div className="space-y-6">

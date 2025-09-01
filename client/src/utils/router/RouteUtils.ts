@@ -1,9 +1,9 @@
-import { PageInfo, RouteConfig } from "./RouteConfig_old";
-import { BreadcrumbBuilder } from "./BreadcrumbBuilder";
+import { PageInfo, RouteConfig } from './RouteConfig_old';
+import { BreadcrumbBuilder } from './BreadcrumbBuilder';
 
 const defaultFallback = {
-  title: "页面",
-  description: "",
+  title: '页面',
+  description: '',
   breadcrumbs: [],
 };
 
@@ -20,7 +20,7 @@ export class RouteUtils {
 
       return {
         title: route.title,
-        description: route.description || "",
+        description: route.description || '',
         breadcrumbs,
       };
     }

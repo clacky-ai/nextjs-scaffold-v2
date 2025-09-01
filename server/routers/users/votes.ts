@@ -8,12 +8,12 @@ const router = Router();
 
 // 投票提交schema
 const voteSchema = z.object({
-  projectId: z.string().min(1, "项目ID不能为空"),
+  projectId: z.string().min(1, '项目ID不能为空'),
   scores: z.array(z.object({
-    dimensionId: z.string().min(1, "评分维度ID不能为空"),
-    score: z.number().min(1, "评分不能小于1").max(10, "评分不能大于10"),
-  })).min(1, "至少需要一个评分"),
-  comment: z.string().min(10, "评价至少需要10个字符").max(1000, "评价不能超过1000个字符"),
+    dimensionId: z.string().min(1, '评分维度ID不能为空'),
+    score: z.number().min(1, '评分不能小于1').max(10, '评分不能大于10'),
+  })).min(1, '至少需要一个评分'),
+  comment: z.string().min(10, '评价至少需要10个字符').max(1000, '评价不能超过1000个字符'),
 });
 
 // 提交投票

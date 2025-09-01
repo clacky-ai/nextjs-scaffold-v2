@@ -242,8 +242,8 @@ export function UserDetail() {
               重置密码
             </Button>
             <Button 
-              variant={user.isBlocked ? "default" : "destructive"}
-              className={user.isBlocked ? "" : "bg-red-600 hover:bg-red-700"}
+              variant={user.isBlocked ? 'default' : 'destructive'}
+              className={user.isBlocked ? '' : 'bg-red-600 hover:bg-red-700'}
             >
               {user.isBlocked ? '解除屏蔽' : '屏蔽用户'}
             </Button>

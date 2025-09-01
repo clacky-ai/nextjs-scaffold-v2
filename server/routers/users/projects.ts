@@ -8,11 +8,11 @@ const router = Router();
 
 // 项目创建/更新schema
 const projectSchema = z.object({
-  title: z.string().min(1, "项目标题不能为空").max(200, "标题不能超过200个字符"),
-  description: z.string().min(10, "项目描述至少需要10个字符").max(2000, "描述不能超过2000个字符"),
-  demoUrl: z.string().url("请输入有效的演示链接").optional().or(z.literal('')),
-  repositoryUrl: z.string().url("请输入有效的代码仓库链接").optional().or(z.literal('')),
-  presentationUrl: z.string().url("请输入有效的文档链接").optional().or(z.literal('')),
+  title: z.string().min(1, '项目标题不能为空').max(200, '标题不能超过200个字符'),
+  description: z.string().min(10, '项目描述至少需要10个字符').max(2000, '描述不能超过2000个字符'),
+  demoUrl: z.string().url('请输入有效的演示链接').optional().or(z.literal('')),
+  repositoryUrl: z.string().url('请输入有效的代码仓库链接').optional().or(z.literal('')),
+  presentationUrl: z.string().url('请输入有效的文档链接').optional().or(z.literal('')),
   categoryId: z.string().optional(),
   tags: z.array(z.string()).optional(),
   teamMembers: z.array(z.string()).optional(),

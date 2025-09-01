@@ -1,4 +1,4 @@
-import postgres from 'postgres';
+import { PrismaClient } from '@prisma/client';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import { config } from 'dotenv';
@@ -11,34 +11,50 @@ config({ path: resolve(process.cwd(), '.env') });
 const execAsync = promisify(exec);
 
 // 数据库配置
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: parseInt(process.env.DB_PORT || '5432'),
-  username: process.env.DB_USER || 'postgres',
-  password: process.env.DB_PASSWORD || '',
-  ssl: process.env.DB_SSL === 'true',
-};
+function getDatabaseUrl() {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL 环境变量未设置');
+  }
+  return process.env.DATABASE_URL;
+}
 
-const dbName = process.env.DB_NAME || 'default';
+function getPostgresUrl() {
+  const databaseUrl = getDatabaseUrl();
+  // 将数据库名替换为 postgres 来连接到默认数据库
+  return databaseUrl.replace(/\/[^\/]+(\?|$)/, '/postgres$1');
+}
+
+function getDatabaseName() {
+  const databaseUrl = getDatabaseUrl();
+  // 从 DATABASE_URL 中提取数据库名
+  const match = databaseUrl.match(/\/([^\/\?]+)(\?|$)/);
+  return match ? match[1] : 'default';
+}
+
+const dbName = getDatabaseName();
 
 // 创建数据库
 async function createDatabase() {
   console.log('🔧 步骤1: 创建数据库...');
-  console.log(dbConfig);
-  
-  
-  const sql = postgres({
-    ...dbConfig,
-    database: 'postgres',
+
+  // 连接到 postgres 数据库来创建目标数据库
+  const postgresUrl = getPostgresUrl();
+
+  const prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: postgresUrl,
+      },
+    },
   });
 
   try {
-    const result = await sql`
-      SELECT 1 FROM pg_database WHERE datname = ${dbName}
+    const result = await prisma.$queryRaw<Array<{ exists: number }>>`
+      SELECT 1 as exists FROM pg_database WHERE datname = ${dbName}
     `;
 
     if (result.length === 0) {
-      await sql.unsafe(`CREATE DATABASE ${dbName}`);
+      await prisma.$executeRawUnsafe(`CREATE DATABASE "${dbName}"`);
       console.log(`✅ 数据库 ${dbName} 创建成功`);
     } else {
       console.log(`ℹ️ 数据库 ${dbName} 已存在`);
@@ -47,7 +63,7 @@ async function createDatabase() {
     console.error('❌ 创建数据库失败:', error);
     throw error;
   } finally {
-    await sql.end();
+    await prisma.$disconnect();
   }
 }
 
@@ -113,7 +129,7 @@ async function runSeed() {
 async function initializeDatabase() {
   console.log('🚀 开始数据库完整初始化...');
   console.log(`目标数据库: ${dbName}`);
-  console.log(`数据库地址: ${dbConfig.host}:${dbConfig.port}`);
+  console.log(`数据库连接: ${getDatabaseUrl()}`);
   console.log('================================');
   
   try {
@@ -160,16 +176,12 @@ if (args.includes('--help') || args.includes('-h')) {
   --force, -f       强制重新初始化（会删除现有数据）
 
 环境变量:
-  DB_HOST          数据库主机地址（默认: localhost）
-  DB_PORT          数据库端口（默认: 5432）
-  DB_USER          数据库用户名（默认: postgres）
-  DB_PASSWORD      数据库密码
-  DB_NAME          数据库名称（默认: default）
-  DB_SSL           是否使用SSL连接（默认: false）
+  DATABASE_URL     PostgreSQL 连接字符串
+                   格式: postgresql://username:password@host:port/database
 
 示例:
   npx tsx scripts/init-db.ts
-  DB_NAME=my_voting_system npx tsx scripts/init-db.ts
+  DATABASE_URL=postgresql://postgres:password@localhost:5432/my_voting_system npx tsx scripts/init-db.ts
   `);
   process.exit(0);
 }
@@ -178,19 +190,23 @@ if (args.includes('--help') || args.includes('-h')) {
 async function main() {
   if (args.includes('--force') || args.includes('-f')) {
     console.log('⚠️ 强制模式：将删除现有数据库重新创建');
-    
-    const sql = postgres({
-      ...dbConfig,
-      database: 'postgres',
+
+    const postgresUrl = getPostgresUrl();
+    const prisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: postgresUrl,
+        },
+      },
     });
-    
+
     try {
-      await sql.unsafe(`DROP DATABASE IF EXISTS ${dbName}`);
+      await prisma.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${dbName}"`);
       console.log(`🗑️ 已删除现有数据库: ${dbName}`);
     } catch (error) {
       console.log('数据库不存在或删除失败，继续执行...');
     } finally {
-      await sql.end();
+      await prisma.$disconnect();
     }
   }
 

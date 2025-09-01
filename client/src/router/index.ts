@@ -18,6 +18,9 @@ import { UserDetail } from '@/pages/admin/UserDetail';
 // 公共组件
 import NotFound from '@/pages/not-found';
 
+// the default page to redirect to after user login, please modify this page by real bussiness requirement
+export const DefaultUserPageAfterLogin = 'user-home';
+
 
 // 统一路由配置
 export const routeConfig: RouteConfig[] = [
@@ -46,7 +49,7 @@ export const routeConfig: RouteConfig[] = [
 
   // 用户登录后的首页，请根据需求重构 path
   // {
-  //   id: "user-home",
+  //   id: DefaultUserPageAfterLogin,
   //   path: "/home",
   //   element: UserHomePage,
   //   loader: requireUserAuth, 

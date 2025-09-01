@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 import { useAuth } from '@/stores/users/authStore';
 import { useRoutes } from '@/hooks/useRoutes';
+import { DefaultUserPageAfterLogin } from '../../router/index';
 
 // 登录表单验证
 const loginSchema = z.object({
@@ -36,7 +37,7 @@ export default function UserLoginPage() {
     try {
       clearError();
       await login(data.email, data.password);
-      routes.navigate('home');
+      routes.navigate(DefaultUserPageAfterLogin);
     } catch (error: any) {
       // 错误已经在 store 中设置了，这里不需要额外处理
     }
@@ -73,7 +74,7 @@ export default function UserLoginPage() {
                 </p>
               )}
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">密码</Label>
               <Input
@@ -94,14 +95,14 @@ export default function UserLoginPage() {
               登录
             </Button>
           </form>
-          
+
           <div className="mt-4 text-center text-sm">
             还没有账号？{' '}
             <Link to={routes.getPath('user-signup')} className="text-blue-600 hover:underline">
               立即注册
             </Link>
           </div>
-          
+
           <div className="mt-2 text-center text-sm">
             <Link to={routes.getPath('admin-login')} className="text-gray-600 hover:underline">
               管理员登录

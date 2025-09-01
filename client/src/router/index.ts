@@ -19,7 +19,7 @@ import { UserDetail } from '@/pages/admin/UserDetail';
 import NotFound from '@/pages/not-found';
 
 // the default page to redirect to after user login, please modify this page by real bussiness requirement
-export const DefaultUserPageAfterLogin = 'user-home';
+export const DefaultUserPageAfterLogin = 'landing';
 
 
 // 统一路由配置

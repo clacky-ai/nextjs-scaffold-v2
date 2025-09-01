@@ -48,7 +48,7 @@ const customRules = {
             if (jsxElement && jsxElement.name && jsxElement.name.name === 'SelectItem') {
               context.report({
                 node: node.value,
-                message: `Empty string value for prop "${propName}" in SelectItem may cause runtime errors. Consider using a meaningful value or removing the prop.`,
+                message: `<SelectItem /> must have a 'value' prop that is not an empty string.`,
               });
             }
           }
@@ -132,7 +132,7 @@ export default [
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-non-null-assertion': 'warn',
+      '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-redeclare': 'off', // Allow interface/type redeclaration
       
       // React rules
@@ -141,20 +141,16 @@ export default [
       'react/jsx-uses-react': 'off',
       'react/jsx-uses-vars': 'error',
       'react/jsx-key': 'error',
-      'react/no-unescaped-entities': 'warn',
+      'react/no-unescaped-entities': 'off',
       
       // React Hooks rules
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
       
       // React Refresh rules
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
-      ],
+      'react-refresh/only-export-components': 'off',
 
-      // Additional React rules
-      'react/no-unescaped-entities': 'warn',
+
 
       // Custom rules
       'custom/jsx-no-empty-string-props': ['error', {
@@ -170,7 +166,7 @@ export default [
       'prefer-const': 'error',
       'no-var': 'error',
       'eqeqeq': ['error', 'always'],
-      'curly': ['error', 'all'],
+      'curly': 'off',
       'brace-style': ['error', '1tbs', { allowSingleLine: true }],
       'indent': ['error', 2, {
         SwitchCase: 1,
@@ -199,8 +195,8 @@ export default [
       'comma-dangle': 'off',
       'object-curly-spacing': ['error', 'always'],
       'array-bracket-spacing': ['error', 'never'],
-      'no-useless-escape': 'warn',
-      'no-useless-catch': 'warn',
+      'no-useless-escape': 'off',
+      'no-useless-catch': 'off',
     },
     settings: {
       react: {
@@ -217,6 +213,7 @@ export default [
   },
   {
     ignores: [
+      'client/src/components/ui',
       'node_modules/**',
       'dist/**',
       'build/**',

@@ -142,6 +142,8 @@ const useAdminAuthStore = create<AdminAuthStore>()(
 export const useAdminAuth = () => {
   const store = useAdminAuthStore();
   return {
+    adminUser: store.adminUser,
+    isAuthenticated: store.isAuthenticated,
     login: store.login,
     logout: store.logout,
     clearError: store.clearError,

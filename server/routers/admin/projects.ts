@@ -68,6 +68,35 @@ router.get('/', async (req: AuthRequest, res) => {
   }
 });
 
+// 发布项目（将状态从submitted改为published）
+router.patch('/:projectId/publish', async (req: AuthRequest, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const project = await storage.getProject(projectId);
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: '项目不存在'
+      });
+    }
+
+    // 更新项目状态为已发布
+    await storage.updateProject(projectId, { status: 'published' });
+
+    res.json({
+      success: true,
+      message: '项目已发布'
+    });
+  } catch (error) {
+    console.error('Error publishing project:', error);
+    res.status(500).json({
+      success: false,
+      message: '发布项目失败'
+    });
+  }
+});
+
 // 更新项目状态（显示/隐藏）
 router.patch('/:projectId/status', async (req: AuthRequest, res) => {
   try {
@@ -76,9 +105,8 @@ router.patch('/:projectId/status', async (req: AuthRequest, res) => {
       isBlocked: z.boolean()
     }).parse(req.body);
 
-    // TODO: 实现项目显示/隐藏逻辑
-    // 目前只是模拟响应，需要在数据库中添加相应字段
-    console.log(`${isBlocked ? '隐藏' : '显示'}项目: ${projectId}`);
+    // 更新项目的isActive状态
+    await storage.updateProject(projectId, { isActive: !isBlocked });
 
     res.json({
       success: true,

@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Save, ArrowLeft, Plus, X } from 'lucide-react';
-import { Link, useLocation, useRoute } from 'wouter';
+import { Link } from 'react-router';
+import { useRoutes } from '@/hooks/useRoutes';
 
 // 项目表单验证
 const projectSchema = z.object({
@@ -26,9 +27,12 @@ const projectSchema = z.object({
 type ProjectFormData = z.infer<typeof projectSchema>;
 
 export default function ProjectFormPage() {
-  const [location, navigate] = useLocation();
-  const isEdit = location.includes('/edit');
-  const projectId = isEdit ? location.split('/').slice(-2, -1)[0] : null;
+  const routes = useRoutes();
+
+  // 从当前路由获取参数
+  const currentPath = window.location.pathname;
+  const isEdit = currentPath.includes('/edit');
+  const projectId = isEdit ? currentPath.split('/').slice(-2, -1)[0] : null;
 
   const {
     categories,
@@ -103,7 +107,7 @@ export default function ProjectFormPage() {
         await createProject(projectData);
       }
 
-      navigate('/my-projects');
+      routes.navigate('my-projects');
     } catch (error) {
       // 错误已在store中处理
     }
@@ -150,7 +154,7 @@ export default function ProjectFormPage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button variant="outline" size="sm" asChild>
-                <Link href="/my-projects">
+                <Link to="/my-projects">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   返回
                 </Link>
@@ -309,7 +313,7 @@ export default function ProjectFormPage() {
                     placeholder="添加标签"
                     value={newTag}
                     onChange={(e) => setNewTag(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
                   />
                   <Button type="button" onClick={addTag}>
                     <Plus className="h-4 w-4" />
@@ -346,7 +350,7 @@ export default function ProjectFormPage() {
                     placeholder="添加团队成员姓名"
                     value={newMember}
                     onChange={(e) => setNewMember(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTeamMember())}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTeamMember())}
                   />
                   <Button type="button" onClick={addTeamMember}>
                     <Plus className="h-4 w-4" />
@@ -377,7 +381,7 @@ export default function ProjectFormPage() {
               {/* 提交按钮 */}
               <div className="flex justify-end space-x-4 pt-6 border-t">
                 <Button type="button" variant="outline" asChild>
-                  <Link href="/my-projects">取消</Link>
+                  <Link to="/my-projects">取消</Link>
                 </Button>
                 <Button type="submit" disabled={isLoading}>
                   {isLoading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

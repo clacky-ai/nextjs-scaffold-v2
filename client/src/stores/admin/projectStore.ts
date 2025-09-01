@@ -70,14 +70,14 @@ export const useAdminProjectStore = create<ProjectStore>((set, get) => ({
   
   toggleProjectStatus: async (projectId: string, isBlocked: boolean) => {
     const { setLoading, projects, setProjects } = get();
-    
+
     try {
       setLoading('toggleProject', true);
-      
-      await api.patch(`/api/admin/projects/${projectId}`, {
+
+      await api.patch(`/api/admin/projects/${projectId}/status`, {
         isBlocked: !isBlocked
       });
-      
+
       // Update local state
       const updatedProjects = projects.map(project =>
         project.id === projectId
@@ -85,7 +85,7 @@ export const useAdminProjectStore = create<ProjectStore>((set, get) => ({
           : project
       );
       setProjects(updatedProjects);
-      
+
       return true;
     } catch (error) {
       console.error('Error toggling project status:', error);

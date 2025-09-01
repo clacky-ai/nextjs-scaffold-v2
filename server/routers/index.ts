@@ -10,6 +10,7 @@ import adminAuthRouter from './admin/auth';
 import adminUsersRouter from './admin/users';
 import adminProjectsRouter from './admin/projects';
 import adminVotesRouter from './admin/votes';
+import adminProfileRouter from './admin/profile';
 import categoriesRouter from './categories';
 import scoreDimensionsRouter from './score-dimensions';
 import apiRouter from './api';
@@ -34,6 +35,7 @@ export function registerRoutes(app: Express): Server {
   app.use('/api/admin/users', adminUsersRouter);
   app.use('/api/admin/projects', adminProjectsRouter);
   app.use('/api/admin/votes', adminVotesRouter);
+  app.use('/api/admin/profile', adminProfileRouter);
 
   // 创建并返回 HTTP 服务器
   return createServer(app);

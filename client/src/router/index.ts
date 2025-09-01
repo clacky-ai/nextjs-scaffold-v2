@@ -9,7 +9,7 @@ import VotingPage from '@/pages/users/voting';
 import ResultsPage from '@/pages/users/results';
 import MyVotesPage from '@/pages/users/my-votes';
 import MyProjectsPage from '@/pages/users/my-projects';
-// import ProjectFormPage from '@/pages/users/project-form';
+import ProjectFormPage from '@/pages/users/project-form';
 import UserLoginPage from '@/pages/users/login';
 import UserSignupPage from '@/pages/users/signup';
 
@@ -23,6 +23,7 @@ import { ProjectsManagement } from '@/pages/admin/ProjectsManagement';
 import { VotesManagement } from '@/pages/admin/VotesManagement';
 import { ResultsStatistics } from '@/pages/admin/ResultsStatistics';
 import { SystemSettings } from '@/pages/admin/SystemSettings';
+import { AdminProfile } from '@/pages/admin/Profile';
 
 // 公共组件
 import NotFound from '@/pages/not-found';
@@ -60,20 +61,20 @@ export const routeConfig: RouteConfig[] = [
     loader: requireUserAuth,
     meta: { title: '项目列表', requiresAuth: true }
   },
-  //   {
-  //     id: 'project-new',
-  //     path: '/projects/new',
-  //     element: ProjectFormPage,
-  //     loader: requireUserAuth,
-  //     meta: { title: '新建项目', requiresAuth: true }
-  //   },
-  //   {
-  //     id: 'project-edit',
-  //     path: '/projects/:id/edit',
-  //     element: ProjectFormPage,
-  //     loader: requireUserAuth,
-  //     meta: { title: '编辑项目', requiresAuth: true }
-  //   },
+  {
+    id: 'project-new',
+    path: '/projects/new',
+    element: ProjectFormPage,
+    loader: requireUserAuth,
+    meta: { title: '新建项目', requiresAuth: true }
+  },
+  {
+    id: 'project-edit',
+    path: '/projects/:id/edit',
+    element: ProjectFormPage,
+    loader: requireUserAuth,
+    meta: { title: '编辑项目', requiresAuth: true }
+  },
   {
     id: 'project-detail',
     path: '/projects/:id',
@@ -203,6 +204,17 @@ export const routeConfig: RouteConfig[] = [
           title: '系统设置',
           icon: Settings,
           breadcrumbTitle: '系统设置'
+        }
+      },
+
+      // 个人资料页面（不显示在侧边栏）
+      {
+        id: 'admin-profile',
+        path: 'profile',
+        element: AdminProfile,
+        meta: {
+          title: '个人资料',
+          breadcrumbTitle: '个人资料'
         }
       },
 

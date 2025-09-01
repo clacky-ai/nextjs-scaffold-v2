@@ -118,7 +118,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   // Filters
   selectedCategory: null,
   searchQuery: '',
-  statusFilter: null,
+  statusFilter: null, // 显示所有项目
   
   // Actions
   setProjects: (projects) => set({ projects }),
@@ -172,9 +172,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         params.append('category', query?.categoryId || selectedCategory!);
       }
 
-      if (query?.status || statusFilter) {
-        params.append('status', query?.status || statusFilter!);
-      }
+      // 移除状态过滤，显示所有活跃项目
+      // if (query?.status || statusFilter) {
+      //   params.append('status', query?.status || statusFilter!);
+      // }
 
       if (query?.search || searchQuery) {
         params.append('search', query?.search || searchQuery);

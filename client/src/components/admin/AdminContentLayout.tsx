@@ -42,8 +42,7 @@ export function AdminContentLayout({
   };
 
   const handleProfile = () => {
-    // TODO: 实现个人资料页面
-    console.log('打开个人资料');
+    routes.navigate('admin-profile');
   };
 
   const handleSettings = () => {

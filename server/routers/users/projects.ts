@@ -79,7 +79,7 @@ router.post('/', async (req: AuthRequest, res) => {
       tags: validatedData.tags || [],
       teamMembers: validatedData.teamMembers || [],
       submitterId: req.user.id,
-      status: 'submitted',
+      status: 'published', // 直接设置为已发布，可以投票
     });
 
     res.status(201).json({

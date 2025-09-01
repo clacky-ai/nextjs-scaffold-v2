@@ -39,6 +39,7 @@ model AdminUser {
   password  String   @db.Text
   name      String   @db.VarChar(255)
   email     String   @unique @db.VarChar(255)
+  avatar    String?  @db.VarChar(500)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 

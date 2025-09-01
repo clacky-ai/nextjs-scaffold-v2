@@ -3,8 +3,6 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 import { nanoid } from 'nanoid';
 import { db } from '../server/db/index';
-import { eq } from 'drizzle-orm';
-import { users, adminUsers } from '../server/db/schema';
 
 // 加载环境变量
 config({ path: resolve(process.cwd(), '.env.local') });
@@ -16,20 +14,24 @@ async function seedDatabase() {
   // 1. 创建默认管理员账号（如果不存在）
   let admin;
   try {
-    [admin] = await db.insert(adminUsers).values({
-      id: nanoid(),
-      username: 'admin',
-      password: await bcrypt.hash('admin123456', 12),
-      name: '系统管理员',
-      email: 'admin@test.com',
-    }).returning();
+    admin = await db.adminUser.create({
+      data: {
+        id: nanoid(),
+        username: 'admin',
+        password: await bcrypt.hash('admin123456', 12),
+        name: '系统管理员',
+        email: 'admin@test.com',
+      }
+    });
     console.log('✅ 管理员账号创建成功:', admin.username);
   } catch (error: any) {
-    if (error.cause?.code === '23505') {
+    if (error.code === 'P2002') {
       // 管理员已存在，获取现有管理员
-      const existingAdmin = await db.select().from(adminUsers).where(eq(adminUsers.username, 'admin')).limit(1);
-      if (existingAdmin.length > 0) {
-        admin = existingAdmin[0];
+      const existingAdmin = await db.adminUser.findUnique({
+        where: { username: 'admin' }
+      });
+      if (existingAdmin) {
+        admin = existingAdmin;
         console.log('ℹ️ 管理员账号已存在:', admin.username);
       } else {
         throw error;
@@ -42,31 +44,26 @@ async function seedDatabase() {
   try {
     // 2. 创建默认用户
     console.log('创建默认用户...');
-    const defaultUsers = [
-      {
-        id: nanoid(),
-        email: 'test@test.com',
-        password: await bcrypt.hash('123456', 10),
-        realName: '张三',
-        phone: '13800138001',
-        organization: '科技公司A',
-        department: '研发部',
-        position: '高级工程师',
-        isActive: true,
-      }
-    ];
+    const defaultUser = {
+      id: nanoid(),
+      email: 'test@test.com',
+      password: await bcrypt.hash('123456', 10),
+      realName: '张三',
+      phone: '13800138001',
+      organization: '科技公司A',
+      department: '研发部',
+      position: '高级工程师',
+      isActive: true,
+    };
 
-    await db.insert(users).values(defaultUsers).onConflictDoNothing();
-  } catch (error) {
-    if (error.cause?.code === '23505') {
-      // 管理员已存在，获取现有管理员
-      const existingAdmin = await db.select().from(users).where(eq(users.email, 'test@test.com')).limit(1);
-      if (existingAdmin.length > 0) {
-        admin = existingAdmin[0];
-        console.log('ℹ️ 测试用户账号已存在:', users.email);
-      } else {
-        throw error;
-      }
+    await db.user.create({
+      data: defaultUser
+    });
+    console.log('✅ 默认用户创建成功');
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      // 用户已存在
+      console.log('ℹ️ 测试用户账号已存在: test@test.com');
     } else {
       throw error;
     }

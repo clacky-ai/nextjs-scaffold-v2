@@ -54,26 +54,26 @@ async function createDatabase() {
 // 运行数据库迁移
 async function runMigrations() {
   console.log('🔧 步骤2: 初始化数据表...');
-  
+
   try {
-    // 生成迁移文件
-    console.log('生成迁移文件...');
-    const generateResult = await execAsync('npx drizzle-kit generate', {
+    // 生成 Prisma 客户端
+    console.log('生成 Prisma 客户端...');
+    const generateResult = await execAsync('npx prisma generate', {
       cwd: process.cwd()
     });
     if (generateResult.stdout) {
       console.log(generateResult.stdout);
     }
-    
-    // 执行迁移
+
+    // 执行数据库迁移
     console.log('执行数据库迁移...');
-    const migrateResult = await execAsync('npx drizzle-kit migrate', {
+    const migrateResult = await execAsync('npx prisma migrate deploy', {
       cwd: process.cwd()
     });
     if (migrateResult.stdout) {
       console.log(migrateResult.stdout);
     }
-    
+
     console.log('✅ 数据表初始化成功');
   } catch (error) {
     console.error('❌ 数据表初始化失败:', error);

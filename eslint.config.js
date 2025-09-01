@@ -213,6 +213,7 @@ export default [
   },
   {
     ignores: [
+      'feat-publish',
       'client/src/components/ui',
       'node_modules/**',
       'dist/**',

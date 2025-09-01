@@ -13,16 +13,16 @@ router.get('/', async (req: AuthRequest, res) => {
     const formattedVotes = await Promise.all(
       votes.map(async (vote) => {
         // 获取用户信息
-        const user = await storage.getUser(vote.userId);
-        
+        const user = await storage.getUser(vote.voterId);
+
         // 获取项目信息
         const project = await storage.getProject(vote.projectId);
-        
+
         return {
           id: vote.id,
-          userId: vote.userId,
+          userId: vote.voterId,
           projectId: vote.projectId,
-          reason: vote.reason || '',
+          reason: vote.comment || '',
           userName: user?.realName || user?.email || '未知用户',
           projectTitle: project?.title || '未知项目',
           createdAt: vote.createdAt.toISOString(),
@@ -158,12 +158,13 @@ router.get('/project/:projectId', async (req: AuthRequest, res) => {
 router.get('/user/:userId', async (req: AuthRequest, res) => {
   try {
     const { userId } = req.params;
-    const votes = await storage.getVotesForUser(userId);
-    
+    const votesWithScores = await storage.getUserVotes(userId);
+
     // 转换数据格式
     const formattedVotes = await Promise.all(
-      votes.map(async (vote) => {
-        const user = await storage.getUser(vote.userId);
+      votesWithScores.map(async (voteWithScore) => {
+        const vote = voteWithScore.vote;
+        const user = await storage.getUser(vote.voterId);
         const project = await storage.getProject(vote.projectId);
         
         return {

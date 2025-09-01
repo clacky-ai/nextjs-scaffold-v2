@@ -1,0 +1,163 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户表 - 支持实名制注册
+model User {
+  id           String   @id @db.VarChar(255)
+  email        String   @unique @db.VarChar(255)
+  password     String   @db.VarChar(255)
+  realName     String   @map("real_name") @db.VarChar(100)
+  phone        String?  @db.VarChar(20)
+  organization String?  @db.VarChar(255)
+  department   String?  @db.VarChar(255)
+  position     String?  @db.VarChar(100)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  submittedProjects Project[] @relation("ProjectSubmitter")
+  votes             Vote[]
+
+  @@index([email], map: "users_email_idx")
+  @@map("users")
+}
+
+// 管理员表
+model AdminUser {
+  id        String   @id @db.VarChar(255)
+  username  String   @unique @db.VarChar(100)
+  password  String   @db.Text
+  name      String   @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+// 项目分类表
+model Category {
+  id          String   @id @db.VarChar(255)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  color       String   @default("#3B82F6") @db.VarChar(7)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  projects Project[]
+
+  @@map("categories")
+}
+
+// 项目表
+model Project {
+  id              String                    @id @db.VarChar(255)
+  title           String                    @db.VarChar(200)
+  description     String                    @db.Text
+  demoUrl         String?                   @map("demo_url") @db.VarChar(500)
+  repositoryUrl   String?                   @map("repository_url") @db.VarChar(500)
+  presentationUrl String?                   @map("presentation_url") @db.VarChar(500)
+  categoryId      String?                   @map("category_id") @db.VarChar(255)
+  submitterId     String                    @map("submitter_id") @db.VarChar(255)
+  teamMembers     Json                      @default("[]") @map("team_members") // string[]
+  tags            Json                      @default("[]") // string[]
+  attachments     Json                      @default("[]") // {filename: string, url: string, size: number}[]
+  status          String                    @default("draft") @db.VarChar(20) // draft, submitted, published
+  isActive        Boolean                   @default(true) @map("is_active")
+  createdAt       DateTime                  @default(now()) @map("created_at")
+  updatedAt       DateTime                  @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  category  Category? @relation(fields: [categoryId], references: [id])
+  submitter User      @relation("ProjectSubmitter", fields: [submitterId], references: [id])
+  votes     Vote[]
+
+  @@index([title], map: "projects_title_idx")
+  @@index([categoryId], map: "projects_category_idx")
+  @@index([submitterId], map: "projects_submitter_idx")
+  @@index([status], map: "projects_status_idx")
+  @@map("projects")
+}
+
+// 投票表
+model Vote {
+  id        String   @id @db.VarChar(255)
+  voterId   String   @map("voter_id") @db.VarChar(255)
+  projectId String   @map("project_id") @db.VarChar(255)
+  comment   String   @db.Text // 强制性评价
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  // Relations
+  voter   User    @relation(fields: [voterId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+  scores  Score[]
+
+  @@unique([voterId, projectId], map: "votes_voter_project_unique")
+  @@index([voterId], map: "votes_voter_idx")
+  @@index([projectId], map: "votes_project_idx")
+  @@map("votes")
+}
+
+// 评分维度表
+model ScoreDimension {
+  id          String   @id @db.VarChar(255)
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  maxScore    Int      @default(10) @map("max_score")
+  weight      Decimal  @default(1.00) @db.Decimal(3, 2) // 权重
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  scores Score[]
+
+  @@map("score_dimensions")
+}
+
+// 评分表
+model Score {
+  id          String   @id @db.VarChar(255)
+  voteId      String   @map("vote_id") @db.VarChar(255)
+  dimensionId String   @map("dimension_id") @db.VarChar(255)
+  score       Int
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  vote      Vote           @relation(fields: [voteId], references: [id], onDelete: Cascade)
+  dimension ScoreDimension @relation(fields: [dimensionId], references: [id])
+
+  @@unique([voteId, dimensionId], map: "scores_vote_dimension_unique")
+  @@index([voteId], map: "scores_vote_idx")
+  @@index([dimensionId], map: "scores_dimension_idx")
+  @@map("scores")
+}
+
+// 投票会话表 - 管理投票活动
+model VotingSession {
+  id               String   @id @db.VarChar(255)
+  name             String   @db.VarChar(200)
+  description      String?  @db.Text
+  startTime        DateTime @map("start_time")
+  endTime          DateTime @map("end_time")
+  maxVotesPerUser  Int      @default(3) @map("max_votes_per_user")
+  isActive         Boolean  @default(true) @map("is_active")
+  allowSelfVoting  Boolean  @default(false) @map("allow_self_voting")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("voting_sessions")
+}

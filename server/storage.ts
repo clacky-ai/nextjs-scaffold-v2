@@ -1,28 +1,23 @@
-import {
-  users,
-  adminUsers,
-  categories,
-  projects,
-  votes,
-  scores,
-  scoreDimensions,
-  type User,
-  type InsertUser,
-  type AdminUser,
-  type InsertAdminUser,
-  type Category,
-  type InsertCategory,
-  type Project,
-  type InsertProject,
-  type Vote,
-  type InsertVote,
-  type Score,
-  type InsertScore,
-  type ScoreDimension,
-} from './db/schema';
 import { db } from './db/index';
-import { eq, desc, and, like, count, sql, avg, sum } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
+import type {
+  User,
+  AdminUser,
+  Category,
+  Project,
+  Vote,
+  Score,
+  ScoreDimension,
+  Prisma
+} from '@prisma/client';
+
+// Type aliases for insert operations
+type InsertUser = Prisma.UserCreateInput;
+type InsertAdminUser = Prisma.AdminUserCreateInput;
+type InsertCategory = Prisma.CategoryCreateInput;
+type InsertProject = Prisma.ProjectUncheckedCreateInput;
+type InsertVote = Prisma.VoteUncheckedCreateInput;
+type InsertScore = Prisma.ScoreCreateInput;
 
 interface ProjectsQuery {
   page?: number;
@@ -120,193 +115,216 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // User operations
   async getUser(id: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    const user = await db.user.findUnique({
+      where: { id }
+    });
+    return user || undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
     try {
-      const [user] = await db.select().from(users).where(eq(users.email, email));
-      return user;
+      const user = await db.user.findUnique({
+        where: { email }
+      });
+      return user || undefined;
     } catch(err) {
       console.log(err);
+      return undefined;
     }
   }
 
   async createUser(userData: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(userData).returning();
+    const user = await db.user.create({
+      data: userData
+    });
     return user;
   }
 
   async updateUser(id: string, userData: Partial<InsertUser>): Promise<User> {
-    const [user] = await db
-      .update(users)
-      .set({ ...userData, updatedAt: new Date() })
-      .where(eq(users.id, id))
-      .returning();
+    const user = await db.user.update({
+      where: { id },
+      data: { ...userData, updatedAt: new Date() }
+    });
     return user;
   }
 
   // Admin User operations
   async getAdminUser(id: string): Promise<AdminUser | undefined> {
-    const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.id, id));
-    return adminUser;
+    const adminUser = await db.adminUser.findUnique({
+      where: { id }
+    });
+    return adminUser || undefined;
   }
 
   async getAdminUserByUsername(username: string): Promise<AdminUser | undefined> {
     try {
-      const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.username, username));
-      return adminUser;
+      const adminUser = await db.adminUser.findUnique({
+        where: { username }
+      });
+      return adminUser || undefined;
     } catch (err) {
       console.log(err);
+      return undefined;
     }
   }
 
   async getAdminUserByEmail(email: string): Promise<AdminUser | undefined> {
     try {
-      const [adminUser] = await db.select().from(adminUsers).where(eq(adminUsers.email, email));
-      return adminUser;
+      const adminUser = await db.adminUser.findUnique({
+        where: { email }
+      });
+      return adminUser || undefined;
     } catch (err) {
       console.log(err);
+      return undefined;
     }
   }
 
   async createAdminUser(userData: InsertAdminUser): Promise<AdminUser> {
-    const [adminUser] = await db.insert(adminUsers).values(userData).returning();
+    const adminUser = await db.adminUser.create({
+      data: userData
+    });
     return adminUser;
   }
 
   async updateAdminUser(id: string, userData: Partial<InsertAdminUser>): Promise<AdminUser> {
-    const [adminUser] = await db
-      .update(adminUsers)
-      .set({ ...userData, updatedAt: new Date() })
-      .where(eq(adminUsers.id, id))
-      .returning();
+    const adminUser = await db.adminUser.update({
+      where: { id },
+      data: { ...userData, updatedAt: new Date() }
+    });
     return adminUser;
   }
 
   // Category operations
   async getCategories(): Promise<Category[]> {
-    return await db.select().from(categories).where(eq(categories.isActive, true));
+    return await db.category.findMany({
+      where: { isActive: true }
+    });
   }
 
   async getCategory(id: string): Promise<Category | undefined> {
-    const [category] = await db.select().from(categories).where(eq(categories.id, id));
-    return category;
+    const category = await db.category.findUnique({
+      where: { id }
+    });
+    return category || undefined;
   }
 
   async createCategory(categoryData: InsertCategory): Promise<Category> {
-    const [category] = await db.insert(categories).values(categoryData).returning();
+    const category = await db.category.create({
+      data: categoryData
+    });
     return category;
   }
 
   async updateCategory(id: string, categoryData: Partial<InsertCategory>): Promise<Category> {
-    const [category] = await db
-      .update(categories)
-      .set({ ...categoryData, updatedAt: new Date() })
-      .where(eq(categories.id, id))
-      .returning();
+    const category = await db.category.update({
+      where: { id },
+      data: { ...categoryData, updatedAt: new Date() }
+    });
     return category;
   }
 
   // Project operations
   async getProjects(query: ProjectsQuery): Promise<ProjectsResult> {
     const { page = 1, limit = 10, categoryId, status, search } = query;
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
     // 构建查询条件
-    const conditions = [eq(projects.isActive, true)];
+    const where: any = { isActive: true };
 
     if (categoryId) {
-      conditions.push(eq(projects.categoryId, categoryId));
+      where.categoryId = categoryId;
     }
 
     if (status) {
-      conditions.push(eq(projects.status, status));
+      where.status = status;
     }
 
     if (search) {
-      conditions.push(
-        sql`(${projects.title} ILIKE ${`%${search}%`} OR ${projects.description} ILIKE ${`%${search}%`})`
-      );
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } }
+      ];
     }
 
     // 获取总数
-    const [{ count: total }] = await db
-      .select({ count: count() })
-      .from(projects)
-      .where(and(...conditions));
+    const total = await db.project.count({ where });
 
     // 获取项目列表
-    const projectList = await db
-      .select()
-      .from(projects)
-      .where(and(...conditions))
-      .orderBy(desc(projects.createdAt))
-      .limit(limit)
-      .offset(offset);
+    const projectList = await db.project.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+      skip
+    });
 
     return {
       projects: projectList,
-      total: Number(total),
+      total,
       page,
       limit,
-      totalPages: Math.ceil(Number(total) / limit),
+      totalPages: Math.ceil(total / limit),
     };
   }
 
   async getProject(id: string): Promise<Project | undefined> {
-    const [project] = await db.select().from(projects).where(eq(projects.id, id));
-    return project;
+    const project = await db.project.findUnique({
+      where: { id }
+    });
+    return project || undefined;
   }
 
   async createProject(projectData: InsertProject): Promise<Project> {
-    const [project] = await db.insert(projects).values(projectData).returning();
+    const project = await db.project.create({
+      data: projectData
+    });
     return project;
   }
 
   async updateProject(id: string, projectData: Partial<InsertProject>): Promise<Project> {
-    const [project] = await db
-      .update(projects)
-      .set({ ...projectData, updatedAt: new Date() })
-      .where(eq(projects.id, id))
-      .returning();
+    const project = await db.project.update({
+      where: { id },
+      data: { ...projectData, updatedAt: new Date() }
+    });
     return project;
   }
 
   async deleteProject(id: string): Promise<void> {
-    await db.update(projects).set({ isActive: false }).where(eq(projects.id, id));
+    await db.project.update({
+      where: { id },
+      data: { isActive: false }
+    });
   }
 
   async getUserProjects(userId: string): Promise<Project[]> {
-    return await db
-      .select()
-      .from(projects)
-      .where(and(eq(projects.submitterId, userId), eq(projects.isActive, true)))
-      .orderBy(desc(projects.createdAt));
+    return await db.project.findMany({
+      where: {
+        submitterId: userId,
+        isActive: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   // Score Dimension operations
   async getScoreDimensions(): Promise<ScoreDimension[]> {
-    return await db
-      .select()
-      .from(scoreDimensions)
-      .where(eq(scoreDimensions.isActive, true))
-      .orderBy(scoreDimensions.sortOrder);
+    return await db.scoreDimension.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' }
+    });
   }
 
   // Vote operations
   async getUserVoteStats(userId: string): Promise<VoteStats> {
-    const [{ count: totalVotes }] = await db
-      .select({ count: count() })
-      .from(votes)
-      .where(eq(votes.voterId, userId));
+    const totalVotes = await db.vote.count({
+      where: { voterId: userId }
+    });
 
     const maxVotes = 3; // 从配置或数据库获取
-    const remainingVotes = Math.max(0, maxVotes - Number(totalVotes));
+    const remainingVotes = Math.max(0, maxVotes - totalVotes);
 
     return {
-      totalVotes: Number(totalVotes),
+      totalVotes,
       remainingVotes,
       maxVotes,
     };
@@ -330,10 +348,12 @@ export class DatabaseStorage implements IStorage {
     }
 
     // 检查是否已经投过票
-    const [existingVote] = await db
-      .select()
-      .from(votes)
-      .where(and(eq(votes.voterId, userId), eq(votes.projectId, projectId)));
+    const existingVote = await db.vote.findFirst({
+      where: {
+        voterId: userId,
+        projectId: projectId
+      }
+    });
 
     if (existingVote) {
       return { canVote: false, reason: '您已经为此项目投过票了' };
@@ -350,9 +370,11 @@ export class DatabaseStorage implements IStorage {
 
   async createVote(voteData: InsertVote, scoreData: Array<{dimensionId: string, score: number}>): Promise<VoteWithScores> {
     // 使用事务确保数据一致性
-    return await db.transaction(async (tx) => {
+    return await db.$transaction(async (tx) => {
       // 创建投票记录
-      const [vote] = await tx.insert(votes).values(voteData).returning();
+      const vote = await tx.vote.create({
+        data: voteData
+      });
 
       // 创建评分记录
       const scoreInserts = scoreData.map(({ dimensionId, score }) => ({
@@ -362,93 +384,98 @@ export class DatabaseStorage implements IStorage {
         score,
       }));
 
-      const insertedScores = await tx.insert(scores).values(scoreInserts).returning();
+      const insertedScores = await tx.score.createMany({
+        data: scoreInserts
+      });
+
+      // 获取创建的评分记录
+      const scores = await tx.score.findMany({
+        where: { voteId: vote.id }
+      });
 
       return {
         vote,
-        scores: insertedScores,
+        scores,
       };
     });
   }
 
   async getProjectVotes(projectId: string): Promise<VoteWithScores[]> {
-    const projectVotes = await db
-      .select()
-      .from(votes)
-      .where(eq(votes.projectId, projectId))
-      .orderBy(desc(votes.createdAt));
+    const projectVotes = await db.vote.findMany({
+      where: { projectId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        scores: true
+      }
+    });
 
-    const result: VoteWithScores[] = [];
-
-    for (const vote of projectVotes) {
-      const voteScores = await db
-        .select()
-        .from(scores)
-        .where(eq(scores.voteId, vote.id));
-
-      result.push({
-        vote,
-        scores: voteScores,
-      });
-    }
-
-    return result;
+    return projectVotes.map(vote => ({
+      vote: {
+        id: vote.id,
+        voterId: vote.voterId,
+        projectId: vote.projectId,
+        comment: vote.comment,
+        createdAt: vote.createdAt,
+        updatedAt: vote.updatedAt,
+      },
+      scores: vote.scores,
+    }));
   }
 
   async getUserVotes(userId: string): Promise<VoteWithScores[]> {
-    const userVotes = await db
-      .select()
-      .from(votes)
-      .where(eq(votes.voterId, userId))
-      .orderBy(desc(votes.createdAt));
+    const userVotes = await db.vote.findMany({
+      where: { voterId: userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        scores: true
+      }
+    });
 
-    const result: VoteWithScores[] = [];
-
-    for (const vote of userVotes) {
-      const voteScores = await db
-        .select()
-        .from(scores)
-        .where(eq(scores.voteId, vote.id));
-
-      result.push({
-        vote,
-        scores: voteScores,
-      });
-    }
-
-    return result;
+    return userVotes.map(vote => ({
+      vote: {
+        id: vote.id,
+        voterId: vote.voterId,
+        projectId: vote.projectId,
+        comment: vote.comment,
+        createdAt: vote.createdAt,
+        updatedAt: vote.updatedAt,
+      },
+      scores: vote.scores,
+    }));
   }
 
   async getVotingResults(): Promise<VotingResults> {
     // 获取所有已发布的项目
-    const publishedProjects = await db
-      .select()
-      .from(projects)
-      .where(and(eq(projects.status, 'published'), eq(projects.isActive, true)));
+    const publishedProjects = await db.project.findMany({
+      where: {
+        status: 'published',
+        isActive: true
+      }
+    });
 
     const results = [];
     let totalVotes = 0;
 
     for (const project of publishedProjects) {
       // 获取项目的投票数
-      const [{ count: voteCount }] = await db
-        .select({ count: count() })
-        .from(votes)
-        .where(eq(votes.projectId, project.id));
+      const projectVoteCount = await db.vote.count({
+        where: { projectId: project.id }
+      });
 
-      const projectVoteCount = Number(voteCount);
       totalVotes += projectVoteCount;
 
       // 获取各维度平均分
-      const dimensionScores = await db
-        .select({
-          dimensionId: scores.dimensionId,
-          avgScore: avg(scores.score),
-        })
-        .from(scores)
-        .innerJoin(votes, eq(scores.voteId, votes.id))
-        .where(eq(votes.projectId, project.id))
-        .groupBy(scores.dimensionId);
+      const dimensionScores = await db.score.groupBy({
+        by: ['dimensionId'],
+        where: {
+          vote: {
+            projectId: project.id
+          }
+        },
+        _avg: {
+          score: true
+        }
+      });
 
       const averageScores: Record<string, number> = {};
       let totalWeightedScore = 0;
@@ -458,8 +485,8 @@ export class DatabaseStorage implements IStorage {
       const dimensions = await this.getScoreDimensions();
 
       for (const dimension of dimensions) {
-        const dimScore = dimensionScores.find(s => s.dimensionId === dimension.id);
-        const avgScore = dimScore ? Number(dimScore.avgScore) : 0;
+        const dimScore = dimensionScores.find((s: any) => s.dimensionId === dimension.id);
+        const avgScore = dimScore ? Number(dimScore._avg.score) : 0;
         const weight = Number(dimension.weight);
 
         averageScores[dimension.id] = avgScore;
@@ -493,24 +520,34 @@ export class DatabaseStorage implements IStorage {
 
   // Admin-specific methods
   async getAllUsers(): Promise<User[]> {
-    return await db.select().from(users).orderBy(desc(users.createdAt));
+    return await db.user.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   async getAllProjects(): Promise<Project[]> {
-    return await db.select().from(projects).orderBy(desc(projects.createdAt));
+    return await db.project.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   async getAllVotes(): Promise<Vote[]> {
-    return await db.select().from(votes).orderBy(desc(votes.createdAt));
+    return await db.vote.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
   }
 
   async getVote(voteId: string): Promise<Vote | undefined> {
-    const [vote] = await db.select().from(votes).where(eq(votes.id, voteId));
-    return vote;
+    const vote = await db.vote.findUnique({
+      where: { id: voteId }
+    });
+    return vote || undefined;
   }
 
   async deleteVote(voteId: string): Promise<void> {
-    await db.delete(votes).where(eq(votes.id, voteId));
+    await db.vote.delete({
+      where: { id: voteId }
+    });
   }
 }
 

@@ -55,14 +55,14 @@ else
     exit 1
 fi
 
-# Set database connection parameters
-echo "Attempting to connect to database: $DB_HOST:$DB_PORT/$DB_NAME (user: $DB_USER)"
+# Parse DATABASE_URL for connection test
+echo "Attempting to connect using DATABASE_URL: $DATABASE_URL"
 
-# Attempt to connect to database
-if ! PGPASSWORD="$DB_PASSWORD" psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -c "\q" &> /dev/null; then
+# Attempt to connect to database using DATABASE_URL
+if ! psql "$DATABASE_URL" -c "\q" &> /dev/null; then
     echo "❌ PostgreSQL database connection failed"
-    echo "Connection parameters: Host=$DB_HOST, Port=$DB_PORT, User=$DB_USER, Database=$DB_NAME"
-    echo "Please check if database service is running and connection parameters are correct"
+    echo "DATABASE_URL: $DATABASE_URL"
+    echo "Please check if database service is running and DATABASE_URL is correct"
     echo "Suggestion: Agent please check middleware-related playbook to install postgres database and run install.sh again"
     exit 1
 fi

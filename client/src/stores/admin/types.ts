@@ -59,12 +59,6 @@ export interface UserStats {
   newThisMonth: number
 }
 
-export interface UserStats {
-  total: number
-  active: number
-  blocked: number
-}
-
 export interface ProjectStats {
   total: number
   active: number
@@ -75,10 +69,6 @@ export interface VoteStats {
   total: number
   todayVotes: number
   averageVotesPerProject: number
-}
-
-export interface LoadingState {
-  [key: string]: boolean
 }
 
 export interface MenuItem {

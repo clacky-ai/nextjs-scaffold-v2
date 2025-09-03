@@ -86,7 +86,14 @@ export const useUserStore = create<UserStore>((set, get) => ({
     const blocked = users.filter(user => user.isBlocked).length;
     const active = total - blocked;
     
-    return { total, active, blocked };
+    // Calculate new users this month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const newThisMonth = users.filter(user => 
+      new Date(user.createdAt) >= startOfMonth
+    ).length;
+    
+    return { total, active, blocked, newThisMonth };
   },
   
   filteredUsers: () => {

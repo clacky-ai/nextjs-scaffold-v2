@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
-import type { OnlineUserData } from '@/ws-modules/admin';
+import type { OnlineUserData } from '@/ws-modules/admin/OnlineUsersModule';
 
 // 在线用户统计数据
 interface OnlineUsersStats {

@@ -119,12 +119,12 @@ class ConnectionManager {
       this.userSockets.delete(socket.id);
 
       // 清理房间订阅
-      for (const [room, sockets] of this.roomSubscriptions.entries()) {
+      this.roomSubscriptions.forEach((sockets, room) => {
         sockets.delete(socket.id);
         if (sockets.size === 0) {
           this.roomSubscriptions.delete(room);
         }
-      }
+      });
 
       // 广播用户下线
       if (user) {

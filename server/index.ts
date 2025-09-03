@@ -79,7 +79,7 @@ app.use((req, res, next) => {
   }
 
   // 注册路由（传入 httpServer 而不是 app）
-  await registerRoutes(app, httpServer);
+  registerRoutes(app, httpServer);
 
   // 初始化 WebSocket 服务器
   log('初始化 WebSocket 服务器...');

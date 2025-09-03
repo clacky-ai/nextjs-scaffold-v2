@@ -31,9 +31,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-!.env.example
-.env*
+# env files
+.env
+.env.local
 
 
 # vercel
@@ -47,3 +47,6 @@ next-env.d.ts
 .1024*
 !.1024
 .breakpoints
+
+# db
+/generated/prisma

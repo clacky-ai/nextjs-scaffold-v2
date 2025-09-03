@@ -65,7 +65,7 @@ export default function UserSignupPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">用户注册</CardTitle>
           <CardDescription className="text-center">
-            创建您的投票系统账号
+            创建您的系统账号
           </CardDescription>
         </CardHeader>
         <CardContent>

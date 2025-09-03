@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -25,19 +25,40 @@ import { useRoutes } from '@/hooks/useRoutes';
 
 export function UsersManagement() {
   const routes = useRoutes();
-  const {
-    loading,
-    searchTerm,
-    setSearchTerm,
-    fetchUsers,
-    toggleUserStatus,
-    stats,
-    filteredUsers,
-  } = useUserStore();
+  
+  // 获取基础状态
+  const { loading, searchTerm, setSearchTerm, fetchUsers, toggleUserStatus } = useUserStore();
+  const users = useUserStore(state => state.users);
+  
+  // 使用 useMemo 缓存计算结果，避免不必要的重新计算
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm) return users;
+    
+    const term = searchTerm.toLowerCase();
+    return users.filter(user => 
+      user.name.toLowerCase().includes(term) ||
+      user.email.toLowerCase().includes(term) ||
+      (user.team && user.team.toLowerCase().includes(term))
+    );
+  }, [users, searchTerm]);
+
+  const stats = useMemo(() => {
+    const total = users.length;
+    const blocked = users.filter(user => user.isBlocked).length;
+    const active = total - blocked;
+    const newThisMonth = users.filter(user => {
+      const createdAt = new Date(user.createdAt);
+      const now = new Date();
+      return createdAt.getMonth() === now.getMonth() && 
+             createdAt.getFullYear() === now.getFullYear();
+    }).length;
+    
+    return { total, active, blocked, newThisMonth };
+  }, [users]);
 
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, [fetchUsers]); // 只在组件挂载时执行一次
 
   const handleToggleUserStatus = async (userId: string, isBlocked: boolean) => {
     const success = await toggleUserStatus(userId, isBlocked);
@@ -60,9 +81,9 @@ export function UsersManagement() {
             <CardTitle className="text-sm font-medium">总用户数</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats().total}</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
             <p className="text-xs text-muted-foreground">
-              +{stats().newThisMonth} 较上月
+              +{stats.newThisMonth} 较上月
             </p>
           </CardContent>
         </Card>
@@ -71,9 +92,9 @@ export function UsersManagement() {
             <CardTitle className="text-sm font-medium">活跃用户</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats().active}</div>
+            <div className="text-2xl font-bold">{stats.active}</div>
             <p className="text-xs text-muted-foreground">
-              活跃率 {stats().total > 0 ? Math.round((stats().active / stats().total) * 100) : 0}%
+              活跃率 {stats.total > 0 ? Math.round((stats.active / stats.total) * 100) : 0}%
             </p>
           </CardContent>
         </Card>
@@ -82,7 +103,7 @@ export function UsersManagement() {
             <CardTitle className="text-sm font-medium">被屏蔽用户</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats().blocked}</div>
+            <div className="text-2xl font-bold">{stats.blocked}</div>
             <p className="text-xs text-muted-foreground">
               需要关注的用户
             </p>
@@ -93,7 +114,7 @@ export function UsersManagement() {
             <CardTitle className="text-sm font-medium">本月新增</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats().newThisMonth}</div>
+            <div className="text-2xl font-bold">{stats.newThisMonth}</div>
             <p className="text-xs text-muted-foreground">
               新注册用户
             </p>
@@ -159,14 +180,14 @@ export function UsersManagement() {
                     <p className="text-sm text-muted-foreground mt-2">加载用户数据中...</p>
                   </TableCell>
                 </TableRow>
-              ) : filteredUsers().length === 0 ? (
+              ) : filteredUsers.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     <p className="text-sm text-muted-foreground">暂无用户数据</p>
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredUsers().map((user) => (
+                filteredUsers.map((user) => (
                   <TableRow key={user.id}>
                     <TableCell>
                       <div>

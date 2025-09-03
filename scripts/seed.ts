@@ -59,7 +59,7 @@ async function seedDatabase() {
     await db.user.create({
       data: defaultUser
     });
-    console.log('✅ 默认用户创建成功');
+    console.log('✅ 默认用户创建成功:', defaultUser.email);
   } catch (error: any) {
     if (error.code === 'P2002') {
       // 用户已存在

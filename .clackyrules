@@ -1,27 +1,9 @@
-# CLAUDE.md
+# Clacky Rules
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Clacky when working with code in this repository.
 
 ## Project Overview
-This is a full-stack React + Express application with dual authentication systems: one for regular users and one for administrators. The project uses TypeScript, Tailwind CSS, shadcn/ui components, and PostgreSQL with Drizzle ORM.
-
-## Development Commands
-
-### Setup & Database
-```bash
-npm install                 # Install dependencies
-npm run db:push            # Push database schema changes
-npm run db:init            # Initialize database
-npm run db:seed            # Seed database with test data
-```
-
-### Development
-```bash
-npm run dev                # Start development server (uses nodemon)
-npm run build              # Build both client and server
-npm run start              # Start production server
-npm run check              # TypeScript type checking
-```
+This is a full-stack React + Express application with dual authentication systems: one for regular users and one for administrators. The project uses TypeScript, Tailwind CSS, shadcn/ui components, and PostgreSQL with Prisma ORM.
 
 ## Architecture
 
@@ -43,7 +25,7 @@ npm run check              # TypeScript type checking
 ### Backend Structure (`server/`)
 - **Router Registration**: All routes registered in `server/routers/index.ts`
 - **Authentication Middleware**: Applied globally via `routeAuthMiddleware`
-- **Database**: Drizzle ORM with schema in `server/db/schema.ts`
+- **Database**: Prisma ORM with schema in `prisma/schema.prisma`
 - **API Routes**:
   - Public APIs: `/api/` (no auth required)
   - User APIs: `/api/auth` (user authentication required)
@@ -57,15 +39,26 @@ npm run check              # TypeScript type checking
 ## Development Guidelines
 
 ### Frontend Development Rules
-1. **State Management**: All data must be managed through Zustand stores, never make direct API calls from pages
-2. **HTTP Requests**: Only use the centralized API client (`src/lib/api.ts`), never make raw fetch requests from pages
-3. **Business Logic**: Consolidate related functionality into single stores rather than creating new stores for each page
-4. **Authentication**: The API client automatically handles token management for both user and admin contexts
+1. **State Management**: 
+  - All data must be managed through Zustand store, never make direct API calls from pages
+  - DO NOT create `MULTIPLE` stores. All pages should use one shared store instead of having individual stores per page, unless the user specifically requests otherwise
+2. **HTTP Requests**: 
+  - Only use the centralized API client (`src/lib/api.ts`), never make raw fetch requests from pages
+  - `await api.get(url)` (include post etc...) returns business data directly. Use `response.fieldName`, NOT `response.data.fieldName`
+  - The API client automatically handles token management for both user and admin contexts
+3. **Zustand Computed Values**: Avoid both getter functions and external selector functions that return new objects/arrays on every call, as they can cause infinite re-renders. Instead, use `useMemo` in components with specific state slices as dependencies: 
+```
+const users = useStore(state => state.users); 
+const computed = useMemo(() => /* logic */, [users])
+```
+4. **RadixUI Select Component**: `<SelectItem value="">` does not accept empty string values. Use a meaningful value like `value="all"` for "All" options instead of empty strings.
+5. **Route Registration**: All Page routes must be registered in `client/src/router/index.ts`
 
 ### Backend Development Rules
 1. **Route Registration**: All API routes must be registered in `server/routers/index.ts`
 2. **Authentication**: Use the global `routeAuthMiddleware`, never add auth middleware in individual route files
 3. **API Patterns**: Follow existing patterns with `/api/` for public, `/api/auth` for user, `/api/admin/` for admin routes
+4. **Zod Schema**: use `z.coerce.date()` instead of `z.string.datetime()` when validating date fields
 
 ### Path Aliases
 - `@/*` → `./client/src/*`
@@ -73,14 +66,15 @@ npm run check              # TypeScript type checking
 
 ### Tech Stack Details
 - **Frontend**: React 18, TypeScript, Tailwind CSS, shadcn/ui, React Router, Zustand, React Hook Form
-- **Backend**: Express, TypeScript, Drizzle ORM, PostgreSQL, JWT authentication, bcrypt
+- **Backend**: Express, TypeScript, Prisma ORM, PostgreSQL, JWT authentication, bcrypt
 - **Build Tools**: Vite (frontend), esbuild (backend), nodemon (development)
-- **Database Tools**: Drizzle Kit for migrations and schema management
+- **Database Tools**: Prisma CLI for migrations, schema management, and database introspection
 
 ### Key Files to Reference
 - `server/routers/index.ts`: Route registration and auth middleware setup
 - `client/src/lib/api.ts`: HTTP client with automatic authentication
-- `server/db/schema.ts`: Database schema definitions
+- `prisma/schema.prisma`: Database schema definitions (Prisma)
+- `server/db/index.ts`: Database connection and Prisma Client setup
 
 ### Default Accounts
 - Admin: admin@test.com / admin123456  

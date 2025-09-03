@@ -7,32 +7,26 @@ import { communicationManager } from '@/lib/websocket/CommunicationManager';
 import { useOnlineUsersStore } from '@/stores/admin/onlineUsersStore';
 import { OnlineUsersModule } from '@/ws-modules/admin/OnlineUsersModule';
 
+// 整个产品的入口页面
+import LandingPage from '@/pages/LandingPage';
+
 // 用户端页面
-import HomePage from '@/pages/users/home';
-import ProjectsPage from '@/pages/users/projects';
-import VotingPage from '@/pages/users/voting';
-import ResultsPage from '@/pages/users/results';
-import MyVotesPage from '@/pages/users/my-votes';
-import MyProjectsPage from '@/pages/users/my-projects';
-import ProjectFormPage from '@/pages/users/project-form';
 import UserLoginPage from '@/pages/users/login';
 import UserSignupPage from '@/pages/users/signup';
 
 // 管理端页面
 import AdminLoginPage from '@/pages/admin/login';
 import AdminEntryPage from '@/pages/admin/entryPage';
-import { Dashboard } from '@/pages/admin/Dashboard';
 import { UsersManagement } from '@/pages/admin/UsersManagement';
 import { UserDetail } from '@/pages/admin/UserDetail';
 import { OnlineUsers } from '@/pages/admin/OnlineUsers';
-import { ProjectsManagement } from '@/pages/admin/ProjectsManagement';
-import { VotesManagement } from '@/pages/admin/VotesManagement';
-import { ResultsStatistics } from '@/pages/admin/ResultsStatistics';
-import { SystemSettings } from '@/pages/admin/SystemSettings';
 import { AdminProfile } from '@/pages/admin/Profile';
 
 // 公共组件
 import NotFound from '@/pages/not-found';
+
+// the default page to redirect to after user login, please modify this page by real bussiness requirement
+export const DefaultUserPageAfterLogin = 'landing';
 
 // 注册 WebSocket 模块
 const onlineUsersStore = useOnlineUsersStore.getState();
@@ -41,6 +35,14 @@ communicationManager.registerModule('admin-online-users', new OnlineUsersModule(
 
 // 统一路由配置
 export const routeConfig: RouteConfig[] = [
+  // 整个产品的入口页面，请根据需求重构这个页面
+  {
+    id: 'landing',
+    path: '/',
+    element: LandingPage,
+    meta: { title: '首页' },
+  },
+
   // 用户端路由
   {
     id: 'user-login',
@@ -55,71 +57,15 @@ export const routeConfig: RouteConfig[] = [
     meta: { title: '用户注册' },
   },
 
-  // 用户认证后的路由
-  {
-    id: 'home',
-    path: '/',
-    element: HomePage,
-    loader: requireUserAuth,
-    meta: { title: '首页', requiresAuth: true },
-  },
-  {
-    id: 'projects',
-    path: '/projects',
-    element: ProjectsPage,
-    loader: requireUserAuth,
-    meta: { title: '项目列表', requiresAuth: true }
-  },
-  {
-    id: 'project-new',
-    path: '/projects/new',
-    element: ProjectFormPage,
-    loader: requireUserAuth,
-    meta: { title: '新建项目', requiresAuth: true }
-  },
-  {
-    id: 'project-edit',
-    path: '/projects/:id/edit',
-    element: ProjectFormPage,
-    loader: requireUserAuth,
-    meta: { title: '编辑项目', requiresAuth: true }
-  },
-  {
-    id: 'project-detail',
-    path: '/projects/:id',
-    element: ProjectsPage,
-    loader: requireUserAuth,
-    meta: { title: '项目详情', requiresAuth: true }
-  },
-  {
-    id: 'my-projects',
-    path: '/my-projects',
-    element: MyProjectsPage,
-    loader: requireUserAuth,
-    meta: { title: '我的项目', requiresAuth: true }
-  },
-  {
-    id: 'voting',
-    path: '/voting',
-    element: VotingPage,
-    loader: requireUserAuth,
-    meta: { title: '投票页面', requiresAuth: true }
-  },
-  {
-    id: 'my-votes',
-    path: '/my-votes',
-    element: MyVotesPage,
-    loader: requireUserAuth,
-    meta: { title: '我的投票', requiresAuth: true }
-  },
-  {
-    id: 'results',
-    path: '/results',
-    element: ResultsPage,
-    loader: requireUserAuth,
-    meta: { title: '投票结果', requiresAuth: true }
-  },
-
+  // 用户登录后的首页，请根据需求重构 path
+  // {
+  //   id: DefaultUserPageAfterLogin,
+  //   path: "/home",
+  //   element: UserHomePage,
+  //   loader: requireUserAuth, 
+  //   meta: { title: "用户首页" },
+  // },
+  
   // 管理员登录页面
   {
     id: 'admin-login',
@@ -139,22 +85,9 @@ export const routeConfig: RouteConfig[] = [
       {
         id: 'admin-index',
         index: true,
-        loader: () => redirect('/admin/dashboard'),
+        loader: () => redirect('/admin/users'), // please modify this default page for real business
       },
-
       // 管理员功能页面
-      {
-        id: 'admin-dashboard',
-        path: 'dashboard',
-        element: Dashboard,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 0,
-          title: '仪表盘',
-          icon: LayoutDashboard,
-          breadcrumbTitle: '仪表盘',
-        },
-      },
       {
         id: 'admin-users',
         path: 'users',
@@ -173,61 +106,12 @@ export const routeConfig: RouteConfig[] = [
         element: OnlineUsers,
         meta: {
           showInSidebar: true,
-          sidebarOrder: 2,
+          sidebarOrder: 99,
           title: '在线用户',
           icon: UserCheck,
           breadcrumbTitle: '在线用户',
         },
       },
-      {
-        id: 'admin-projects',
-        path: 'projects',
-        element: ProjectsManagement,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 3,
-          title: '项目管理',
-          icon: FolderOpen,
-          breadcrumbTitle: '项目管理'
-        }
-      },
-      {
-        id: 'admin-votes',
-        path: 'votes',
-        element: VotesManagement,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 4,
-          title: '投票管理',
-          icon: Vote,
-          breadcrumbTitle: '投票管理'
-        }
-      },
-      {
-        id: 'admin-results',
-        path: 'results',
-        element: ResultsStatistics,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 5,
-          title: '结果统计',
-          icon: BarChart3,
-          breadcrumbTitle: '结果统计'
-        }
-      },
-      {
-        id: 'admin-settings',
-        path: 'settings',
-        element: SystemSettings,
-        meta: {
-          showInSidebar: true,
-          sidebarOrder: 6,
-          title: '系统设置',
-          icon: Settings,
-          breadcrumbTitle: '系统设置'
-        }
-      },
-
       // 个人资料页面（不显示在侧边栏）
       {
         id: 'admin-profile',
@@ -238,7 +122,6 @@ export const routeConfig: RouteConfig[] = [
           breadcrumbTitle: '个人资料'
         }
       },
-
       // 详情页面（不显示在侧边栏）
       {
         id: 'admin-user-detail',

@@ -49,19 +49,29 @@ async function createDatabase() {
   });
 
   try {
-    const result = await prisma.$queryRaw<Array<{ exists: number }>>`
-      SELECT 1 as exists FROM pg_database WHERE datname = ${dbName}
-    `;
+    // 检查数据库是否存在
+    const result = await prisma.$queryRaw`
+      SELECT 1 FROM pg_database WHERE datname = ${dbName}
+    ` as any[];
 
     if (result.length === 0) {
+      // 数据库不存在，创建它
       await prisma.$executeRawUnsafe(`CREATE DATABASE "${dbName}"`);
       console.log(`✅ 数据库 ${dbName} 创建成功`);
     } else {
       console.log(`ℹ️ 数据库 ${dbName} 已存在`);
     }
-  } catch (error) {
-    console.error('❌ 创建数据库失败:', error);
-    throw error;
+  } catch (error: any) {
+    // 如果连接失败，可能是因为 PostgreSQL 服务未启动
+    if (error.code === 'ECONNREFUSED') {
+      console.error('❌ 无法连接到 PostgreSQL 服务器');
+      console.error('请确保 PostgreSQL 服务正在运行');
+      console.error(`DATABASE_URL: ${getDatabaseUrl()}`);
+      throw error;
+    } else {
+      console.error('❌ 创建数据库失败:', error.message);
+      throw error;
+    }
   } finally {
     await prisma.$disconnect();
   }
@@ -72,8 +82,8 @@ async function runMigrations() {
   console.log('🔧 步骤2: 初始化数据表...');
 
   try {
-    // 生成 Prisma 客户端
-    console.log('生成 Prisma 客户端...');
+    // 生成 Prisma Client
+    console.log('生成 Prisma Client...');
     const generateResult = await execAsync('npx prisma generate', {
       cwd: process.cwd()
     });
@@ -81,13 +91,13 @@ async function runMigrations() {
       console.log(generateResult.stdout);
     }
 
-    // 执行数据库迁移
-    console.log('执行数据库迁移...');
-    const migrateResult = await execAsync('npx prisma migrate deploy', {
+    // 推送数据库 schema
+    console.log('推送数据库 schema...');
+    const pushResult = await execAsync('npx prisma db push', {
       cwd: process.cwd()
     });
-    if (migrateResult.stdout) {
-      console.log(migrateResult.stdout);
+    if (pushResult.stdout) {
+      console.log(pushResult.stdout);
     }
 
     console.log('✅ 数据表初始化成功');
@@ -129,7 +139,7 @@ async function runSeed() {
 async function initializeDatabase() {
   console.log('🚀 开始数据库完整初始化...');
   console.log(`目标数据库: ${dbName}`);
-  console.log(`数据库连接: ${getDatabaseUrl()}`);
+  console.log(`DATABASE_URL: ${getDatabaseUrl()}`);
   console.log('================================');
   
   try {
@@ -189,24 +199,20 @@ if (args.includes('--help') || args.includes('-h')) {
 // 处理强制模式和运行初始化
 async function main() {
   if (args.includes('--force') || args.includes('-f')) {
-    console.log('⚠️ 强制模式：将删除现有数据库重新创建');
-
-    const postgresUrl = getPostgresUrl();
-    const prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: postgresUrl,
-        },
-      },
-    });
+    console.log('⚠️ 强制模式：将重置数据库表');
 
     try {
-      await prisma.$executeRawUnsafe(`DROP DATABASE IF EXISTS "${dbName}"`);
-      console.log(`🗑️ 已删除现有数据库: ${dbName}`);
-    } catch (error) {
-      console.log('数据库不存在或删除失败，继续执行...');
-    } finally {
-      await prisma.$disconnect();
+      // 使用 Prisma 重置数据库表
+      console.log('重置数据库表...');
+      const resetResult = await execAsync('npx prisma db push --force-reset --accept-data-loss', {
+        cwd: process.cwd()
+      });
+      if (resetResult.stdout) {
+        console.log(resetResult.stdout);
+      }
+      console.log('🗑️ 数据库表已重置');
+    } catch (error: any) {
+      console.log('数据库重置失败，继续执行...', error.message);
     }
   }
 

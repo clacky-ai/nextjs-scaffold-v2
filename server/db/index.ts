@@ -23,19 +23,25 @@ function createPrismaClient() {
   return client;
 }
 
-// 导出 Prisma 客户端实例
+// 导出 Prisma Client 实例
 export const db = createPrismaClient();
 
 // 检查数据库连接
 export async function checkDatabaseConnection(): Promise<{ connected: boolean; error?: string }> {
   try {
-    // 执行一个简单的查询来测试连接
+    // 使用 Prisma Client 执行一个简单的查询来测试连接
     await db.$queryRaw`SELECT 1`;
+    console.log('✅ 数据库连接成功');
     return { connected: true };
   } catch (error: any) {
     const errorMessage = error.code === 'ECONNREFUSED'
       ? `数据库连接被拒绝。请确保PostgreSQL服务正在运行并检查 DATABASE_URL 配置`
       : `数据库连接失败: ${error.message}`;
+
+    console.error('❌ 数据库连接错误:', {
+      message: error.message,
+      code: error.code,
+    });
 
     return {
       connected: false,

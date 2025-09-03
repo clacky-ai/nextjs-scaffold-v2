@@ -77,9 +77,18 @@ const users = useStore(state => state.users);
 const computed = useMemo(() => /* logic */, [users])
 ```
 4. **RadixUI Select Component**: `<SelectItem value="">` does not accept empty string values. Use a meaningful value like `value="all"` for "All" options instead of empty strings.
-5. **Route Registration**: All page routes must be registered in `client/src/router/index.ts`
+5. **Route Registration & Navigation**: 
+  - All page routes must be registered in `client/src/router/index.ts`
+  - For page navigation, use: 
+```
+import { useRoutes } from '@/hooks/useRoutes';
+routes.navigate('page-router-id')
+```
+  - DO NOT use react-router's `useNavigate` directly
+
 6. **WebSocket Modules**: WebSocket functionality is organized into modules in `src/ws-modules/` and registered via `CommunicationManager`
 7. **WebSocket Development Pattern**: 
+   - WebSocket functionality is available through `WebSocketProvider` in `App.tsx` which handles authentication automatically
    - Create modules extending `BaseModule` (see `client/src/ws-modules/admin/OnlineUsersModule.ts` as reference)
    - All WebSocket modules MUST be registered in `client/src/router/index.ts` using `communicationManager.registerModule()`
    - Define message handlers via `getMessageHandlers()` method

@@ -10,25 +10,33 @@ config({ path: resolve(process.cwd(), '.env') });
 
 const execAsync = promisify(exec);
 
-// 数据库配置
-function getDatabaseUrl() {
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL 环境变量未设置');
-  }
-  return process.env.DATABASE_URL;
+// 数据库配置函数
+function getPostgresUrl(): string {
+  const dbName = process.env.DB_NAME || 'your_database_name';
+  const dbPassword = process.env.DB_PASSWORD || '123456';
+  const dbUser = process.env.DB_USER || 'postgres';
+  const dbHost = process.env.DB_HOST || '127.0.0.1';
+  const dbPort = process.env.DB_PORT || '5432';
+
+  return `postgresql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
 }
 
-function getPostgresUrl() {
-  const databaseUrl = getDatabaseUrl();
-  // 将数据库名替换为 postgres 来连接到默认数据库
-  return databaseUrl.replace(/\/[^\/]+(\?|$)/, '/postgres$1');
+// 确保 DATABASE_URL 环境变量被设置（Prisma CLI 需要）
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = getPostgresUrl();
+}
+
+function getPostgresDefaultDbUrl(): string {
+  const dbPassword = process.env.DB_PASSWORD || '123456';
+  const dbUser = process.env.DB_USER || 'postgres';
+  const dbHost = process.env.DB_HOST || '127.0.0.1';
+  const dbPort = process.env.DB_PORT || '5432';
+
+  return `postgresql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/postgres`;
 }
 
 function getDatabaseName() {
-  const databaseUrl = getDatabaseUrl();
-  // 从 DATABASE_URL 中提取数据库名
-  const match = databaseUrl.match(/\/([^\/\?]+)(\?|$)/);
-  return match ? match[1] : 'default';
+  return process.env.DB_NAME || 'your_database_name';
 }
 
 const dbName = getDatabaseName();
@@ -38,7 +46,7 @@ async function createDatabase() {
   console.log('🔧 步骤1: 创建数据库...');
 
   // 连接到 postgres 数据库来创建目标数据库
-  const postgresUrl = getPostgresUrl();
+  const postgresUrl = getPostgresDefaultDbUrl();
 
   const prisma = new PrismaClient({
     datasources: {
@@ -66,7 +74,7 @@ async function createDatabase() {
     if (error.code === 'ECONNREFUSED') {
       console.error('❌ 无法连接到 PostgreSQL 服务器');
       console.error('请确保 PostgreSQL 服务正在运行');
-      console.error(`DATABASE_URL: ${getDatabaseUrl()}`);
+      console.error(`连接URL: ${getPostgresDefaultDbUrl()}`);
       throw error;
     } else {
       console.error('❌ 创建数据库失败:', error.message);
@@ -85,7 +93,8 @@ async function runMigrations() {
     // 生成 Prisma Client
     console.log('生成 Prisma Client...');
     const generateResult = await execAsync('npx prisma generate', {
-      cwd: process.cwd()
+      cwd: process.cwd(),
+      env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
     });
     if (generateResult.stdout) {
       console.log(generateResult.stdout);
@@ -94,7 +103,8 @@ async function runMigrations() {
     // 推送数据库 schema
     console.log('推送数据库 schema...');
     const pushResult = await execAsync('npx prisma db push', {
-      cwd: process.cwd()
+      cwd: process.cwd(),
+      env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
     });
     if (pushResult.stdout) {
       console.log(pushResult.stdout);
@@ -110,20 +120,21 @@ async function runMigrations() {
 // 执行种子数据
 async function runSeed() {
   console.log('🔧 步骤3: 写入种子数据...');
-  
+
   try {
     const seedResult = await execAsync('npm run db:seed', {
       cwd: process.cwd(),
-      timeout: 30000 // 30秒超时
+      timeout: 30000, // 30秒超时
+      env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
     });
-    
+
     if (seedResult.stdout) {
       console.log(seedResult.stdout);
     }
     if (seedResult.stderr) {
       console.error(seedResult.stderr);
     }
-    
+
     console.log('✅ 种子数据写入成功');
   } catch (error) {
     console.error('❌ 种子数据写入失败:', error);
@@ -139,22 +150,22 @@ async function runSeed() {
 async function initializeDatabase() {
   console.log('🚀 开始数据库完整初始化...');
   console.log(`目标数据库: ${dbName}`);
-  console.log(`DATABASE_URL: ${getDatabaseUrl()}`);
+  console.log(`业务数据库URL: ${getPostgresUrl()}`);
   console.log('================================');
-  
+
   try {
     // 步骤1: 创建数据库
     await createDatabase();
     console.log('');
-    
+
     // 步骤2: 初始化数据表
     await runMigrations();
     console.log('');
-    
+
     // 步骤3: 写入种子数据
     await runSeed();
     console.log('');
-    
+
     console.log('🎉 数据库初始化完成!');
     console.log('================================');
     console.log('现在你可以启动应用程序了:');
@@ -164,7 +175,7 @@ async function initializeDatabase() {
     console.log('用户名: admin');
     console.log('密码: admin123456');
     console.log('登录地址: http://localhost:3000/admin/sign-in');
-    
+
   } catch (error) {
     console.error('💥 数据库初始化失败:', error);
     process.exit(1);
@@ -186,12 +197,15 @@ if (args.includes('--help') || args.includes('-h')) {
   --force, -f       强制重新初始化（会删除现有数据）
 
 环境变量:
-  DATABASE_URL     PostgreSQL 连接字符串
-                   格式: postgresql://username:password@host:port/database
+  DB_NAME          数据库名称
+  DB_PASSWORD      数据库密码
+  DB_USER          数据库用户名 (默认: postgres)
+  DB_HOST          数据库主机 (默认: 127.0.0.1)
+  DB_PORT          数据库端口 (默认: 5432)
 
 示例:
   npx tsx scripts/init-db.ts
-  DATABASE_URL=postgresql://postgres:password@localhost:5432/my_voting_system npx tsx scripts/init-db.ts
+  DB_NAME=my_voting_system DB_PASSWORD=password npx tsx scripts/init-db.ts
   `);
   process.exit(0);
 }
@@ -205,7 +219,8 @@ async function main() {
       // 使用 Prisma 重置数据库表
       console.log('重置数据库表...');
       const resetResult = await execAsync('npx prisma db push --force-reset --accept-data-loss', {
-        cwd: process.cwd()
+        cwd: process.cwd(),
+        env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
       });
       if (resetResult.stdout) {
         console.log(resetResult.stdout);

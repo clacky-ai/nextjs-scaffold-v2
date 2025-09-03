@@ -55,19 +55,6 @@ else
     exit 1
 fi
 
-# Parse DATABASE_URL for connection test
-echo "Attempting to connect using DATABASE_URL: $DATABASE_URL"
-
-# Attempt to connect to database using DATABASE_URL
-if ! psql "$DATABASE_URL" -c "\q" &> /dev/null; then
-    echo "❌ PostgreSQL database connection failed"
-    echo "DATABASE_URL: $DATABASE_URL"
-    echo "Please check if database service is running and DATABASE_URL is correct"
-    echo "Suggestion: Agent please check middleware-related playbook to install postgres database and run install.sh again"
-    exit 1
-fi
-echo "✓ PostgreSQL database connection successful"
-
 # Step 3: Execute database initialization
 echo "Step 3: Executing database initialization..."
 npm run db:init

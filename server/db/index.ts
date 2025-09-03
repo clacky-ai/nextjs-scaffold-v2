@@ -1,7 +1,13 @@
 import { PrismaClient } from '@prisma/client';
+import { buildDatabaseUrl } from '../config/index';
 
 declare global {
   var __prisma_client: PrismaClient | undefined;
+}
+
+// 确保 DATABASE_URL 环境变量被设置
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = buildDatabaseUrl();
 }
 
 // 单例模式，避免重复创建连接

@@ -284,7 +284,7 @@ export function AdminProfile() {
             <CardContent className="space-y-6">
               <div className="flex items-center space-x-6">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={avatarPreview || "/avatars/admin.png"} alt="管理员头像" />
+                  <AvatarImage src={avatarPreview || '/avatars/admin.png'} alt="管理员头像" />
                   <AvatarFallback className="text-2xl">
                     {adminUser.name?.charAt(0)?.toUpperCase() || 'A'}
                   </AvatarFallback>
@@ -352,7 +352,7 @@ export function AdminProfile() {
                   <div className="relative">
                     <Input
                       id="currentPassword"
-                      type={showPasswords.current ? "text" : "password"}
+                      type={showPasswords.current ? 'text' : 'password'}
                       value={passwordForm.currentPassword}
                       onChange={(e) => setPasswordForm(prev => ({ ...prev, currentPassword: e.target.value }))}
                       placeholder="请输入当前密码"
@@ -379,7 +379,7 @@ export function AdminProfile() {
                   <div className="relative">
                     <Input
                       id="newPassword"
-                      type={showPasswords.new ? "text" : "password"}
+                      type={showPasswords.new ? 'text' : 'password'}
                       value={passwordForm.newPassword}
                       onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
                       placeholder="请输入新密码（至少6位）"
@@ -407,7 +407,7 @@ export function AdminProfile() {
                   <div className="relative">
                     <Input
                       id="confirmPassword"
-                      type={showPasswords.confirm ? "text" : "password"}
+                      type={showPasswords.confirm ? 'text' : 'password'}
                       value={passwordForm.confirmPassword}
                       onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                       placeholder="请再次输入新密码"

@@ -2,9 +2,11 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 import express, { type Request, Response, NextFunction } from 'express';
 import cookieParser from 'cookie-parser';
+import { createServer } from 'http';
 import { setupVite, serveStatic, log } from './vite';
 import { registerRoutes } from './routers';
 import { checkDatabaseConnection } from './db/index';
+import { initializeWebSocket } from './websocket';
 
 // 加载环境变量
 config({ path: resolve(process.cwd(), '.env.local') });
@@ -24,6 +26,8 @@ process.on('unhandledRejection', (reason, promise) => {
 });
 
 const app = express();
+const httpServer = createServer(app);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -74,7 +78,13 @@ app.use((req, res, next) => {
     log('✅ 数据库连接正常');
   }
 
-  const server = await registerRoutes(app);
+  // 注册路由（传入 httpServer 而不是 app）
+  await registerRoutes(app, httpServer);
+
+  // 初始化 WebSocket 服务器
+  log('初始化 WebSocket 服务器...');
+  initializeWebSocket(httpServer);
+  log('✅ WebSocket 服务器已启动');
 
   app.use((err: any, req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -93,7 +103,7 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get('env') === 'development') {
-    await setupVite(app, server);
+    await setupVite(app, httpServer);
   } else {
     serveStatic(app);
   }
@@ -105,7 +115,8 @@ app.use((req, res, next) => {
   const port = parseInt(process.env.PORT || '3000', 10);
   const host = process.env.HOST || '0.0.0.0';
 
-  server.listen(port, host, () => {
+  httpServer.listen(port, host, () => {
     log(`serving on port ${port} (host: ${host})`);
+    log(`WebSocket available at ws://${host}:${port}/ws`);
   });
 })();

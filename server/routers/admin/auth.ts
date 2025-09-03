@@ -9,7 +9,7 @@ import { AuthRequest } from 'server/middleware/route-auth';
 const router = Router();
 
 // JWT密钥 - 使用不同的密钥以区分用户和管理员token
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'admin-secret-key-change-in-production';
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET;
 
 // 管理员登录请求schema
 const adminLoginSchema = z.object({
@@ -43,6 +43,9 @@ router.post('/login', async (req, res) => {
     }
 
     // 生成JWT令牌
+    if (!JWT_SECRET) {
+      throw new Error('JWT_SECRET 未设置');
+    }
     const token = jwt.sign({ adminUserId: adminUser.id }, JWT_SECRET, { expiresIn: '7d' });
 
     // 设置HttpOnly cookie

@@ -1,5 +1,5 @@
 import { Express } from 'express';
-import { createServer, type Server } from 'http';
+import { type Server } from 'http';
 import { routeAuthMiddleware } from '../middleware/route-auth';
 
 // 直接导入各个路由文件
@@ -16,7 +16,7 @@ import scoreDimensionsRouter from './score-dimensions';
 import apiRouter from './api';
 
 
-export function registerRoutes(app: Express): Server {
+export function registerRoutes(app: Express, server?: Server): Promise<void> {
   // 先注册公开 API（不需要认证）
   app.use('/api', apiRouter);
   app.use('/api/categories', categoriesRouter);
@@ -37,6 +37,6 @@ export function registerRoutes(app: Express): Server {
   app.use('/api/admin/votes', adminVotesRouter);
   app.use('/api/admin/profile', adminProfileRouter);
 
-  // 创建并返回 HTTP 服务器
-  return createServer(app);
+  // 如果没有传入 server，这是向后兼容的处理
+  return Promise.resolve();
 }

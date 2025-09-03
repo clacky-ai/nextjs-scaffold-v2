@@ -1,6 +1,11 @@
 import { redirect } from 'react-router';
 import { requireAdminAuth, requireUserAuth, RouteConfig } from '@/utils/router/routes';
-import { LayoutDashboard, Users, FolderOpen, Vote, BarChart3, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, FolderOpen, Vote, BarChart3, Settings, UserCheck } from 'lucide-react';
+
+// WebSocket 模块配置
+import { communicationManager } from '@/lib/websocket/CommunicationManager';
+import { useOnlineUsersStore } from '@/stores/admin/onlineUsersStore';
+import { OnlineUsersModule } from '@/ws-modules/admin/OnlineUsersModule';
 
 // 用户端页面
 import HomePage from '@/pages/users/home';
@@ -19,6 +24,7 @@ import AdminEntryPage from '@/pages/admin/entryPage';
 import { Dashboard } from '@/pages/admin/Dashboard';
 import { UsersManagement } from '@/pages/admin/UsersManagement';
 import { UserDetail } from '@/pages/admin/UserDetail';
+import { OnlineUsers } from '@/pages/admin/OnlineUsers';
 import { ProjectsManagement } from '@/pages/admin/ProjectsManagement';
 import { VotesManagement } from '@/pages/admin/VotesManagement';
 import { ResultsStatistics } from '@/pages/admin/ResultsStatistics';
@@ -28,6 +34,9 @@ import { AdminProfile } from '@/pages/admin/Profile';
 // 公共组件
 import NotFound from '@/pages/not-found';
 
+// 注册 WebSocket 模块
+const onlineUsersStore = useOnlineUsersStore.getState();
+communicationManager.registerModule('admin-online-users', new OnlineUsersModule(onlineUsersStore));
 
 
 // 统一路由配置
@@ -159,12 +168,24 @@ export const routeConfig: RouteConfig[] = [
         },
       },
       {
+        id: 'admin-online-users',
+        path: 'online-users',
+        element: OnlineUsers,
+        meta: {
+          showInSidebar: true,
+          sidebarOrder: 2,
+          title: '在线用户',
+          icon: UserCheck,
+          breadcrumbTitle: '在线用户',
+        },
+      },
+      {
         id: 'admin-projects',
         path: 'projects',
         element: ProjectsManagement,
         meta: {
           showInSidebar: true,
-          sidebarOrder: 2,
+          sidebarOrder: 3,
           title: '项目管理',
           icon: FolderOpen,
           breadcrumbTitle: '项目管理'
@@ -176,7 +197,7 @@ export const routeConfig: RouteConfig[] = [
         element: VotesManagement,
         meta: {
           showInSidebar: true,
-          sidebarOrder: 3,
+          sidebarOrder: 4,
           title: '投票管理',
           icon: Vote,
           breadcrumbTitle: '投票管理'
@@ -188,7 +209,7 @@ export const routeConfig: RouteConfig[] = [
         element: ResultsStatistics,
         meta: {
           showInSidebar: true,
-          sidebarOrder: 4,
+          sidebarOrder: 5,
           title: '结果统计',
           icon: BarChart3,
           breadcrumbTitle: '结果统计'
@@ -200,7 +221,7 @@ export const routeConfig: RouteConfig[] = [
         element: SystemSettings,
         meta: {
           showInSidebar: true,
-          sidebarOrder: 5,
+          sidebarOrder: 6,
           title: '系统设置',
           icon: Settings,
           breadcrumbTitle: '系统设置'

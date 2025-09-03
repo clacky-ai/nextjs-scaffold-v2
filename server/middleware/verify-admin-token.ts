@@ -2,8 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
 import { storage } from '../storage';
 import { type AuthRequest } from './route-auth';
-
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'admin-secret-key-change-in-production';
+import * as Config from '../config';
 
 export const verifyAdminToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -21,7 +20,7 @@ export const verifyAdminToken = async (req: AuthRequest, res: Response, next: Ne
     }
 
     // 验证JWT令牌
-    const decoded = jwt.verify(token, JWT_SECRET) as { adminUserId: string };
+    const decoded = jwt.verify(token, Config.ADMIN_JWT_SECRET) as { adminUserId: string };
     
     // 获取管理员用户信息
     const adminUser = await storage.getAdminUser(decoded.adminUserId);

@@ -28,6 +28,7 @@ interface RegisterData {
 interface AuthState {
   // State
   user: User | null;
+  token: string | null;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -50,6 +51,7 @@ export const useUserAuthStore = create<AuthState>()(
     (set, get) => ({
       // Initial state
       user: null,
+      token: null,
       isLoading: false,
       error: null,
       isAuthenticated: false,

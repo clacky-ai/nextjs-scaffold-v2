@@ -70,6 +70,12 @@ interface VotingResults {
   totalProjects: number;
 }
 
+interface ProjectVoteStats {
+  totalVotes: number;
+  averageScore: number;
+  averageScores: Record<string, number>;
+}
+
 
 
 export interface IStorage {
@@ -108,6 +114,7 @@ export interface IStorage {
   canUserVoteForProject(userId: string, projectId: string): Promise<CanVoteResult>;
   createVote(vote: InsertVote, scores: Array<{dimensionId: string, score: number}>): Promise<VoteWithScores>;
   getProjectVotes(projectId: string): Promise<VoteWithScores[]>;
+  getProjectVoteStats(projectId: string): Promise<ProjectVoteStats>;
   getUserVotes(userId: string): Promise<VoteWithScores[]>;
   getVotingResults(): Promise<VotingResults>;
 }
@@ -420,6 +427,51 @@ export class DatabaseStorage implements IStorage {
       },
       scores: vote.scores,
     }));
+  }
+
+  async getProjectVoteStats(projectId: string): Promise<ProjectVoteStats> {
+    // 获取项目的投票数
+    const totalVotes = await db.vote.count({
+      where: { projectId }
+    });
+
+    // 获取各维度平均分
+    const dimensionScores = await db.score.groupBy({
+      by: ['dimensionId'],
+      where: {
+        vote: {
+          projectId: projectId
+        }
+      },
+      _avg: {
+        score: true
+      }
+    });
+
+    const averageScores: Record<string, number> = {};
+    let totalWeightedScore = 0;
+    let totalWeight = 0;
+
+    // 获取维度权重并计算加权平均分
+    const dimensions = await this.getScoreDimensions();
+
+    for (const dimension of dimensions) {
+      const dimScore = dimensionScores.find((s: any) => s.dimensionId === dimension.id);
+      const avgScore = dimScore ? Number(dimScore._avg.score) : 0;
+      const weight = Number(dimension.weight);
+
+      averageScores[dimension.id] = avgScore;
+      totalWeightedScore += avgScore * weight;
+      totalWeight += weight;
+    }
+
+    const averageScore = totalWeight > 0 ? totalWeightedScore / totalWeight : 0;
+
+    return {
+      totalVotes,
+      averageScore,
+      averageScores,
+    };
   }
 
   async getUserVotes(userId: string): Promise<VoteWithScores[]> {

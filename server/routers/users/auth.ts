@@ -5,11 +5,9 @@ import jwt from 'jsonwebtoken';
 import { nanoid } from 'nanoid';
 import { storage } from '../../storage';
 import { AuthRequest } from 'server/middleware/route-auth';
+import * as Config from '../../config';
 
 const router = Router();
-
-// JWT密钥
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 // 登录请求schema
 const loginSchema = z.object({
@@ -56,7 +54,7 @@ router.post('/register', async (req, res) => {
     });
 
     // 生成JWT令牌
-    const token = jwt.sign({ userId: newUser.id }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: newUser.id }, Config.JWT_SECRET, { expiresIn: '7d' });
 
     // 设置HttpOnly cookie for user
     res.cookie('user_token', token, {
@@ -111,7 +109,7 @@ router.post('/login', async (req, res) => {
     }
 
     // 生成JWT令牌
-    const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id }, Config.JWT_SECRET, { expiresIn: '7d' });
 
     // 设置HttpOnly cookie for user
     res.cookie('user_token', token, {

@@ -4,7 +4,7 @@
  */
 
 // 获取用户认证 token 的函数
-const getUserAuthToken = (): string | null => {
+export const getUserAuthToken = (): string | null => {
   try {
     const authStorage = localStorage.getItem('auth-storage');
     if (!authStorage) return null;
@@ -17,7 +17,7 @@ const getUserAuthToken = (): string | null => {
 };
 
 // 获取管理员认证 token 的函数
-const getAdminAuthToken = (): string | null => {
+export const getAdminAuthToken = (): string | null => {
   try {
     const adminAuthStorage = localStorage.getItem('admin-auth-storage');
     if (!adminAuthStorage) return null;
@@ -30,9 +30,9 @@ const getAdminAuthToken = (): string | null => {
 };
 
 // 根据 URL 自动选择合适的 token
-const getAuthToken = (url: string): string | null => {
-  // 如果是管理员 API，使用管理员 token
-  if (url.includes('/api/admin/')) {
+export const getAuthToken = (url: string): string | null => {
+  // 如果是管理员 API 或管理员页面，使用管理员 token
+  if (url.includes('/api/admin/') || url.includes('/admin/')) {
     return getAdminAuthToken();
   }
   // 否则使用用户 token

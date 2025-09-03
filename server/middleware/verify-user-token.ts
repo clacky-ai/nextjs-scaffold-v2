@@ -2,8 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
 import { storage } from '../storage';
 import { AuthRequest } from './route-auth';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+import * as Config from '../config';
 
 export const verifyUserToken = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
@@ -21,7 +20,7 @@ export const verifyUserToken = async (req: AuthRequest, res: Response, next: Nex
     }
 
     // 验证JWT令牌
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    const decoded = jwt.verify(token, Config.JWT_SECRET) as { userId: string };
     
     // 获取用户信息
     const user = await storage.getUser(decoded.userId);

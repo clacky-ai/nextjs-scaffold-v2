@@ -3,7 +3,7 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-This is a full-stack React + Express application with dual authentication systems: one for regular users and one for administrators. The project uses TypeScript, Tailwind CSS, shadcn/ui components, and PostgreSQL with Drizzle ORM.
+This is a full-stack React + Express application with dual authentication systems: one for regular users and one for administrators. The project uses TypeScript, Tailwind CSS, shadcn/ui components, PostgreSQL with Prisma ORM, and includes WebSocket support for real-time features.
 
 ## Development Commands
 
@@ -11,8 +11,11 @@ This is a full-stack React + Express application with dual authentication system
 ```bash
 npm install                 # Install dependencies
 npm run db:push            # Push database schema changes
-npm run db:init            # Initialize database
+npm run db:generate        # Generate Prisma client
+npm run db:migrate         # Run Prisma migrations
+npm run db:init            # Initialize database with seed data
 npm run db:seed            # Seed database with test data
+npm run db:studio          # Open Prisma Studio
 ```
 
 ### Development
@@ -21,6 +24,8 @@ npm run dev                # Start development server (uses nodemon)
 npm run build              # Build both client and server
 npm run start              # Start production server
 npm run check              # TypeScript type checking
+npm run lint               # Run ESLint
+npm run lint:fix           # Fix ESLint errors automatically
 ```
 
 ## Architecture
@@ -31,10 +36,11 @@ npm run check              # TypeScript type checking
 - Authentication is completely separate between user and admin systems
 
 ### Frontend Structure (`client/`)
-- **React Router**: Uses custom routing utilities in `src/utils/routeUtils.tsx`
+- **React Router**: Uses custom routing utilities and configurations in `src/router/index.ts`
 - **State Management**: Zustand stores in `src/stores/` (separate for users and admin)
 - **UI Components**: shadcn/ui components in `src/components/ui/`
 - **API Client**: Centralized HTTP client in `src/lib/api.ts` with auto-authentication
+- **WebSocket**: Real-time communication via `src/lib/websocket/` with modular architecture
 - **Pages**:
   - Landing page: `src/pages/LandingPage.tsx` (main entry point)
   - User auth: `src/pages/users/`
@@ -43,7 +49,8 @@ npm run check              # TypeScript type checking
 ### Backend Structure (`server/`)
 - **Router Registration**: All routes registered in `server/routers/index.ts`
 - **Authentication Middleware**: Applied globally via `routeAuthMiddleware`
-- **Database**: Drizzle ORM with schema in `server/db/schema.ts`
+- **Database**: Prisma ORM with schema in `prisma/schema.prisma`
+- **WebSocket**: Real-time server implementation in `server/websocket/`
 - **API Routes**:
   - Public APIs: `/api/` (no auth required)
   - User APIs: `/api/auth` (user authentication required)
@@ -57,31 +64,55 @@ npm run check              # TypeScript type checking
 ## Development Guidelines
 
 ### Frontend Development Rules
-1. **State Management**: All data must be managed through Zustand stores, never make direct API calls from pages
-2. **HTTP Requests**: Only use the centralized API client (`src/lib/api.ts`), never make raw fetch requests from pages
-3. **Business Logic**: Consolidate related functionality into single stores rather than creating new stores for each page
-4. **Authentication**: The API client automatically handles token management for both user and admin contexts
+1. **State Management**: 
+  - All data must be managed through Zustand store, never make direct API calls from pages
+  - DO NOT create `MULTIPLE` stores. All pages should use one shared store instead of having individual stores per page, unless the user specifically requests otherwise
+2. **HTTP Requests**: 
+  - Only use the centralized API client (`src/lib/api.ts`), never make raw fetch requests from pages
+  - `await api.get(url)` (include post etc...) returns business data directly. Use `response.fieldName`, NOT `response.data.fieldName`
+  - The API client automatically handles token management for both user and admin contexts
+3. **Zustand Computed Values**: Avoid both getter functions and external selector functions that return new objects/arrays on every call, as they can cause infinite re-renders. Instead, use `useMemo` in components with specific state slices as dependencies: 
+```
+const users = useStore(state => state.users); 
+const computed = useMemo(() => /* logic */, [users])
+```
+4. **RadixUI Select Component**: `<SelectItem value="">` does not accept empty string values. Use a meaningful value like `value="all"` for "All" options instead of empty strings.
+5. **Route Registration**: All page routes must be registered in `client/src/router/index.ts`
+6. **WebSocket Modules**: WebSocket functionality is organized into modules in `src/ws-modules/` and registered via `CommunicationManager`
+7. **WebSocket Development Pattern**: 
+   - Create modules extending `BaseModule` (see `client/src/ws-modules/admin/OnlineUsersModule.ts` as reference)
+   - All WebSocket modules MUST be registered in `client/src/router/index.ts` using `communicationManager.registerModule()`
+   - Define message handlers via `getMessageHandlers()` method
+   - Specify event subscriptions via `getSubscriptions()` method
+
 
 ### Backend Development Rules
 1. **Route Registration**: All API routes must be registered in `server/routers/index.ts`
 2. **Authentication**: Use the global `routeAuthMiddleware`, never add auth middleware in individual route files
 3. **API Patterns**: Follow existing patterns with `/api/` for public, `/api/auth` for user, `/api/admin/` for admin routes
+4. **Zod Schema**: use `z.coerce.date()` instead of `z.string.datetime()` when validating date fields
 
 ### Path Aliases
 - `@/*` → `./client/src/*`
 - `@shared/*` → `./shared/*`
+- `@assets/*` → `./attached_assets/*`
 
 ### Tech Stack Details
 - **Frontend**: React 18, TypeScript, Tailwind CSS, shadcn/ui, React Router, Zustand, React Hook Form
-- **Backend**: Express, TypeScript, Drizzle ORM, PostgreSQL, JWT authentication, bcrypt
+- **Backend**: Express, TypeScript, Prisma ORM, PostgreSQL, JWT authentication, bcrypt, Socket.IO
 - **Build Tools**: Vite (frontend), esbuild (backend), nodemon (development)
-- **Database Tools**: Drizzle Kit for migrations and schema management
+- **Database Tools**: Prisma CLI for migrations, schema management, and database introspection
+- **Real-time**: WebSocket communication with modular architecture
 
 ### Key Files to Reference
 - `server/routers/index.ts`: Route registration and auth middleware setup
 - `client/src/lib/api.ts`: HTTP client with automatic authentication
-- `server/db/schema.ts`: Database schema definitions
+- `client/src/router/index.ts`: Frontend route configuration and WebSocket module registration
+- `prisma/schema.prisma`: Database schema definitions
+- `server/db/index.ts`: Database connection and Prisma Client setup
+- `client/src/lib/websocket/CommunicationManager.ts`: WebSocket communication manager
+- `scripts/init-db.ts`: Database initialization script with seed data
 
 ### Default Accounts
-- Admin: admin@test.com / admin123456  
-- User1: test@test.com / 123456
+- Admin: admin / admin123456 (login at `/admin/login`)
+- User: test@test.com / 123456
